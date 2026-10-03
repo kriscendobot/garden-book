@@ -4,6 +4,9 @@
   "description": "The source and build tooling for Better Code and Gardens.",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "build": "node build/build.mjs chapters out",
     "test": "node --test"

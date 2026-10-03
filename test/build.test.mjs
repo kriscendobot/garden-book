@@ -90,7 +90,9 @@ test("assembleBook uses tree capabilities and writes the complete clip", async (
 
 test("publishBook sends inert powers and UTF-8 clip content", async () => {
   assert.equal(
-    encodeBase64(new TextEncoder().encode("garden ✓")),
+    encodeBase64(
+      new Uint8Array([103, 97, 114, 100, 101, 110, 32, 226, 156, 147]),
+    ),
     "Z2FyZGVuIOKckw==",
   );
   const calls = [];

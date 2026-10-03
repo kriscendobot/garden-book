@@ -1,3 +1,4 @@
+// prefer-endo-primitives-exempt: this standalone tool uses the web-standard encoder for portability.
 import { readText } from "./tree-io.mjs";
 
 const BASE64_ALPHABET =

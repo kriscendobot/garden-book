@@ -34,15 +34,23 @@ role/skill links to the in-book chapter 5/6 entries, and sends other repo
 paths to `main2` on GitHub (`kriscendobot/garden`, where the roles/skills
 this book documents actually live).
 
-Edition 2026-10-03, redesigned and retitled *Better Code and Gardens* (design
-pass, job `book-design-pass`: Tufte-style text column with a margin for chapter
-provenance, catalog source citations, and each chapter's contents; the chapters
-grouped into five parts marked by line-drawn growth stages; serif/sans system
-font stacks and an earth-and-leaf palette with a matching dark scheme):
-https://5f7jjhj4sbxaxdbej5t7oxgarnzhmb7wq45ds3nxqnq4wtthotsq.ocap.site/
+Edition 2026-10-03, illustrated (job `book-illustrations-integrate-after-pr4`,
+PR #5: the `art/` title garden scene inlined behind the title page, the
+garden-bed figure beside chapter 2, and a faint paper texture behind the
+reading surface; the three dividers and the trellis, seed-packet, and
+potted-plant figures are left unused so they don't compete with the five
+growth-stage glyphs):
+https://xwo4jjai3z3lqwmls3tqlxnn6fqzawktp6lskvmyywdox52c272a.ocap.site/
 
 Prior editions:
 
+- 2026-10-03, redesigned and retitled *Better Code and Gardens* (design
+  pass, job `book-design-pass`: Tufte-style text column with a margin for
+  chapter provenance, catalog source citations, and each chapter's contents;
+  the chapters grouped into five parts marked by line-drawn growth stages;
+  serif/sans system font stacks and an earth-and-leaf palette with a matching
+  dark scheme):
+  https://5f7jjhj4sbxaxdbej5t7oxgarnzhmb7wq45ds3nxqnq4wtthotsq.ocap.site/
 - 2026-10-03 (copy-edit pass, job `book-copyedit`: terminology normalized
   across chapters, tense/voice/audience made consistent, cross-references added
   between chapters including into chapters 9 and 10, repeated explanations

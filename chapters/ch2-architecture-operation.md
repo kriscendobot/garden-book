@@ -6,17 +6,19 @@ grounded-on: main2 2a5c1991779
 
 # Chapter 2: Architecture and operation
 
-This chapter explains how the garden actually runs: where work is recorded,
-how many workers on many hosts share it without a lock server, how messages
-move, which services run where, and how a new version of the garden reaches a
-running fleet. It is written for a reader who needs to operate or change the
-machinery, so it names real script paths and journal locations throughout.
+This chapter explains how the garden runs: where work is recorded, how many
+workers on many hosts share it without a lock server, how messages move,
+which services run where, and how a new version of the garden reaches a
+running fleet. It is written for readers who operate or change the machinery,
+so it names real script paths and journal locations throughout. Chapter 1
+tells how this architecture came about; chapter 3 covers driving it through
+the liaison.
 
 It is grounded in [`CLAUDE.md`][claude-md] (§ Layout, § How work reaches
 workers, § Job system), the [job-board][job-board] and
-[message-bus][message-bus] skills, [`WORKTREES.md`][worktrees], and the two
-architecture designs [`designs/job-board.md`][design-job-board] and
-[`designs/gardening-state-machine.md`][design-gsm]. When this chapter and
+[message-bus][message-bus] skills, [`WORKTREES.md`][worktrees], and two
+architecture designs, [`designs/job-board.md`][design-job-board] and
+[`designs/gardening-state-machine.md`][design-gsm]. Where this chapter and
 those files disagree, the files win: they are what the fleet executes.
 
 Paths below are relative to the garden root (`<garden-root>`, the bot user's
@@ -41,24 +43,25 @@ journal directory, in which case they are relative to the root of the
 The garden repository (`github.com/kriscendobot/garden`) has two long-lived
 branches that never merge:
 
-- **`main2`** holds the library: `roles/`, `skills/`, `scripts/`, `designs/`,
-  `context/`. This is code and prose that agents read.
+- **`main2`** holds the code and prose that agents read: `roles/`, `skills/`,
+  `scripts/`, `designs/`, `context/` (the role and skill catalogs are
+  chapters 5 and 6; the reference library under `journal/library/` is
+  chapter 9).
 - **`journal2`** is an **orphan** branch (no shared history with `main2`)
-  holding the garden's *state*. It is checked out as a worktree at
-  `<garden-root>/journal/`.
+  holding the garden's *state*. This is *the journal*, checked out as a
+  worktree at `<garden-root>/journal/`.
 
-The journal does three things at once:
+The journal does three jobs at once:
 
 1. **It is the transcript.** `entries/<Y>/<M>/<D>/…` holds progress
    narration written by `scripts/jobs/journal-entry.sh`.
 2. **It is the job board.** `jobs/{todo,doin,tada}/` is the work queue, with
    `jobs/plan/` for parked work (§ 2.2).
-3. **It is the message bus.** `inbox/<doer>/{unread,read}/` holds directed
-   mail, `msgs/role/<r>/` and `msgs/broadcast/` hold fan-out topics, and
-   `msgs/host/<GARDEN>/` carries host-directed operations for the sysop
-   (§ 2.4, § 2.5).
+3. **It is the message bus.** Directed inboxes under `inbox/` and fan-out
+   and host channels under `msgs/` carry every message between agents, the
+   maintainer, and the hosts (§ 2.4).
 
-Around those sit the rest of the fleet's shared state, all on the same
+Around these sits the rest of the fleet's shared state, all on the same
 branch: `repos/<slug>` (the watch set; adding a file arms the watchers,
 removing it disarms them), `hosts/<GARDEN>` (per-host worker counts),
 `leader` (the leader marker, § 2.5), `schedules/` (recurring jobs),
@@ -67,12 +70,12 @@ map, below), `work/<base>` (per-job in-flight state), and `deploy/roll/`
 (rolling-deploy release tokens, § 2.6). The design lists the core layout in
 [`designs/job-board.md`][design-job-board] § 1.
 
-Using git for all of this means the whole coordination state is versioned,
+Because all of this lives in git, the whole coordination state is versioned,
 auditable (`git log` on `journal2` is a complete history of who claimed what
-and when), replicated to every host by ordinary fetch, and requires no
+and when), replicated to every host by ordinary fetch, and served without a
 database or queue service. The price is that every mutation is a commit and a
-push, and the design has to make concurrent pushes safe. That is the subject
-of the rest of this section.
+push, so the design must make concurrent pushes safe, the subject of the rest
+of this section.
 
 ### The basename is the spine
 
@@ -91,83 +94,81 @@ scratch/project-wt-<base>-<digest>/  the per-job project worktree
 
 Because the name is derived from the identity of the change, posting the same
 ask twice is a no-op: `scripts/jobs/post-job.sh` refuses a basename that
-already exists anywhere in `todo/`, `doin/`, `plan/`, or `tada/`. That
-idempotency is what lets the liaison re-issue a request after a `/clear`
-without creating duplicate work.
+already exists anywhere in `todo/`, `doin/`, `plan/`, or `tada/`. This
+idempotency lets the liaison re-issue a request after a `/clear` without
+creating duplicate work.
 
 It cuts both ways. For **one-shot** work (`design-X`, `build-X`, a specific
-fix) the bare name is correct and must never be date-suffixed, since that
-would break the no-op property. For a **recurring verb against the same
-target** (`weave`, `shepherd`, `conduct`, a restack, a `retcon`), this
-month's invocation is different work from last month's but derives the same
-bare base; if the earlier one is in `tada/`, the new post is **silently
-swallowed**. Those bases get a disambiguator, conventionally an ISO date
-`-YYYYMMDD` ([job-board][job-board] § Basename shape). The deterministic
-producers already handle this: the scheduler stamps
-`${prefix}-YYYYMMDD-HHMMSS`, the pages-watcher keys on the commit SHA, and the
-comment and CI watchers pass a directive identity (below). `post-job.sh` and
-`post-plan.sh` emit a loud WARN when a post collides with a completed job, so
-a scripted loop cannot let the swallow pass unnoticed.
+fix) the bare name is correct and must never be date-suffixed, which would
+break the no-op property. A **recurring verb against the same target**
+(`weave`, `shepherd`, `conduct`, a restack, a `retcon`) is different work this
+month than last month but derives the same bare base, so if the earlier job is
+in `tada/`, the new post is **silently swallowed**. Those bases get a
+disambiguator, conventionally an ISO date `-YYYYMMDD` ([job-board][job-board]
+§ Basename shape). The deterministic producers already handle this: the
+scheduler stamps `${prefix}-YYYYMMDD-HHMMSS`, the pages-watcher keys on the
+commit SHA, and the comment and CI watchers pass a directive identity (below).
+`post-job.sh` and `post-plan.sh` also emit a loud WARN when a post collides
+with a completed job, so a scripted loop cannot swallow work unnoticed.
 
 A second dedup layer catches **different names for the same directive**. Two
-producers (say, the comment-watcher and a hand-posting liaison) can name one
-PR comment's work differently, and basename idempotency cannot see that they
-are the same. `post-job.sh --identity <owner>/<repo>#<pr>:comment:<cid>` (or
+producers (the comment watcher and a liaison posting by hand, say) can name
+one PR comment's work differently, and basename idempotency cannot tell that
+they are the same. `post-job.sh --identity <owner>/<repo>#<pr>:comment:<cid>` (or
 `…:review:<id>`, or `GARDEN_JOB_IDENTITY`) records the identity in
 `jobs/index/<hash>`, written in the same commit as the job; a later post with
 the same identity while its job is live, or after it completed, is a no-op.
 When no identity is passed, one is derived from the body if it cites exactly
-one canonical GitHub comment URL. This closed the endo-but-for-bots #58
-incident, where two differently-named jobs for one comment raced and one
-worker clobbered the other's working tree.
+one canonical GitHub comment URL. This layer closed the
+`endojs/endo-but-for-bots#58` incident, in which two differently named jobs
+for one comment raced and one worker clobbered the other's working tree.
 
 ### The push is the compare-and-swap
 
 A local `git mv jobs/todo/X jobs/doin/X` is atomic on one filesystem, but
-nobody else can see it until it is pushed. The real serialization point is
-the **`git push` to `origin/journal2`**, which the server accepts only as a
-fast-forward. Of several workers that start from the same tip and each push a
-different commit, exactly one is accepted; every other push is rejected as
-non-fast-forward. That rejection *is* the failed compare-and-swap: "I expected
-the tip to be T; it is not T any more."
+nobody else sees it until it is pushed. The real serialization point is the
+**`git push` to `origin/journal2`**, which the server accepts only as a
+fast-forward. When several workers start from the same tip and each push a
+different commit, exactly one is accepted and the rest are rejected as
+non-fast-forward. That rejection *is* the failed compare-and-swap (CAS): "I
+expected the tip to be T; it is not T any more."
 
-No code path treats the local move as authoritative. Everything that mutates
-the board follows the same shape:
+No code path treats the local move as authoritative. Every board mutation
+has the same shape:
 
 1. fetch and hard-reset a private clone to `origin/journal2`;
 2. make the change and commit;
 3. push; on rejection, go back to step 1.
 
-What differs is **whether to retry after a rejection**, and the garden draws
-that line deliberately ([`designs/job-board.md`][design-job-board] § 2):
+What differs is **whether to retry after a rejection**, a line the garden
+draws deliberately ([`designs/job-board.md`][design-job-board] § 2):
 
-- **Claims back off.** After a rejected claim push, `claim-job.sh` re-syncs,
-  and if its candidate is no longer in `todo/` someone else took it. The
+- **Claims back off.** After a rejected claim push, `claim-job.sh` re-syncs;
+  if its candidate is no longer in `todo/`, someone else took it, and the
   worker moves on to another candidate. It never blindly re-applies the
-  claim, since that could steal a job a peer already owns.
+  claim, which could steal a job a peer already owns.
 - **Posts, completions, sends, and promotions retry.** These touch only the
   caller's own basename or message id, so replaying them onto a newer tip
   cannot damage anyone else's state. They retry until they land.
 
 Both use exponential backoff with full jitter (`backoff()` in
 `scripts/jobs/common.sh`: a uniform draw in `[0, min(cap, base·2^attempt)]`,
-base 50 ms, cap 2 s). The jitter matters: the
-design's stress test found a fixed six-attempt completion retry with no
-backoff stranding a job in `doin/` under eight-way contention. The idle poll
-between claims uses the same recipe at second scale (`idle_backoff()`), so a
-large fleet started in lockstep does not hammer `journal2` with simultaneous
-fetches.
+base 50 ms, cap 2 s). The jitter matters: the design's stress test found that
+a fixed six-attempt completion retry with no backoff stranded a job in
+`doin/` under eight-way contention. The idle poll between claims uses the same
+recipe at second scale (`idle_backoff()`), so a large fleet started in
+lockstep does not hammer `journal2` with simultaneous fetches.
 
-Two operational rules follow from this model:
+Two operational rules follow:
 
 - **Each writer has its own clone.** Two gardeners on one host must never
   share a journal checkout, or their `reset --hard` calls would stomp each
   other's working trees. Each worker has a private clone under
   `$GARDEN_STATE`, and producers share one serialized producer clone
-  (`$GARDEN_STATE/producer/journal`) guarded by a per-clone `journal.lock`.
-  Batch posts should therefore run sequentially, not in parallel.
+  (`$GARDEN_STATE/producer/journal`) guarded by a per-clone `journal.lock`,
+  so batch posts should run one after another, not in parallel.
 - **Nobody edits the live `journal/` worktree by hand.** It can be stale and
-  hold a peer's uncommitted changes. Content edits under `library/` or
+  can hold a peer's uncommitted changes. Content edits under `library/` or
   `projects/` go through `scripts/jobs/land-journal-edit.sh`, which applies
   the change in the producer clone on the current tip, with the same CAS loop
   and a verify-pushed guard. (This chapter was landed that way.)
@@ -192,7 +193,8 @@ followed by the work body in prose.
 `jobs/todo/<base>.md` and pushes, retrying on contention. Ordinary producers
 get `tier: mentor` with `minion` fallback; explicitly requested `mentat`
 work goes through `scripts/jobs/post-manual-job.sh`, which stamps
-`dispatch: manual` (see [model-selection][model-selection]).
+`dispatch: manual` ([model-selection][model-selection]; tiers are chapter
+10).
 
 **Claim.** `scripts/jobs/claim-job.sh <id>` (called from the worker spine):
 
@@ -200,7 +202,7 @@ work goes through `scripts/jobs/post-manual-job.sh`, which stamps
 2. Fetches and hard-resets its clone to the tip.
 3. Picks a candidate from `jobs/todo/` only, in lexical order offset by an
    id-derived index so that N workers do not all reach for the same first
-   file. Candidates are filtered for eligibility: model/provider fit for
+   file. Candidates are filtered for eligibility: model and provider fit for
    this worker kind, and any `requires:` capability tokens (such as
    `requires: aws`) the host must satisfy. A `role: boatman` job is never
    claimed (§ 2.3).
@@ -213,8 +215,9 @@ work goes through `scripts/jobs/post-manual-job.sh`, which stamps
 Jobs marked `market: bid` take a different route to the same push: a bounded
 bid window followed by a deterministic Thompson-draw award that every worker
 computes identically from the committed journal, resolved by the same
-todo→doin CAS ([bid-auction][bid-auction]). Everything else, including every
-`priority: urgent` job, stays on the race.
+todo→doin CAS ([bid-auction][bid-auction]; chapter 1, § 1.5 tells where the
+market is headed). Everything else, including every `priority: urgent` job,
+stays on the race.
 
 **Work.** The worker runs its handler with a wall-clock budget (below), in a
 per-job worktree (§ 2.3). While it works it can read its inbox and message
@@ -225,13 +228,13 @@ the maintainer (§ 2.4).
 `jobs/tada/YYYY/MM/DD/<base>.md` (UTC completion date; readers use
 `tada_find` in `common.sh` rather than guessing the date), sweeps any
 `jobs/bids/<base>/`, records a reputation event, and pushes, retrying until
-it lands. After completion exactly one `tada/` report exists for the base and
-nothing else.
+it lands. Afterward the base has exactly one `tada/` report and nothing else.
 
 Completion is keyed to an explicit signal, not to the agent ending its turn.
-A worker's final report must end with the exact line `<<<GARDEN-JOB-COMPLETE>>>`;
-an end-turn without it is treated as unfinished, nudged once in-process, and
-otherwise left for requeue. Two optional signals precede it:
+A worker's final report must end with the exact line
+`<<<GARDEN-JOB-COMPLETE>>>`; an end-turn without it counts as unfinished, is
+nudged once in-process, and is otherwise left for requeue. Two optional
+signals may precede it:
 `<<<GARDEN-ORCHESTRATION-FAILED>>>` (finished, but a gated outcome was not
 achieved; stamped as `orchestration-failed: true`) and
 `<<<GARDEN-JOB-HANDED-OFF: successor>>>` (the deliverable is unfinished but a
@@ -248,8 +251,9 @@ directives, panel runs; table in `role_default_handler_timeout` in
 `common.sh`). A `handler-timeout:` header in the job body overrides the role
 default in either direction, capped at
 `GARDEN_CLAIM_TTL − GARDEN_HANDLER_KILL_AFTER − 1` (14400 − 60 − 1 = 14339 s at
-the defaults). The cap keeps the single-owner invariant: a handler is always
-killed before its claim can be considered stale.
+the defaults). The cap preserves the single-owner invariant: a handler is
+always killed before its claim can be considered stale. Chapter 8, § 8.5
+treats the wall-clock and token budgets as cost controls.
 
 The leader-only **reaper** (`scripts/jobs/reaper.sh`, `garden-reaper.timer`)
 scans only `jobs/doin/`. A claim older than the TTL, or one carrying a
@@ -257,22 +261,22 @@ known-dead `garden-reap-now` hint, is requeued to `todo/` (oldest first, at
 most `GARDEN_REAP_MAX_PER_TICK` = 8 per tick, so a restart burst does not
 re-form a thundering herd). A job that fails identically on every cycle is
 **doomed**: parked in `plan/` with `doomed:` metadata and a maintainer notice
-rather than requeued forever. Progress and token spend also inform that
-decision; an over-budget job can be held as a `go-ahead` plan carrying
+instead of being requeued forever. Progress and token spend also inform that
+decision: an over-budget job can be held as a `go-ahead` plan carrying
 `park_reason: over-token-budget`, which `budget-refresh.sh` returns to
 `todo/` when the quota window resets. `scripts/jobs/progress.sh <base>` shows
 the read-only verdict.
 
 ### The plan category and its five gates
 
-`jobs/plan/` sits beside the lifecycle, **outside** it. This is by
-construction, not by a guard: `claim-job.sh` draws candidates only from
-`todo/`, and `reaper.sh` scans only `doin/`, so a parked job is invisible to
-the worker pool and never goes stale. It becomes work only when **promoted**,
-which `scripts/jobs/promote-plan.sh <base>` does by moving
-`plan/<base>.md` to `todo/<base>.md`, stripping the plan frontmatter, and
-clearing the reaper's cycle markers so that a previously doomed job gets a
-genuinely fresh run.
+`jobs/plan/` sits beside the lifecycle, **outside** it, by construction
+rather than by a guard: `claim-job.sh` draws candidates only from `todo/`, and
+`reaper.sh` scans only `doin/`, so a parked job is invisible to the worker
+pool and never goes stale. It becomes work only when **promoted**:
+`scripts/jobs/promote-plan.sh <base>` moves `plan/<base>.md` to
+`todo/<base>.md`, strips the plan frontmatter, and clears the reaper's cycle
+markers so that a previously doomed job gets a genuinely fresh run. (Chapter
+3, § 3.4 covers the plan queue from the user's side.)
 
 A plan job's frontmatter names its **gate**, which determines who may promote
 it:
@@ -297,14 +301,14 @@ separate act with its own primitive (`promote-plan.sh`, `block-job.sh`,
 `post-orchestration.sh`), with one atomic repair exception for moving a job to
 `awaiting-maintainer`.
 
-The orchestrate watcher is a good example of the garden's preference for
-deterministic, `claude`-free machinery. Each tick it reads the orchestration
-record and the board, promotes the next child (serial) or all children
-(parallel), watches each reach `tada/`, and treats a child that vanished
-without a `tada/` report, or whose report carries
-`orchestration-failed: true`, as a failure to be handled by the record's
-policy (halt and surface to the maintainer, or continue). This very book is an
-orchestration, `garden-book-orch`, running eight chapter children in
+The orchestrate watcher shows the garden's preference for deterministic,
+`claude`-free machinery. Each tick it reads the orchestration record and the
+board, promotes the next child (serial) or all children (parallel), watches
+each reach `tada/`, and treats a child that vanished without a `tada/` report,
+or whose report carries `orchestration-failed: true`, as a failure handled by
+the record's policy (halt and surface to the maintainer, or continue).
+Chapter 7, § 7.4 covers orchestration as a procedure. This book is itself an
+orchestration, `garden-book-orch`, which first ran eight chapter children in
 parallel.
 
 ## 2.3 The gardener fleet
@@ -314,8 +318,9 @@ parallel.
 "Gardener" names the **shared worker role and spine**, not a particular kind
 of process. The spine is `scripts/jobs/gardener.sh`: a loop that polls the
 bus, passes a pre-claim health gate, claims a job, runs a handler, and
-completes the job. The spine is backend-pluggable; the **worker kind**
-decides which agent CLI the handler drives:
+completes the job. The spine is backend-pluggable: the **worker kind**
+decides which agent CLI the handler drives (chapter 10 maps worker kinds to
+providers and tiers):
 
 | Kind | Unit | Handler | Backend |
 |---|---|---|---|
@@ -323,79 +328,81 @@ decides which agent CLI the handler drives:
 | cleric | `garden-cleric@<id>.service` | `scripts/jobs/handlers/cleric-codex.sh` | OpenAI (`codex`) |
 | others (mystic, opencode, …) | per-kind units | `mystic-kimi.sh`, `opencode.sh`, … | other providers |
 
-All kinds are rendered from one template (`scripts/systemd/garden-worker@.service.in`)
-and all share the prompt builder in `scripts/jobs/handlers/worker-common.sh`,
-so every backend receives the same completion contract, worktree note,
-messaging discipline, and verbatim job spec. The standing brief every worker
-reads is [`roles/gardener/AGENT.md`][gardener-role], on top of
-`roles/COMMON.md`.
+All kinds are rendered from one template
+(`scripts/systemd/garden-worker@.service.in`) and share the prompt builder in
+`scripts/jobs/handlers/worker-common.sh`, so every backend receives the same
+completion contract, worktree note, messaging discipline, and verbatim job
+spec. The standing brief every worker reads is
+[`roles/gardener/AGENT.md`][gardener-role], on top of `roles/COMMON.md`.
 
 Per-host pool size is journal state (`hosts/<GARDEN>`), set with
-`scripts/jobs/set-workers.sh monk|cleric <count>` on the host in question, or
+`scripts/jobs/set-workers.sh monk|cleric <count>` on the host in question or
 remotely through that host's sysop (§ 2.5). Each host's
 `garden-gardener-scaler.timer` reconciles its local unit pool to that record.
-Pool sizing against quota and backend health is covered in
-[`context/operations/scaling.md`][scaling] and the cybernetics chapter.
+Sizing the pool against quota and backend health is covered in
+[`context/operations/scaling.md`][scaling] and chapter 8, § 8.3.
 
 **The pre-claim health gate.** Before claiming, the spine checks that it can
-actually run a job: that its kind's agent CLI resolves
+actually run a job, meaning that its kind's agent CLI resolves
 (`worker_health_gate` in `common.sh`). A worker that fails the gate does not
 claim; it idle-polls on backoff and resumes by itself when the binary
-reappears. This matters because a broken worker fails each job in about a
+reappears. The gate matters because a broken worker fails each job in about a
 second and so wins claim races disproportionately. In the 2026-07-27/28
 incident, one host with an unresolvable CLI held all 52 `doin/` claims and
 produced zero completions while healthy hosts sat idle. Peers cannot take
-such a host out of rotation (`set-workers.sh` refuses cross-host writes and
-the drain marker is host-local), so the gate must live in the spine.
+such a host out of rotation (`set-workers.sh` refuses cross-host writes, and
+the drain marker is host-local), so the gate has to live in the spine.
 
 ### How `role:` selects the posture
 
 A job's `role:` frontmatter field (read by `plan_role` in `common.sh`) names
 the posture the gardener wears: `builder`, `fixer`, `designer`, `shepherd`,
-`conductor`, and so on, each with its own `roles/<role>/AGENT.md`. The body
-of the job directs the worker to that brief, and the gardener reads it (and
-the skills it links) just-in-time; role files are named `AGENT.md`, not
-`CLAUDE.md`, precisely so that Claude Code does not auto-load them. The
-`role:` field also drives machinery around the handler:
+`conductor`, and so on, each with its own `roles/<role>/AGENT.md` (chapter 5
+describes every role). The job body directs the worker to that brief, and the
+gardener reads it, and the skills it links, just-in-time; role files are
+named `AGENT.md`, not `CLAUDE.md`, precisely so that Claude Code does not
+auto-load them. The `role:` field also drives machinery around the handler:
 
 - **Model tier.** Absent an explicit `model:`, the handler resolves a
   per-role default through `role_default_model` / `role_default_tier`,
   subject to role floors (canonical map:
-  [model-selection][model-selection]).
-- **Handler budget.** `role_default_handler_timeout` gives builder, fixer,
-  shepherd, conductor, and botanist their 7200 s defaults (§ 2.2).
+  [model-selection][model-selection]; chapter 10 covers tiers and floors).
+- **Handler budget.** `role_default_handler_timeout` gives structurally long
+  roles their 7200 s default (§ 2.2).
 - **Environment.** The handler exports `GARDEN_JOB_ROLE`, which, for
-  example, gives a `botanist` a scripts-disabled dependency install in
+  instance, gives a `botanist` a scripts-disabled dependency install in
   `ensure-project-worktree.sh` and labels the worker's journal entries.
 - **Completion edges.** When a `role: builder` job completes with an open
   draft PR authored by the bot, `scripts/jobs/auto-gauntlet-handoff.sh` posts
   the idempotent `<build-base>-gauntlet` job before the build can move to
   `tada/` ([`designs/gardening-state-machine.md`][design-gsm] § Build handoff
-  invariant).
+  invariant; the gauntlet itself is chapter 7, § 7.2).
 - **Refusals.** `role: boatman` is refused by `post-job.sh`, `claim-job.sh`,
   and `gardener.sh`. Ferrying lands commits under the maintainer's identity,
-  so it runs only off-board via `scripts/ferry.sh` on the credentialed host.
+  so it runs only off-board, through `scripts/ferry.sh` on the credentialed
+  host (chapter 7, § 7.6).
 
 PR work inside a job follows the **gardening state machine**
 (`scripts/jobs/gardening/garden-pr.sh`), which the gardener supervises rather
-than executes step by step. The script runs deterministic stages itself
-(safe rebase, sense-gated automations, pre-push gates, the always-on
-`local-verify.sh` evaluation gate, push) and shells to `claude -p` only for
-small decisions such as "loop or stop?". It is quiet on success, so routine
-progress stays out of the supervisor's context, and `GARDEN_TRACE=1` sends
-`set -x` output to a file for a dedicated debugging subagent rather than to
-the supervisor ([`designs/gardening-state-machine.md`][design-gsm]).
+than executing step by step (chapter 7, § 7.1). The script runs the
+deterministic stages itself (safe rebase, sense-gated automations, pre-push
+gates, the always-on `local-verify.sh` evaluation gate, push) and shells out
+to `claude -p` only for small decisions such as "loop or stop?". It is quiet
+on success, so routine progress stays out of the supervisor's context, and
+`GARDEN_TRACE=1` sends `set -x` output to a file for a dedicated debugging
+subagent instead of to the supervisor
+([`designs/gardening-state-machine.md`][design-gsm]).
 
 ### Per-job worktrees, and why never the root
 
 A job never works in the deployed garden root. The spine gives each job two
-kinds of isolated checkout ([`WORKTREES.md`][worktrees] § Per-job v2
-worktrees):
+isolated checkouts, its per-job worktrees ([`WORKTREES.md`][worktrees]
+§ Per-job v2 worktrees):
 
 - **Garden worktree:** `scratch/gardener-wt-<base>`, a checkout off
-  `origin/main2`, which is the handler's cwd. Garden development (roles,
-  skills, scripts) happens here and is pushed straight to `main2` with a
-  rebase CAS loop under `garden_repo_lock`.
+  `origin/main2` and the handler's working directory. Garden development
+  (roles, skills, scripts) happens here and is pushed straight to `main2`
+  with a rebase CAS loop under `garden_repo_lock`.
 - **Project worktree:** `scripts/jobs/ensure-project-worktree.sh <base>
   <owner/repo> <branch>` prints a detached checkout at
   `scratch/project-wt-<base>-<digest>`, created from the bare clone
@@ -404,16 +411,16 @@ worktrees):
   tree (concurrent pushes to the same branch still race, correctly, at the
   push CAS). It also populates `node_modules` from a warm per-repo cache.
 
-Both are stable across a requeue on the same host, because uncommitted work
-may be the only resumable copy. Teardown follows board state rather than age:
-a successful completion removes the job's project worktree, a doom removes it,
-an ordinary requeue preserves it, and the per-host
-`garden-worktree-sweeper.timer` collects anything missed.
+Both survive a requeue on the same host, because uncommitted work may be the
+only resumable copy. Teardown follows board state, not age: a successful
+completion or a doom removes the job's project worktree, an ordinary requeue
+preserves it, and the per-host `garden-worktree-sweeper.timer` collects
+anything missed.
 
 The root is off-limits for three reasons:
 
-1. **It is a deployed version** (§ 2.6). Editing it would dirty what the whole
-   host is running and collide with peers.
+1. **It is a deployed version** (§ 2.6). Editing it would dirty the code the
+   whole host is running and collide with peers.
 2. **It shares one repository with the journal.** `<garden-root>/.git` backs
    both the root checkout and the `journal/` worktree. A stray `git checkout`,
    `remote set-url`, or `commit` run with that repo as the enclosing
@@ -428,17 +435,19 @@ The root is off-limits for three reasons:
    and repairs and alerts on drift ([`designs/root-repo-guard.md`][root-guard]).
 
 The retired v1 route, in which the liaison dispatched subagents into a
-`dispatches/<role>--<id>/{garden,journal,project}/` triple, survives in
-`WORKTREES.md` and the [dispatch-worktree][dispatch-worktree] skill only where
-a role still needs that shape. (`WORKTREES.md` also still calls the journal
-branch `journal`; the live branch is `journal2`.)
+`dispatches/<role>--<id>/{garden,journal,project}/` triple (chapter 1, § 1.3,
+stage two), survives in `WORKTREES.md` and the
+[dispatch-worktree][dispatch-worktree] skill only where a role still needs
+that shape. (`WORKTREES.md` also still calls the journal branch `journal`; the
+live branch is `journal2`.)
 
 ## 2.4 The message bus
 
-The bus is the journal, even for two processes on the same host, because the
-fleet spans hosts. Every send and every read-state move is a commit pushed
-with the same CAS discipline as the board. There are four kinds of address
-([message-bus][message-bus]).
+§ 2.1 introduced the bus as the journal's third job; this section details
+its addresses. Even two processes on the same host talk through the journal,
+because the fleet spans hosts, and every send and every read-state move is a
+commit pushed with the same CAS discipline as the board. There are four kinds
+of address ([message-bus][message-bus]).
 
 ### Directed inboxes (one doer)
 
@@ -456,9 +465,9 @@ exactly the lifetime of one job's doer.
 
 A message addressed to a doer that has already completed is dead-lettered,
 and the leader-only `garden-deadmail` service (`scripts/jobs/deadmail.sh`)
-promotes it to a fresh job, so its intent is not lost. Machine-generated
-deadline warnings arrive here too (`kind: deadline-nudge`), and a running job
-sees them only when it next reads its inbox; they do not interrupt a turn.
+promotes it to a fresh job so that its intent is not lost. Machine-generated
+deadline warnings (`kind: deadline-nudge`) arrive here too; a running job sees
+them only when it next reads its inbox, so they never interrupt a turn.
 
 ### The maintainer inbox (the human, via the liaison)
 
@@ -470,8 +479,9 @@ destroyed. A gardener writes to it with
 messages, and disposes of each with `maintainer-reply.sh <msgid>` (which
 routes the reply into the originating doer's inbox via `reply_to` and
 archives the original) or `maintainer-archive.sh <msgid>`. The gardener, still
-working, picks up the reply with its own `inbox-read.sh`. An empty reply
-simply archives.
+working, picks up the reply with its own `inbox-read.sh`; an empty reply
+simply archives. Chapter 3, § 3.3 describes *muster*, the liaison's
+interactive triage of this inbox.
 
 Repeated notices do not pile up. With `GARDEN_MSG_COALESCE=1` and a stable
 `GARDEN_MSG_ID` (the episode key), a repeat **amends** the still-unread entry
@@ -488,16 +498,16 @@ distinct.
 `scripts/jobs/read-msgs.sh <seen-key> <addr>…`, which prints unseen messages
 and advances a per-reader cursor. The cursor lives under `$GARDEN_STATE`,
 outside any worktree, so a `reset --hard` of a journal clone never loses it.
-Every working gardener polls `role/gardener` and `broadcast`; the watchman
-uses `broadcast` to announce role and skill evolution on `main2`, so a lesson
-reaches running agents mid-flight; liaisons coordinate leadership handoffs on
-`role/liaison` (§ 2.5).
+Every working gardener polls `role/gardener` and `broadcast`. The watchman
+announces role and skill evolution on `main2` through `broadcast`, so a lesson
+reaches running agents mid-flight, and liaisons coordinate leadership
+handoffs on `role/liaison` (§ 2.5).
 
 ### Host channels (the sysop)
 
 `msgs/host/<GARDEN>/` is addressed to one host's sysop daemon rather than to
-an agent. Senders use `scripts/jobs/send-host-op.sh <GARDEN> op=… key=…`.
-Section 2.5 describes the receiver.
+an agent. Senders use `scripts/jobs/send-host-op.sh <GARDEN> op=… key=…`;
+§ 2.5 describes the receiver.
 
 ### Summary
 
@@ -510,17 +520,17 @@ Section 2.5 describes the receiver.
 
 One hygiene rule is enforced mechanically on every author-written send:
 issue and PR references must be fully qualified (`owner/repo#N` or a full
-URL). `check-issue-refs.sh` rejects a bare `#N` outside code spans before the
-push.
+URL), and `check-issue-refs.sh` rejects a bare `#N` outside code spans before
+the push.
 
 ## 2.5 Fleet topology: leaders, followers, and the sysop
 
 ### Why there is a leader at all
 
-Gardeners are safe to run anywhere: two workers on two hosts racing for the
-same job are deduplicated by the push CAS. The garden also runs **producers
-and supervisors** that are not safe to duplicate, because none of them
-coordinate with a second copy of themselves:
+Gardeners are safe to run anywhere, since the push CAS deduplicates two
+workers on two hosts racing for the same job. The garden also runs
+**producers and supervisors** that are not safe to duplicate, because none of
+them coordinates with a second copy of itself:
 
 - two **foremen** would double-pump the board (each promoting or generating
   work on idle);
@@ -531,9 +541,9 @@ coordinate with a second copy of themselves:
 So the fleet is **leader/follower** ([`designs/multibot-leader-follower.md`][multibot],
 operator procedure [`context/operations/leader-follower.md`][leader-follower]).
 Each host has a unique `GARDEN` identity (`<hostname>-<basename>-<hash8>`,
-derived from the checkout path). The journal file `leader` holds the
-leader's identity, and `scripts/jobs/is-main-host.sh` exits 0 on the leader
-and 1 elsewhere.
+derived from the checkout path; chapter 4, § 4.3). The journal file `leader`
+holds the leader's identity, and `scripts/jobs/is-main-host.sh` exits 0 on
+the leader and 1 elsewhere.
 
 ### What runs where
 
@@ -557,10 +567,10 @@ leader in-process). The audited per-unit list is
 `context/operations/systemd-units.md`.
 
 **The gate.** Each timer-driven singleton carries `is-main-host.sh` as an
-`ExecCondition=`. On a follower the timer still fires, but the tick is skipped
-cleanly (condition-failed, not Failed), and every firing re-evaluates the
-marker, so promotion and demotion need no restart. Long-running singletons
-such as the bulletin gate the same predicate in-process.
+`ExecCondition=`. On a follower the timer still fires but the tick is skipped
+cleanly (condition-failed, not Failed), and because every firing re-evaluates
+the marker, promotion and demotion need no restart. Long-running singletons
+such as the bulletin check the same predicate in-process.
 
 ### Designation is raising
 
@@ -573,10 +583,10 @@ therefore *raises* the new leader.
 
 The systemd singletons follow the marker on their own, so the only pieces a
 handoff must sequence are the two liaison Monitors, which live in a Claude
-session and have no `ExecCondition=`. The preferred handoff is initiated by
-the incoming host on `role/liaison`: the outgoing liaison stands down its
-Monitors and confirms, then the incoming host moves the marker, then arms its
-own Monitors. That ordering guarantees there are never two live
+session and have no `ExecCondition=`. In the preferred handoff, the incoming
+host initiates on `role/liaison`; the outgoing liaison stands down its
+Monitors and confirms; then the incoming host moves the marker and arms its
+own Monitors. That order guarantees there are never two live
 maintainer-inbox Monitors. If the leader is dead, the marker is re-pointed by
 hand.
 
@@ -587,6 +597,8 @@ pool, drain, clear failed units, deploy. `set-workers.sh` correctly refuses to
 write another host's count. The **sysop** (`scripts/jobs/sysop.sh`,
 `garden-sysop.{service,timer}`, [`designs/sysop.md`][sysop]) is the daemon
 that "sits at" each host and runs the command there, driven by a bus message.
+This section describes its architecture; chapter 8, § 8.3 shows how the
+budget controllers use it.
 
 - **Deterministic, no LLM.** It runs no `claude` and claims no jobs; the
   `roles/sysop/AGENT.md` stub only redirects to the design.
@@ -612,16 +624,19 @@ that "sits at" each host and runs the command there, driven by a bus message.
 
 ### Capacity and the foreman brake
 
-Capacity is a per-host count (`set-workers.sh`, or the sysop's `set-workers`
-op). `scripts/jobs/drain-fleet.sh on|off` writes or removes the host-local
-marker `$GARDEN_STATE/draining`: a draining host's workers finish their
-in-flight claim and then stop claiming (`claim-job.sh` exits 3), so a drain is
-a claim brake, not a kill. `scripts/jobs/brake-foreman.sh on|off|status` is a
-separate, journal-backed brake on the foreman alone: it stops the foreman
-from promoting or generating work without stopping workers from draining the
-existing board. The shipped foreman active target is 10;
-`GARDEN_TOKEN_BACKOFF_FRACTION` is the spend brake. Budget pacing is covered
-in [`context/operations/cybernetics.md`][cybernetics].
+Architecturally there are three separate levers. Capacity is a per-host
+count (`set-workers.sh`, or the sysop's `set-workers` op). A **drain**
+(`scripts/jobs/drain-fleet.sh on|off`) writes or removes the host-local
+marker `$GARDEN_STATE/draining`; a draining host's workers finish their
+in-flight claim and then stop claiming (`claim-job.sh` exits 3), so a drain
+brakes claims without killing anything. The **foreman brake**
+(`scripts/jobs/brake-foreman.sh on|off|status`) is journal-backed and acts on
+the foreman alone: it stops the foreman from promoting or generating work
+while workers keep draining the existing board. The shipped foreman active
+target is 10, and `GARDEN_TOKEN_BACKOFF_FRACTION` is the spend brake. The
+control loops that turn these levers (worker-count leveling, the foreman as
+pacing actuator) are chapter 8, § 8.3 and § 8.4; see also
+[`context/operations/cybernetics.md`][cybernetics].
 
 ## 2.6 The deliberate deploy
 
@@ -635,16 +650,16 @@ Development happens only in per-job worktrees (§ 2.3), which push to
 ([`designs/deliberate-deploy.md`][deliberate-deploy], procedure
 [`context/operations/deploy.md`][deploy]).
 
-The reason is that a running fleet must not change underneath itself. A
-worker mid-job, a watcher mid-tick, or a unit mid-restart should see one
-consistent version, and a bad commit on `main2` should be stopped before it
-reaches every host at once.
+A running fleet must not change underneath itself. A worker mid-job, a
+watcher mid-tick, or a unit mid-restart should see one consistent version,
+and a bad commit on `main2` should be stopped before it reaches every host at
+once.
 
 ### One host's deploy: `deploy-garden.sh`
 
-`scripts/jobs/deploy-garden.sh` is the per-host deploy, run the same way
-whether triggered by hand, by the self-deployer, or by the rolling conductor.
-Its sequence is:
+`scripts/jobs/deploy-garden.sh` is the per-host deploy, and it runs the same
+way whether triggered by hand, by the self-deployer, or by the rolling
+deployer. Its sequence is:
 
 1. **Candidate gate.** Unpack the target SHA into an isolated candidate tree
    and run the configured deterministic gate suites (one retry in a fresh
@@ -652,18 +667,18 @@ Its sequence is:
    diagnostics stay under `$GARDEN_STATE/deploy/candidate-gate-diagnostics/<sha>`.
 2. **Drain and quiesce.** Engage the same drain as `drain-fleet.sh` and wait
    up to 600 s for in-flight work to finish. If a live worker has been busy
-   for more than 300 s, the deploy **defers** instead (a 7200 s build cannot
-   be outlasted); operators pre-drain with `drain-fleet.sh on` and wait for
-   the `busy` markers to clear.
+   for more than 300 s, the deploy **defers** instead, since a 7200 s build
+   cannot be outlasted; operators pre-drain with `drain-fleet.sh on` and wait
+   for the `busy` markers to clear.
 3. **Advance** the root to the tested candidate and **record** the deployed
    SHA, which clears the upgrade-ready signal.
 4. **Lift the drain and restart** the fleet, so every unit picks up the new
    code.
 
-A deploy is always **pinned** when orchestrated
-(`GARDEN_DEPLOY_TARGET=<sha>`), and the target must lie on `origin/main2`. A
-deploy that changes the Dockerfile or its inputs also needs an image rebuild
-(`./garden check` reports staleness); `deploy-garden.sh` does not rebuild the
+An orchestrated deploy is always **pinned** (`GARDEN_DEPLOY_TARGET=<sha>`),
+and the target must lie on `origin/main2`. A deploy that changes the
+Dockerfile or its inputs also needs an image rebuild (`./garden check`
+reports staleness), because `deploy-garden.sh` does not rebuild the
 container.
 
 ### The trigger: `upgrade-ready`
@@ -672,45 +687,46 @@ The per-host `garden-upgrade-monitor` service writes
 `$GARDEN_STATE/deploy/upgrade-ready` when `origin/main2` is ahead of the
 host's deployed SHA. That file is a **host-local fact** derived from git
 ancestry, not a bus message, and it is the only thing that can start a deploy
-automatically. A message on the bus cannot make a host deploy.
+automatically: no message on the bus can make a host deploy.
 
 ### The fleet-wide roll: canaries first, leader last
 
 Two daemons act on that fact ([`designs/follower-self-deploy.md`][self-deploy]):
 
 - **`garden-rolling-deploy`** (`scripts/jobs/rolling-deploy.sh`, leader only)
-  is the conductor. Each tick it reads local signals and journal state and
-  advances the roll **at most one step**. It releases one follower at a time
-  as a **canary** by writing a journal release token `deploy/roll/<GARDEN>`
-  pinned to a target SHA. It then validates that canary: unit health
-  (excluding advisory units), a host-pinned **round-trip probe job** that must
-  reach `tada/` within 10 minutes, and a job-processing regression check.
-  Only after the canaries pass does it deploy the **leader itself, last**,
-  and it never does so on a failed canary.
+  is the rolling deployer. Each tick it reads local signals and journal state
+  and advances the roll **at most one step**. It releases one follower at a
+  time as a **canary** by writing a journal release token
+  `deploy/roll/<GARDEN>` pinned to a target SHA, then validates that canary:
+  unit health (excluding advisory units), a host-pinned **round-trip probe
+  job** that must reach `tada/` within 10 minutes, and a job-processing
+  regression check. Only after the canaries pass does it deploy the **leader
+  itself, last**, and never on a failed canary.
 - **`garden-self-deploy`** (`scripts/jobs/self-deploy.sh`, every host) is the
   follower half. It deploys its host only when **both** its own
   `upgrade-ready` fact and a release token for it exist, and only to the
-  released SHA. If there is no live leader to orchestrate, a leaderless-grace
+  released SHA. When no live leader is orchestrating, a leaderless-grace
   fallback lets a follower advance on its own.
 
-The release token is deliberately weak. It is not a sysop op and not a deploy
+The release token is deliberately weak. It is neither a sysop op nor a deploy
 trigger: a follower still needs its own `upgrade-ready` fact to move, and
-`deploy-garden.sh` refuses any target that is not on `origin/main2`. A forged
-or stray token can therefore only let a host reach a point on the canonical
-branch. The only bus messages the conductor sends are **benign** `drain` ops
-(for example, the `rolling-deploy-quiesce` drain it sends after a canary has
+`deploy-garden.sh` refuses any target not on `origin/main2`, so a forged or
+stray token can only let a host reach a point on the canonical branch. The
+only bus messages the rolling deployer sends are **benign** `drain` ops (for
+example, the `rolling-deploy-quiesce` drain it sends after a canary has
 deferred for 30 minutes behind a long job). The attested sysop `deploy` op is
 never on the rolling path; it remains the maintainer's manual escape hatch for
 an unattended host.
 
-Failure handling is equally deterministic. A follower that holds a release
+Failure handling is just as deterministic. A follower that holds a release
 for 20 minutes without deploying raises a `rolling-deploy-canary-stuck-<host>`
-notice. A canary still deferring three hours after release fails normally.
-When the leader's own candidate gate rejects a SHA, the conductor records a
-target-keyed marker under `$GARDEN_STATE/rolling-deploy/rejected/<short-sha>`
-and skips that SHA quietly until a new target appears, instead of re-paging
-the maintainer every tick. Once the leader is current, followers left behind
-receive catch-up releases to the leader's SHA.
+notice, and a canary still deferring three hours after release fails
+normally. When the leader's own candidate gate rejects a SHA, the rolling
+deployer records a target-keyed marker under
+`$GARDEN_STATE/rolling-deploy/rejected/<short-sha>` and skips that SHA quietly
+until a new target appears, instead of re-paging the maintainer every tick.
+Once the leader is current, followers left behind receive catch-up releases
+to the leader's SHA.
 
 The liaison's deploy-on-upgrade Monitor is now an **observer and
 kill-switch** on the leader: it reports `upgrade-ready` and lets a human
@@ -720,19 +736,20 @@ overrides, skipping canaries). A host with no liaison session still advances.
 ### Guarding the deployed root
 
 Because the root and `journal/` share one repository, the deploy model is
-paired with the `garden-root-repo-guard` described in § 2.3. It also checks
-that the object store stays maintainable: a failed `git gc` leaves a `gc.log`
-that disables automatic cleanup permanently, after which packs grow without
-bound and every journal sync slows. The guard repairs losslessly, alerts on
-drift, and watches for a stalled deploy.
+paired with the `garden-root-repo-guard` described in § 2.3. Beyond the
+checks listed there, the guard verifies that the object store stays
+maintainable: a failed `git gc` leaves a `gc.log` that permanently disables
+automatic cleanup, after which packs grow without bound and every journal
+sync slows. The guard repairs losslessly, alerts on drift, and watches for a
+stalled deploy.
 
 ## 2.7 Summary of invariants
 
 - **The accepted push to `origin/journal2` is the only serialization point.**
   A local move is never authoritative.
 - **Claims back off; everything else retries.** Retrying a claim could steal
-  a job; retrying a post, completion, send, or promotion only fast-forwards
-  the caller's own files.
+  a job, while retrying a post, completion, send, or promotion only
+  fast-forwards the caller's own files.
 - **The basename is the spine and the idempotency key.** One-shot work stays
   bare; recurring verbs get a date suffix; PR directives also carry an
   identity.

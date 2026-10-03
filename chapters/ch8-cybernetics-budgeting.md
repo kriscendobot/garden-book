@@ -9,11 +9,11 @@ grounded-on: main2 2a5c1991779, journal2 as of 2026-09-30
 A garden spends money. It runs model inference on subscriptions that have
 weekly and session quotas, and on metered API keys that bill by the token. Most
 agent systems handle cost with a ledger and a hard cap. The garden treats it as
-a control problem instead: spend is measured, the measurement is fed back into
+a control problem instead: spend is measured, the measurement feeds back into
 the decisions that cause spend, and several separate loops run at different
 speeds and with different authority.
 
-This chapter describes those loops as they exist on `main2` today. It follows
+This chapter describes those loops as they exist on `main2` today, following
 the current operator map,
 [`context/operations/cybernetics.md`](../../context/operations/cybernetics.md),
 checked against the scripts. Two design documents give the rationale:
@@ -21,14 +21,25 @@ checked against the scripts. Two design documents give the rationale:
 systemic audit from 2026-09-01, and
 [`designs/cybernetics-economic-resilience.md`](../../designs/cybernetics-economic-resilience.md),
 the accepted follow-up. Both begin with a dated "implementation status"
-section. Read everything after that section as history, not as a description of
+section; everything after that section is history, not a description of
 today's code.
+
+## Contents
+
+- [8.1 Why "cybernetics"](#81-why-cybernetics)
+- [8.2 Subscription accounting](#82-subscription-accounting)
+- [8.3 Worker-count leveling and derotation](#83-worker-count-leveling-and-derotation)
+- [8.4 The foreman as pacing actuator](#84-the-foreman-as-pacing-actuator)
+- [8.5 Per-job budgets: wall clock and tokens](#85-per-job-budgets-wall-clock-and-tokens)
+- [8.6 Per-orchestration budgets: a bounded pie](#86-per-orchestration-budgets-a-bounded-pie)
+- [8.7 What's evolving now: the accountant](#87-whats-evolving-now-the-accountant)
+- [8.8 Quick reference](#88-quick-reference)
 
 ## 8.1 Why "cybernetics"
 
-The audit's unit of analysis is the **feedback loop**. Each loop has a sensor,
-a setpoint, a controller, an actuator, and the world it acts on, which the
-sensor then reads again. For each loop the audit asks five questions:
+The audit's unit of analysis is the **feedback loop**: a sensor, a setpoint, a
+controller, an actuator, and the world the actuator changes, which the sensor
+then reads again. For each loop the audit asks five questions:
 
 - What is measured, and how closely does it track the quantity being
   regulated?
@@ -43,27 +54,27 @@ feeds back into the fleet in four places, each with its own time constant:
 
 | Loop | Sensor | Actuator | Speed |
 | --- | --- | --- | --- |
-| **Admission** (`claim-job.sh`) | the pool's metered spend vs its high-water mark | refuse this claim tick | every claim attempt |
+| **Admission** (`claim-job.sh`) | the pool's metered spend against its high-water mark | refuse this claim tick | every claim attempt |
 | **Pacing** (`foreman.sh`) | board depth, host quota status, fleet pool status | promote or generate work, or hold | 5-minute timer |
 | **Leveling** (`budget-level.sh`, `worker-derotate.sh`) | per-subscription spend, reset-window slack, host heartbeats | per-host monk/cleric counts | scheduler tick (15 min) |
 | **Per-job and per-campaign budgets** (reaper, `orchestrate.sh`) | a job's or campaign's own token ledger | hold, requeue, or stop promoting | per reap / per orchestration step |
 
-A single static cap would be simpler, and the garden's history shows why it
-does not work. A cap that is too low wedges the fleet. The audit (§ 2.3) records
+A single static cap would be simpler, but the garden's history shows why it
+fails. A cap that is too low wedges the fleet. The audit (§ 2.3) records
 a leader host sitting in permanent backoff for days against a 5M-token
 placeholder cap whose own header read "PLACEHOLDER CAPS — NOT CALIBRATED". A
 cap that is missing or reads as empty lets spend run unbounded. On 2026-09-04 a
 host ran about nineteen hours on a temporary API key whose pool was marked
-`unmetered`. Admission failed open and roughly $1,090 was spent before anyone
-noticed. The layered loops exist so that each failure mode has a loop that
-catches it, and so that each loop's gain matches how much its sensor can be
+`unmetered`; admission failed open, and roughly $1,090 was spent before anyone
+noticed. The layered loops exist so that every failure mode has a loop that
+catches it, and so that each loop's gain matches how far its sensor can be
 trusted.
 
 Three design rules from the audit recur through the rest of this chapter:
 
 1. **"No signal" is not "zero spend."** The audit's § 2.2 found two meter paths
    that printed a confident `0` when the sensor was blind (a missing log
-   directory, an empty `usage/` tree). The leveler of that time turned zero
+   directory, an empty `usage/` tree). The leveler of the time turned zero
    spend into maximum workers, so a blind sensor scaled the fleet up. Today
    every loop separates `off` (no budget configured), `unknown` (sensor
    unreadable), `ok`, and `backoff`, and handles each explicitly.
@@ -80,7 +91,7 @@ Three design rules from the audit recur through the rest of this chapter:
 ### Pools follow the subscription, not the machine
 
 Budget is keyed to **the account that pays**, not the host that spends. Two
-journal files define this.
+journal files define the keying.
 
 **`config/budget-pools`** has one row per pool: name, provider, kind, cap,
 calibration provenance, and calibration date. As of this writing:
@@ -105,47 +116,47 @@ codex-endolin    endolin-garden2-5bcdff64  cleric
 ...
 ```
 
-The mapping is many-to-one. In the example above, two hosts' clerics draw on the
-same `codex-endolin` subscription. A host's own spend is therefore not the
-whole bill. Before reading one host's numbers as the account's total, check the
-mapping.
+The mapping is many-to-one: in the example above, two hosts' clerics draw on
+the same `codex-endolin` subscription. One host's spend is therefore not the
+whole bill, so check the mapping before reading one host's numbers as the
+account's total.
 
 ### The meter
 
 [`scripts/jobs/usage-meter.sh`](../../scripts/jobs/usage-meter.sh) is the
-sensor, and it reads Claude Code's own session logs. The Admin Usage & Cost API
-covers API-key/Console billing only, so it does not apply to subscriptions and is
-deliberately not wired. Each host publishes its contribution under
+sensor; it reads Claude Code's own session logs. The Admin Usage & Cost API
+covers only API-key and Console billing, so it does not apply to subscriptions
+and is deliberately not wired. Each host publishes its contribution under
 `budget/live/<subscription>/<host>`. A pool's spend is the sum of its hosts'
 contributions within the subscription's reset window. Each subscription has its
 own reset window, with independent reset facts under `budget/reset-events/`.
-There is no global "Friday 21:00" reset any more. The audit found that anchor
+There is no longer a global "Friday 21:00" reset: the audit found that anchor
 hardcoded, and it was replaced.
 
-The same `budget/live` snapshot serves as a **heartbeat**. A host that stops
-publishing it is treated as offline. Worker derotation (§ 8.3) relies on this.
+The same `budget/live` snapshot serves as a **heartbeat**: a host that stops
+publishing it is treated as offline, which worker derotation (§ 8.3) relies
+on.
 
 ### Calibration: why a pool must be metered *and* calibrated
 
-The meter counts tokens. The subscription's real limit is a percentage shown on
-a human-facing dashboard. **Calibration** relates the two.
+The meter counts tokens, but the subscription's real limit is a percentage
+shown on a human-facing dashboard. **Calibration** relates the two.
 `append-quota-checkpoint.sh <subscription> <weekly-percent> [session-percent]`
 pairs a dashboard reading taken by a human with the summed host contributions
 in the freshest sample's reset window. Samples from mismatched windows are
 excluded and listed in `meter_hosts`. The oldest included sample sets the
-pairing time. If the samples span more than 900 seconds, confidence is lowered.
+pairing time, and samples spanning more than 900 seconds lower the confidence.
 Corrections are append-only: a new row carries `supersedes` pointing at the old
 `checked_at`. `fit-quota-calibration.sh` fits a cap from the checkpoints and
 skips superseded rows. The provenance strings in the pool file
 (`manual-single-point-fresh-pair`, `manual-regression-fresh-contiguous-cluster`)
 record which fit produced each cap.
 
-A checkpoint only measures. It never changes a cap or a worker count by itself;
-promoting a fitted figure to the pool file is a deliberate
+A checkpoint only measures. It never changes a cap or a worker count; promoting a fitted figure to the pool file is a deliberate
 `set-budget-pool.sh` act.
 
-The admission rule follows. At claim time, `pool_admits` returns one of
-four verdicts:
+The admission rule follows from this. At claim time, `pool_admits` returns one
+of four verdicts:
 
 | Verdict | Meaning | Claim gate |
 | --- | --- | --- |
@@ -156,23 +167,23 @@ four verdicts:
 
 Each asymmetry here comes from a specific incident. An **unmetered or
 uncalibrated** pool fails closed because a ceiling nobody trusts bounds nothing;
-the $1,090 incident is quoted in the code comment. An **absent** pool row means
+the code comment quotes the $1,090 incident. An **absent** pool row means
 budgeting is deliberately off for that provider. A **blind sensor** fails open
 because wedging the fleet on a broken meter would turn a monitoring fault into
-an outage. The fail-closed halt is made loud and explicit so it never looks
+an outage. The fail-closed halt is loud and explicit so that it never looks
 mysterious. The leveler handles a sensor failure differently: it **holds** the
 current allocation and does not treat unreadable spend as zero (§ 8.3).
 
 The high-water mark is the pool cap multiplied by `GARDEN_TOKEN_BACKOFF_FRACTION`.
-The code default is 0.85. When the environment doesn't set the fraction,
-`config/token-backoff-fraction` in the journal supplies it; that file currently
-reads `0.95`. `set-token-backoff-fraction.sh` validates and writes the file, and
+The code default is 0.85; when the environment does not set the fraction,
+`config/token-backoff-fraction` in the journal supplies it, and that file
+currently reads `0.95`. `set-token-backoff-fraction.sh` validates and writes the file, and
 can run as a one-shot schedule preflight hook so a change takes effect at a
 chosen time (exit 2 means "written, no job needed").
 
 A cruder ceiling sits under all of this. `claude_call_budget_usd` gives every
-single `claude -p` invocation a hard per-call USD cap by tier: $4 for myrmidon,
-$10 for minion, $20 for mentor, $40 for mentat. The cap shrinks (never grows)
+single `claude -p` invocation a hard per-call USD cap by tier (chapter 10): $4
+for myrmidon, $10 for minion, $20 for mentor, $40 for mentat. The cap shrinks (never grows)
 as the provider's seven-day headroom shrinks, down to a $0.50 floor. It is a
 seat belt for a runaway call, not a planning tool.
 
@@ -181,17 +192,17 @@ seat belt for a runaway call, not a planning tool.
 ### Declared counts, effective counts
 
 Each host's `hosts/<host>` journal file declares `monks:` (native Anthropic,
-Claude Code) and `clerics:` (OpenAI, Codex) counts. The per-host
+Claude Code) and `clerics:` (OpenAI, Codex) counts (worker kinds: chapter 10). The per-host
 `garden-gardener-scaler` reconciles the declaration into running
 `garden-monk@N` / `garden-cleric@N` systemd units. A backend-health probe then
 gates the declared count: after one passing probe the effective count ramps up
-to the declaration, and after two consecutive failures it drops. So even a
-declared count is only an upper bound.
+to the declaration, and after two consecutive failures it drops. A declared
+count is therefore only an upper bound.
 
 An operator sets counts with `scripts/jobs/set-workers.sh monk|cleric <count>`
 (or `set-monks.sh` / `set-clerics.sh`). The setter is **local-only**: its
-optional `[host]` argument must equal this host's `GARDEN` identity. To change
-another host, send it a message instead (below).
+optional `[host]` argument must equal this host's `GARDEN` identity. Another
+host changes only through its sysop (below).
 
 ### The leveler
 
@@ -208,13 +219,13 @@ host  oros-studio-garden-ce242c49  0  0
 ```
 
 **Monks** share one fleet ceiling, split by bounded largest-remainder
-apportionment. Every mapped host gets a floor of one (by default), and no host
+apportionment. Every mapped host gets a floor of one by default, and no host
 exceeds its physical cap. A host's weight is its calibrated cap multiplied by
 `1 + 19 * pacing_bias`. The **pacing bias** rises toward 1 when the fraction of
-quota remaining is larger than the fraction of the reset window remaining, which
-means the subscription is under-spending relative to the clock. Unused quota
-near a reset can therefore earn up to 20 times the base weight. The loop pushes
-toward "use it before you lose it" as well as braking overspend.
+quota remaining exceeds the fraction of the reset window remaining, that is,
+when the subscription is under-spending relative to the clock. Unused quota
+near a reset can therefore earn up to 20 times the base weight, so the loop
+pushes toward "use it before you lose it" as well as braking overspend.
 
 Inside each allocation, a proportional target is computed from spend against
 the high-water mark:
@@ -232,8 +243,8 @@ host constraints. It does not count manual mentat jobs as automatic demand. It
 never shrinks below an active higher-numbered cleric slot, because stopping a
 working slot would kill in-flight work.
 
-**Actuation** is hysteretic by default. It moves one slot per step. A raise
-needs two same-direction observations; a lower needs one. Reaching the target
+**Actuation** is hysteretic by default: one slot per step, two same-direction
+observations to raise, one to lower. Reaching the target
 resets the streak, and a change of direction starts a new streak. If the monk
 configuration is malformed, raises freeze, but a calibrated over-budget host can
 still step down toward its floor. The leader's drain suspends leveling. Freeze
@@ -245,12 +256,12 @@ arbitration."
 
 ### Derotation: a quiet host gives its share back
 
-A budget allocation spent on a host that isn't running is wasted.
+A budget allocation given to a host that is not running is wasted.
 [`worker-derotate.sh`](../../scripts/jobs/worker-derotate.sh), added on
 2026-09-28, runs just before the leveler in the same leader-only scheduler
 tick. It uses the `budget/live` heartbeat through the `host_liveness`
 predicate in `common.sh`, which it shares with the rolling-deploy canary.
-`GARDEN_HOST_OFFLINE_AFTER` sets the threshold. Derotation works in five steps:
+`GARDEN_HOST_OFFLINE_AFTER` sets the threshold. Derotation has five steps:
 
 1. A host whose heartbeat is stale past the threshold on **two consecutive
    ticks** has its `host` row in `config/worker-leveling` zeroed.
@@ -263,8 +274,8 @@ predicate in `common.sh`, which it shares with the rolling-deploy canary.
 5. Each episode posts one notice and one recovery.
 
 The oros row above is a live example. On 2026-09-30 the liaison's muster
-handled the derotation notices by hand, and at the time of writing the marker
-still stood:
+(chapter 3, § 3.3) handled the derotation notices by hand, and at the time of
+writing the marker still stood:
 
 ```text
 host: oros-studio-garden-ce242c49
@@ -277,7 +288,7 @@ detail: heartbeat stale by 3377s (offline threshold 1800s; ...)
 ```
 
 That row reads `0 0` because the mechanism zeroed it. When oros heartbeats
-again, `4 0` returns without anyone acting.
+again, `4 0` returns with no one acting.
 
 The ownership rules make derotation safe alongside human operators:
 
@@ -290,54 +301,42 @@ The ownership rules make derotation safe alongside human operators:
   lists the markers.
 - A missing or unparseable heartbeat counts as **unknown**. The host is neither
   zeroed nor restored.
-- If the leader's own heartbeat reads stale, the tick freezes. The leader
-  doesn't trust a sensor that says it is itself offline.
+- If the leader's own heartbeat reads stale, the tick freezes: the leader
+  does not trust a sensor that says the leader itself is offline.
 
 **Known gap.** The heartbeat measures liveness, not claiming. A host that still
-heartbeats but doesn't claim keeps its allocation: one that is drained, has
-wedged workers, or is stuck in a deploy. The leader's drain guard doesn't solve
-this. Treat allocation as heartbeat-live capacity, not claiming capacity.
+heartbeats but does not claim (one that is drained, has wedged workers, or is
+stuck in a deploy) keeps its allocation, and the leader's drain guard does not
+solve this. Allocation tracks heartbeat-live capacity, not claiming capacity.
 
 ### Remote operations: the sysop
 
-Leveling across hosts requires something that can act *on* a follower when no
-human is sitting at it. That is the **sysop**
-(`scripts/jobs/sysop.sh`, [`designs/sysop.md`](../../designs/sysop.md)). It is a
-deterministic per-host daemon that runs no LLM. It reads only
-`msgs/host/<its-own-GARDEN>` and runs a closed vocabulary of ops on its own
-host:
+Leveling across hosts needs an actuator that can act *on* a follower when no
+human is sitting at it. That actuator is the **sysop**, the deterministic,
+no-LLM per-host daemon described in chapter 2, § 2.5 (its closed op
+vocabulary, its every-host deployment, and its authorization rules live
+there). Three of its properties matter to the control loops:
 
-- `set-workers`
-- `drain`
-- `reset-failed`
-- `restore`
-- `unit`
-- `deploy`
-- `local-model`
-- `maintain`
-
-Because each op runs *on* the target host, the sysop respects
-`set-workers.sh`'s cross-host refusal instead of bypassing it. It runs on
-**every** host, unlike the leader-only singletons below. It keeps ticking under
-drain, so a drained host can always receive its own `drain off`.
-
-Journal push access is the authorization boundary for benign ops such as
-`set-workers`, `drain`, and `restore`: any garden host may send them to any
-other. The **destructive** ops need maintainer attestation, an `authorized_by:`
-naming someone on `maintainers/allowlist`. Those ops are `unit`, `deploy`,
-`local-model` (a model pull can fill a follower's disk), and `maintain` (which
-breaks a stale gc lock and repacks the shared root repository). Ferrying and any
-identity switch are permanently outside the vocabulary. Every op is idempotent,
-logged to `sysop-log/<GARDEN>/<msgid>.md`, and acknowledged. Send one with
-`scripts/jobs/send-host-op.sh <GARDEN> op=… key=…`.
+- **It is the only remote actuator for counts.** The leader resizes another
+  host by sending that host's sysop a benign `set-workers` op
+  (`scripts/jobs/send-host-op.sh <GARDEN> op=set-workers …`). Because the op
+  runs *on* the target, `set-workers.sh`'s cross-host refusal still holds.
+- **Benign ops need no human.** `set-workers`, `drain`, and `restore` require
+  only journal push access, so the leveler can actuate unattended. The
+  destructive ops (`unit`, `deploy`, `local-model`, `maintain`) need a
+  maintainer attestation and are never part of an automatic loop.
+- **It ticks under drain**, so a drained host can always receive its own
+  `drain off`, and every op is idempotent, logged to
+  `sysop-log/<GARDEN>/<msgid>.md`, and acknowledged, so the sender can tell an
+  applied change from a lost message.
 
 ### Who runs the controllers
 
-The leveler, derotation, foreman, scheduler, and watchers are **singletons**.
-None of them tolerates a concurrent duplicate: two levelers would fight over
-count lines, two foremen would double-pump, two schedulers would double-dispatch.
-They run only on the **leader**, and `scripts/jobs/is-main-host.sh` gates them
-against the journal's `leader` marker. Gardeners (monks and clerics) run on
+The leveler, derotation, foreman, scheduler, and watchers are **singletons**:
+two levelers would fight over count lines, two foremen would double-pump, and
+two schedulers would double-dispatch. They run only on the **leader**, gated by
+`scripts/jobs/is-main-host.sh` against the journal's `leader` marker (chapter
+2, § 2.5). Gardeners (monks and clerics) run on
 every host and race-claim safely through the job-board push compare-and-swap.
 Moving the marker with `set-main-host.sh` moves every budget controller with it.
 The journal-backed foreman brake (`config/foreman-brake`) moves with it too,
@@ -347,11 +346,11 @@ because it lives in the journal rather than on a host.
 
 The foreman ([`scripts/jobs/foreman.sh`](../../scripts/jobs/foreman.sh), the
 leader-only `garden-foreman` timer) is the fleet's **autonomous spender**.
-Watchers post work in response to events. The foreman posts work because the
-board is under-full. It is therefore where pacing is applied.
+Watchers post work in response to events; the foreman posts work because the
+board is under-full, which makes it the place where pacing applies.
 
-Each tick it counts in-flight work: `jobs/todo/` plus `jobs/doin/`. The count is
-compared with `GARDEN_FOREMAN_ACTIVE_TARGET`:
+Each tick it counts in-flight work (`jobs/todo/` plus `jobs/doin/`) and
+compares the count with `GARDEN_FOREMAN_ACTIVE_TARGET`:
 
 - **At or above target**: the foreman does nothing and clears its settle clock.
 - **Below target, but for less than `GARDEN_FOREMAN_IDLE_SETTLE`** (240 s): it
@@ -366,10 +365,10 @@ compared with `GARDEN_FOREMAN_ACTIVE_TARGET`:
     promotion and generation fleet-wide until a recorded reset.
   - An unreadable meter fails open with a WARN, like the claim gate.
 - If budget allows, it fills open slots **first by batch-promoting deferred plan
-  jobs**. These are pre-approved and cost no model call, and promotion is
+  jobs**, which are pre-approved and cost no model call; promotion is
   leaf-first by omega rank. Only if none are queued does it run `claude -p`
-  wearing the foreman role to generate **one** new milestone step. That step
-  may be steered by `config/foreman-mandate`.
+  wearing the foreman role to generate **one** new milestone step, which
+  `config/foreman-mandate` may steer.
 
 Every tick appends one line to `$GARDEN_STATE/foreman/decisions.log`. Before
 that log existed, a foreman quiesced at target 0 exited silently every tick for
@@ -378,52 +377,55 @@ weeks and could be diagnosed only by live-debugging the unit (job
 
 ### The active target and why it is 10
 
-The target has moved with quota pressure. The unit file's comment records the
-history. The script's own fallback is 5 ("keep ~5 jobs in flight," kriskowal
+The target has moved with quota pressure, as the unit file's comment records.
+The script's own fallback is 5 ("keep ~5 jobs in flight," kriskowal
 2026-07-03). The unit pinned it to **0**, quiescing the pump, from 2026-07-14
 through quota pressure. It was raised to 2 on 2026-09-16, and to **10** on
 2026-09-27. The unit ships `Environment=GARDEN_FOREMAN_ACTIVE_TARGET=10`, and
 `CLAUDE.md` and `scaling.md` agree.
 
 The reason for 10 matters more than the number. It covers the fleet's roughly
-eight physical worker slots plus a small buffer. The raise was meant to change
-**which knob does the braking**. A low concurrency target throttles spend
-bluntly and whatever the actual budget state, so the fleet idles even when quota
-is available. At 10 the target is effectively "keep the fleet saturated," and
+eight physical worker slots plus a small buffer, and the raise was meant to
+change **which knob does the braking**. A low concurrency target throttles
+spend bluntly, whatever the actual budget state, so the fleet idles even when
+quota is available. At 10 the target is effectively "keep the fleet saturated," and
 spend is braked by the backoff fraction and pool state, which respond to real
 budget. Concurrency is a capacity control; the backoff fraction is the spend
 control.
 
 A documentation note: `context/operations/cybernetics.md` and both designs'
-2026-09-27 status sections still say "the shipped active target is 2." They were
-written just before the raise. The unit file is authoritative.
+2026-09-27 status sections, written just before the raise, still say "the
+shipped active target is 2." The unit file is authoritative.
 
 ### Brake, drain, and target: three different levers
 
+This section is the canonical home for these three controls; chapter 2, § 2.5
+only summarizes them.
+
 | Lever | Scope | Stops |
 | --- | --- | --- |
-| `brake-foreman.sh on\|off\|status` | journal-backed; follows leadership | **only** the foreman pump |
-| `drain-fleet.sh on\|off` | host-local marker | **new claims** on this host; in-flight work finishes ("drain" and "lift") |
+| `brake-foreman.sh on\|off\|status` | journal-backed (`config/foreman-brake`); follows leadership | **only** the foreman pump, which neither promotes nor generates; workers keep draining the existing board |
+| `drain-fleet.sh on\|off` | host-local marker (`$GARDEN_STATE/draining`) | **new claims** on this host (`claim-job.sh` exits 3); in-flight work finishes ("drain" and "lift") |
 | `GARDEN_FOREMAN_ACTIVE_TARGET=0` | unit env / drop-in | the pump, by making every tick "subscribed" |
 
 Drain is a claim moratorium, not a global write lock. On a drained leader the
-scheduler has no drain guard and can still dispatch due schedules into `todo/`.
-Those jobs sit unclaimed on that host, and undrained hosts may claim them. If
-the intent is only to stop autonomous generation, use the brake.
+scheduler has no drain guard and can still dispatch due schedules into `todo/`,
+where they sit unclaimed on that host and undrained hosts may claim them. To
+stop only autonomous generation, the brake is the right lever.
 
 ## 8.5 Per-job budgets: wall clock and tokens
 
-Each claimed job carries two separate budgets. They are resolved from the same
+Each claimed job carries two separate budgets, both resolved from the same
 role in the same place, `common.sh`, so the gardener that runs the handler, the
-reaper that judges staleness, and the deadline nudger that warns the worker
-cannot disagree.
+reaper that judges staleness (chapter 2, § 2.2), and the deadline nudger that
+warns the worker cannot disagree.
 
 ### The handler wall (`handler-timeout:`)
 
 `job_handler_budget_base` picks the job's **runtime role**. That is
 `handler-budget-role:` if present; otherwise the `gauntlet_stage` (`panel` →
 `panel`, `clean`/`fix` → `shepherd`); otherwise the job's `role:`.
-`canonical_budget_role` normalizes the alias `fix` to `fixer`. Without that, a
+`canonical_budget_role` normalizes the alias `fix` to `fixer`; without that, a
 mistyped alias would silently fall through to the 40-minute fleet default. The
 `role_default_handler_timeout` table then gives:
 
@@ -431,15 +433,15 @@ mistyped alias would silently fall through to the 40-minute fleet default. The
 | --- | --- | --- |
 | `builder`, `web-builder` | `GARDEN_BUILD_HANDLER_TIMEOUT` | 7200 s |
 | `fixer` | `GARDEN_FIXER_HANDLER_TIMEOUT` | 7200 s |
-| `shepherd` (incl. gauntlet clean/fix) | `GARDEN_SHEPHERD_HANDLER_TIMEOUT` | 7200 s |
+| `shepherd` (including gauntlet clean/fix) | `GARDEN_SHEPHERD_HANDLER_TIMEOUT` | 7200 s |
 | `conductor` | `GARDEN_CONDUCTOR_HANDLER_TIMEOUT` | 7200 s |
 | review directive | `GARDEN_REVIEW_HANDLER_TIMEOUT` | 7200 s |
 | panel / repanel | `GARDEN_PANEL_HANDLER_TIMEOUT` | 7200 s |
 | `botanist` | `GARDEN_BOTANIST_HANDLER_TIMEOUT` | 7200 s |
 | anything else | `GARDEN_HANDLER_TIMEOUT` | 2400 s |
 
-Any role that waits on CI or fans out a panel must have a budget longer than
-that wait. The CI deadline is 5400 s, so 7200 s covers it.
+Any role that waits on CI or fans out a panel needs a budget longer than that
+wait; the CI deadline is 5400 s, which 7200 s covers.
 
 A strictly positive integer `handler-timeout: <seconds>` in the job body
 **overrides** the role default in either direction. A cold `docker build`
@@ -452,16 +454,16 @@ budget_max = GARDEN_CLAIM_TTL − GARDEN_HANDLER_KILL_AFTER − 1
 
 and the maintainer is alerted when a request is clamped. The cap is tied to the
 claim TTL because of the **single-owner invariant**: the reaper requeues a claim
-it considers stale. If a handler could run longer than a claim lives, a second
-gardener would claim the same job while the first was still working, and two
-workers would run concurrently on one worktree. Work that needs more than one
+it considers stale, so if a handler could outlive its claim, a second gardener
+would claim the same job while the first was still working, and two workers
+would run concurrently on one worktree. Work that needs more than one
 claim's lifetime must run detached or be split into claim-sized stages. To raise
 the ceiling, raise `GARDEN_CLAIM_TTL` in both `gardener.sh` and `reaper.sh`, so
 that `budget + kill_after < TTL` still holds.
 
 Only `handler-timeout:` sets the wall. A frequent mistake is writing
-`tier: builder`. That is an invalid tier, not a role, so the job silently
-receives the default budget. `role:` is the separate field.
+`tier: builder`: that is an invalid tier, not a role, so the job silently
+receives the default budget. `role:` is the separate field (chapter 10).
 
 ### The notional token budget (`token-budget:`)
 
@@ -471,13 +473,13 @@ receives the default budget. `role:` is the separate field.
 **100,000** (`GARDEN_TOKEN_BUDGET_DEFAULT`). A positive `token-budget:` header
 overrides the default.
 
-This budget doesn't cap a single model call. It bounds **repeated resume
-cycles**. The wall still decides when a requeue is safe. The token ledger decides
-where the job goes after it has hit the wall:
+This budget does not cap a single model call; it bounds **repeated resume
+cycles**. The wall still decides when a requeue is safe, and the token ledger
+decides where the job goes after it hits the wall:
 
 - Output tokens at or above `GARDEN_PROGRESS_MIN_OUTPUT_TOKENS` (2000) since the
-  claim, or a productive-cycle marker, means the job is **advancing**. Requeue
-  it.
+  claim, or a productive-cycle marker, means the job is **advancing**, and it
+  is requeued.
 - A job over its token budget becomes a **budget hold**: a `go-ahead` plan with
   `park_reason: over-token-budget`. The leader's `budget-refresh.sh` returns
   that subset to `todo/` after its explicit reset or rolling quota window, and
@@ -489,23 +491,21 @@ where the job goes after it has hit the wall:
 
 ### Tier is part of cost
 
-`skills/model-selection/SKILL.md` covers the other axis of per-job cost: which
-model runs the job. The automatic producers are `post-job.sh` and
-`post-plan.sh`, and they normalize every body to `tier: mentor`,
-`fallback-tier: minion`, `dispatch: automatic`. Mentor is multi-provider, so a
-job runs on whichever pool has live capacity, and the claim gate charges that
-pool. The reaper's one-hop reroute on failure never demotes below
-`role_tier_floor`: mentor for designer and builder, minion for everything else.
-**Mentat**, the most expensive tier (Fable 5, GPT-6 Astra), is manual-only.
-It is posted with `post-manual-job.sh`, which stamps `dispatch: manual`, and the
-claim predicate and handler both refuse an automatic mentat job. The one
-exception is the journal-authorized Ironhorse ratchet watcher, and even that
-path is gated by a rolling arc token budget at foreman admission.
+The other axis of per-job cost is which model runs the job. Chapter 10 is the
+reference for tiers, the models in each, role floors, and provider fallback
+(source: `skills/model-selection/SKILL.md`). Two facts matter for budgeting.
+Automatic producers stamp every job `tier: mentor`, and mentor is
+multi-provider, so a job runs on whichever pool has live capacity and the
+claim gate charges that pool. **Mentat**, the most expensive tier, is
+manual-only (`post-manual-job.sh`); its one automatic exception, the
+journal-authorized Ironhorse ratchet watcher, is still gated by a rolling arc
+token budget at foreman admission.
 
 ## 8.6 Per-orchestration budgets: a bounded pie
 
 The garden's most direct form of "a bounded budget a scheduler draws down"
-already exists at the scope of one **orchestration**. See
+already exists at the scope of one **orchestration** (the mechanism itself is in
+chapter 7, § 7.4). See
 [`skills/orchestration/SKILL.md`](../../skills/orchestration/SKILL.md) and
 [`designs/budgeted-campaign-dispatch.md`](../../designs/budgeted-campaign-dispatch.md).
 
@@ -518,7 +518,7 @@ The orchestration record gains `budget_tokens:`. It works like this:
 - **Serial only.** Parallel promotion admits every child before any spend
   exists, so there would be nothing to meter against.
 - **Checked before each promotion.** Just before promoting the next child,
-  the leader's deterministic `orchestrate.sh` freshly sums **billable** tokens
+  the leader's deterministic `orchestrate.sh` sums **billable** tokens
   from the named children's ledgers, counting from the record's `created_at`.
   Billable tokens are input + output + cache creation; cache reads are
   excluded.
@@ -528,7 +528,7 @@ The orchestration record gains `budget_tokens:`. It works like this:
   running finishes normally, so a campaign can overshoot by up to one child. The
   terminal report states that overshoot along with the budget, the spend, and
   the non-negative unspent amount.
-- **A meter it can't trust stops it.** A malformed or unmetered ledger row ends
+- **An untrustworthy meter stops it.** A malformed or unmetered ledger row ends
   the orchestration `budget-meter-incomplete`, also without promoting anything.
   Here the uncertainty stops spending instead of permitting it, because a
   campaign budget is an explicit authorization.
@@ -541,7 +541,7 @@ The orchestration record gains `budget_tokens:`. It works like this:
   children in one journal commit. An old campaign's budget is never edited or
   refilled in place. Each campaign is its own accounting period.
 
-This mechanism puts a clear boundary around delegated authority: the maintainer
+The mechanism puts a clear boundary around delegated authority: the maintainer
 authorizes a quantity of spend toward a named piece of work, the scheduler draws
 it down in order, and running out never damages in-flight work.
 
@@ -559,10 +559,10 @@ role**:
 > foreman can draw from to make progress on prioritized work in the planned jobs.
 
 When this chapter was written, that work was a **queued design job**,
-`design-accountant-role-budget-apportionment`, in `jobs/todo/`. No design has
-landed in `designs/`, and no `roles/accountant/` exists. Nothing below is
-shipped behavior or a decided conclusion. It restates what the design job
-asks for:
+`design-accountant-role-budget-apportionment`, in `jobs/todo/`. No design had
+landed in `designs/`, and no `roles/accountant/` existed. Nothing below is
+shipped behavior or a decided conclusion; it restates what the design job
+asked for:
 
 - A **survey first**, so the role consolidates existing budget duties instead of
   duplicating them. The survey covers everything in this chapter (pools, the
@@ -591,11 +591,11 @@ backoff fraction. The foreman draws from one undifferentiated pool, and only an
 explicit orchestration gets a bounded budget of its own. The proposal would
 generalize the per-orchestration budget to the foreman's own spending, sliced
 by priority, with the human re-entering the loop on a fixed weekly cadence
-instead of through ad-hoc watchdog notices. How that is actually built belongs
+instead of through unscheduled watchdog notices. How that is actually built belongs
 to the design, and a later edition of this chapter should describe it once it
 lands.
 
-## Operator quick reference
+## 8.8 Quick reference
 
 | Question | Where to look |
 | --- | --- |

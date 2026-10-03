@@ -9,14 +9,33 @@ grounded-on: main2 c63c16cad57, journal2 as of 2026-09-30
 This chapter covers the garden's reference library under `journal/library/`:
 what it looks like on disk, how material gets in, how a worker finds it again,
 and why the whole thing is shaped around a subagent's context window rather
-than around being a complete encyclopedia. It does not cover the per-project
-trees under `journal/projects/` except where they share the same discipline.
+than around completeness. It covers the per-project trees under
+`journal/projects/` only where they share the same discipline.
 
-## Why the garden keeps a library at all
+Three roles and two skills carry the library. The
+[scholar](../../roles/scholar/AGENT.md) writes it, the
+[librarian](../../roles/librarian/AGENT.md) searches it read-only, and the
+[researcher](../../roles/researcher/AGENT.md) turns it into grounding for
+design and build jobs; their full entries are in chapter 5, § 5.5. The
+[library-lookup](../../skills/library-lookup/SKILL.md) and
+[context-library](../../skills/context-library/SKILL.md) skills, catalogued in
+chapter 6, § 6.8, are the reading procedure and the authoring discipline. This
+chapter explains how those pieces fit together.
 
-A gardener that claims a design or build job starts with an empty head. It has
-its role brief, the skills that role names, and the job body. Everything else
-it has to find. For the domains the garden works in (hardened JavaScript,
+## Contents
+
+- [9.1 Why the garden keeps a library at all](#91-why-the-garden-keeps-a-library-at-all)
+- [9.2 What it looks like on disk](#92-what-it-looks-like-on-disk)
+- [9.3 How content gets in: the scholar](#93-how-content-gets-in-the-scholar)
+- [9.4 How content gets found: library-lookup](#94-how-content-gets-found-library-lookup)
+- [9.5 How research uses it: the researcher](#95-how-research-uses-it-the-researcher)
+- [9.6 Why it is shaped this way: the context economy](#96-why-it-is-shaped-this-way-the-context-economy)
+
+## 9.1 Why the garden keeps a library at all
+
+A gardener that claims a design or build job starts with an empty head: its
+role brief, the skills that role names, and the job body. Everything else it
+has to find. For the domains the garden works in (hardened JavaScript,
 capability security, OCapN, the Endo daemon, the XS engine and its Rust port),
 the relevant knowledge is spread across hundreds of upstream documents, papers,
 design notes, and long review comments. If every job rediscovered that material
@@ -24,7 +43,7 @@ by reading upstream repositories directly, each job would pay the reading cost
 again, and each would pick its own words for the same ideas.
 
 The library is the garden's answer: a curated, cross-cutting reference that
-workers consult by lookup instead of by reading. On 2026-09-30 it holds about
+workers consult by lookup instead of by reading. On 2026-09-30 it held about
 1,000 source-index pages, 7,235 section files, 99 topic pages, and 269 concept
 pages, about 32 MB of Markdown in all. That is roughly eight million tokens,
 far more than any model's context window. The design problem is not "how do we
@@ -32,9 +51,10 @@ store this" but "how does a worker with a few hundred thousand tokens of
 context, most of which it needs for the actual job, get at the two or three
 pages that matter."
 
-## What it looks like on disk
+## 9.2 What it looks like on disk
 
-The library lives on the `journal2` branch, in `journal/library/`:
+The library lives on the journal (the `journal2` branch), in
+`journal/library/`:
 
 ```
 journal/library/
@@ -69,7 +89,7 @@ one-paragraph **Abstract**, then the section's content (lightly cleaned and
 mostly verbatim), and ends with a footer linking the upstream file at the
 recorded commit.
 
-Section files are small by construction. The median is about 2.1 KB, roughly
+Section files are small by construction: the median is about 2.1 KB, roughly
 500 tokens.
 
 ### The three indexing axes
@@ -79,30 +99,30 @@ same content a different way:
 
 - **Sources** (by provenance). `sources/<source-slug>.md` is a short page for
   one upstream document: an abstract, a metadata block, and a table of the
-  section files cut from it. Use this axis when you know *which document* you
-  want.
+  section files cut from it. This axis serves a reader who knows *which
+  document* it wants.
 - **Topics** (by subject). `topics/<topic-slug>.md` has no frontmatter; it is a
   catalog page with an abstract, a `Sections` table (one row per filed
-  section, with that section's abstract first sentence), and a see-also list.
-  Use this axis when you want *everything about a subject*, such as
-  `capability-security` or `marshal`.
+  section, with the first sentence of that section's abstract), and a see-also
+  list. This axis serves a reader who wants *everything about a subject*, such
+  as `capability-security` or `marshal`.
 - **Concepts** (by the unit a reader actually looks up). `concepts/<id>.md` is
   a short page with `id`, `aliases`, and `topics` frontmatter, a one-paragraph
   definition, a table of the sections that touch the concept, and a see-also
   list of related concepts. `keywords.md` maps terms to concept ids, one bullet
   per cluster (`- ambient authority, ambient capability, ... -> ambient-authority`),
   with code symbols in backticks so symbol and prose keywords are
-  distinguishable at a glance. Use this axis when you have a *specific term*
-  in mind and do not know which document or subject owns it.
+  distinguishable at a glance. This axis serves a reader who has a *specific
+  term* in mind and does not know which document or subject owns it.
 
 The concepts axis came last and is now the primary entry point for lookup,
-because a worker's question almost always starts from a term in the task in
-front of it, not from a document name or a subject heading.
+because a worker's question almost always starts from a term in its task, not
+from a document name or a subject heading.
 
 ### Keeping it honest: staleness, supersession, contradiction
 
-The journal is append-only, and the library follows suit. When a section
-becomes wrong, nobody edits it in place. Its `status` flips to `stale` or
+The journal is append-only, and the library follows suit: nobody edits a
+section in place when it becomes wrong. Its `status` flips to `stale` or
 `superseded` with a `notes:` line saying why; a replacement section names the
 old one in `supersedes:`. When two sections genuinely disagree and neither
 replaces the other, both become `conflicted` and name each other under
@@ -139,19 +159,18 @@ Two sibling trees use the same authoring discipline and are easy to confuse.
 design rationale, security policy, anything that could apply to more than one
 project. `journal/projects/<slug>/` holds *project-bound operating rules*:
 rules of engagement, identity and credentials, who has authority over what.
-"What `harden` does to an object" belongs in the library. "How the boatman
+"What `harden` does to an object" belongs in the library; "how the boatman
 ferries work upstream to endo" belongs in the project tree.
 
-## How content gets in: the scholar
+## 9.3 How content gets in: the scholar
 
-The library grows through one role, the
-[scholar](../../roles/scholar/AGENT.md). The scholar is job-driven, not a
-standing daemon. Work reaches it as a board job (`scholar-ingest-<repo>`,
-`scholar-ingest-source`, `scholar-library-refresh`,
+The library grows through one role, the scholar (chapter 5, § 5.5.3). The
+scholar is job-driven, not a standing daemon. Work reaches it as a board job
+(`scholar-ingest-<repo>`, `scholar-ingest-source`, `scholar-library-refresh`,
 `scholar-review-writebacks`), as a recurring library-refresh schedule that the
 scheduler duplicates onto the board, or, for compatibility, as a bus message
 asking for an ingest. A gardener claims the job, wears the scholar role for
-the life of the job, and finishes. There is no scholar running between jobs.
+the life of the job, and finishes. No scholar runs between jobs.
 
 ### One job, one cycle
 
@@ -159,7 +178,7 @@ Each claimed job is one cycle with a fixed procedure: sync the journal, read
 the ask and drain the scholar inbox, survey the target, ingest, update the
 indexes, run an integrity gate, land, and report.
 
-The ingest step is where the library's cost discipline starts. For each queued
+The library's cost discipline starts at the ingest step. For each queued
 source the scholar computes the source slug and reads the existing
 `sources/<slug>.md`, if any, for its recorded `source_commit` (or
 `source_pdf_sha256` for a paper). It then asks the upstream bare clone for the
@@ -169,11 +188,11 @@ skip in its result and moves on without reading the source at all. Only on a
 mismatch does it read the source at the new commit, cut sections, and write
 section, source, topic, and concept files.
 
-That check is what makes ingestion cheap to request. Any role can ask for a
-source to be ingested, and any schedule can re-ask on a timer, because a
-re-ask against an unchanged file costs one `git log` and a line in a report.
-It is also why the frontmatter insists on the file-specific commit rather than
-the repository's head: a repo head moves on every unrelated commit and would
+That check makes ingestion cheap to request. Any role can ask for a source to
+be ingested, and any schedule can re-ask on a timer, because a re-ask against
+an unchanged file costs one `git log` and a line in a report. It is also why
+the frontmatter insists on the file-specific commit rather than the
+repository's head: a repository head moves on every unrelated commit and would
 force a pointless re-read.
 
 Re-ingestion is append-only. A changed source produces new section files; the
@@ -185,7 +204,9 @@ Foreign content gets an extra gate. A web page or paper is fetched with
 `scripts/jobs/fetch-source.sh` (which knows how to fall back to the Internet
 Archive), then passed through `scripts/jobs/classify-foreign-content.sh`
 before the scholar reads it, so that text written by strangers is classified
-before it can steer a model.
+before it can steer a model (the
+[foreign-content-preclassification](../../skills/foreign-content-preclassification/SKILL.md)
+skill).
 
 ### The section budget
 
@@ -195,8 +216,8 @@ A scholar cycle stops after roughly three to five source documents or about
 full cycle on its own. The role brief gives the reason plainly: long cycles
 risk leaving the journal half-written, and they burn context.
 
-When a source or repository is bigger than one cycle, the scholar does not
-truncate silently and does not spawn subagents. It writes what it could
+When a source or repository is bigger than one cycle, the scholar neither
+truncates silently nor spawns subagents. It writes what the cycle can
 support, then posts a follow-on `scholar-ingest-<repo>` job naming exactly
 what is left: which packages, which design docs, which sections. The next
 cycle picks up from there with a fresh context. A large repository is ingested
@@ -224,15 +245,21 @@ The scholar finishes with a `result` entry in the journal naming each source
 ingested or skipped (with the matching sha), each follow-on job posted, and a
 short digest to the maintainer.
 
-## How content gets found: library-lookup
+## 9.4 How content gets found: library-lookup
 
 The reading side is the [library-lookup](../../skills/library-lookup/SKILL.md)
-skill. Any role that touches the library uses it; the researcher uses it most.
+skill (chapter 6, § 6.8). Any role that touches the library uses it; the
+researcher uses it most. The [librarian](../../roles/librarian/AGENT.md)
+(chapter 5, § 5.5.4) packages a read-only journal search as a job: a role that
+would rather not spend its own context on the walk posts a `librarian` job and
+gets back a citation list. The librarian descends the README hierarchy by
+abstract rather than grepping first, so its procedure is the one in § 9.6, not
+the grep-first lookup below.
 
 ### A hit
 
-The caller has a term: a code symbol like `LOCAL_NODE`, a proper name, a
-domain phrase like "ambient authority." It greps the keyword index:
+The caller has a term: a code symbol such as `LOCAL_NODE`, a proper name, or a
+domain phrase such as "ambient authority." It greps the keyword index:
 
 ```sh
 grep -i "ambient authority" journal/library/keywords.md
@@ -242,7 +269,7 @@ On a hit, the line names a concept id. The caller reads
 `concepts/ambient-authority.md`, a page of a screen or less: a definition, a
 table of the sections that touch the concept with one-line summaries, and a
 see-also list. From that table it opens only the one or two sections whose
-summaries match its question. Done.
+summaries match its question.
 
 The whole lookup reads one grep result line, one concept page of about 400
 tokens, and one or two sections of about 500 tokens each. It never opens
@@ -268,12 +295,11 @@ a reader whose question does not match it stops and moves to the next match.
 
 ### Every lookup improves the index
 
-The part that makes the library get better with use is step 4 of the skill,
-which is mandatory. `conventions.md` states the principle: the librarian's job
-is not just to find information but to make sure the *next* search for the
-same information succeeds where this one did not, or succeeds faster. The
-caller, at the point of lookup and not in some later cleanup pass, does one of
-three things:
+The library improves with use because of step 4 of the skill, which is
+mandatory. `conventions.md` states the principle: the librarian's job is not
+just to find information but to make sure the *next* search for the same
+information succeeds where this one did not, or succeeds faster. At the point
+of lookup, not in a later cleanup pass, the caller does one of three things:
 
 - **Add a shortcut.** If it reached the right concept only through flat-grep,
   the term it actually used was missing from `keywords.md`. It appends
@@ -300,19 +326,19 @@ confusions, and draft concepts, because those are small, append-style, and
 directly justified by a real query. New topics, source-index changes, and
 concept merges remain the scholar's.
 
-The effect compounds. Each flat-grep fallback that ends in a shortcut converts
-an expensive lookup into a cheap one for every later caller. The keyword index
-ends up reflecting the vocabulary workers actually use, not the vocabulary an
+The effect compounds. Each flat-grep fallback that ends in a shortcut turns an
+expensive lookup into a cheap one for every later caller, so the keyword index
+comes to reflect the vocabulary workers actually use, not the vocabulary an
 author guessed they would use.
 
-## How research uses it: the researcher
+## 9.5 How research uses it: the researcher
 
-The [researcher](../../roles/researcher/AGENT.md) is where the library meets
-design and build work. By default a research step runs before a design or
-build job's work stage, either as a preparation stage of the gardener-
-supervised job or as a posted `research` job whose result the design or build
-job inlines. (It does not run for fixer, weave, shepherd, conductor, or panel
-work; those read PR state and journal entries directly.)
+The researcher (chapter 5, § 5.5.2) is where the library meets design and
+build work. By default a research step runs before a design or build job's
+work stage, either as a preparation stage of the gardener-supervised job or as
+a posted `research` job whose result the design or build job inlines. It does
+not run for fixer, weave, shepherd, conductor, or panel work; those read PR
+state and journal entries directly.
 
 The researcher reads the proposed task as data, not as instructions, and
 picks out its domain terms, code symbols, proper names, and references to
@@ -325,34 +351,36 @@ code.
 Its deliverable is a single `## Library and project references` section,
 grouped into **Library concepts and sections** and **Project context**, with a
 half-line per citation saying why it matters to this task. That section is
-inlined into the design or build job body *before* the work starts. The
-designer or builder therefore begins with the garden's existing terminology
-and prior art already in its context, rather than inventing new names for old
-ideas or re-deriving a design the library already records.
+inlined into the design or build job body *before* the work starts, so the
+designer or builder begins with the garden's existing terminology and prior
+art already in its context, rather than inventing new names for old ideas or
+re-deriving a design the library already records.
 
 The researcher's own norms mirror the library's economy. The refinement is
 additive: it never rewrites the task. Every citation must point at a file that
-exists; a load-bearing term with no library coverage becomes an open question,
-not an invented reference. Relevance half-lines stay to one short sentence,
-since a long justification usually means the reference is not relevant. The
-target is one to three minutes of wall time, and a task with more than about a
-dozen lookup-worthy terms is trimmed to the most relevant subset, with the rest
-listed as open questions for the downstream stage to look up itself. A
-refinement that skipped a required writeback counts as partial.
+exists; a term the task depends on with no library coverage becomes an open
+question, not an invented reference. Each relevance note stays to one short
+sentence, since a long justification usually means the reference is not
+relevant. The target is one to three minutes of wall time, and a task with
+more than about a dozen lookup-worthy terms is trimmed to the most relevant
+subset, with the rest listed as open questions for the downstream stage to
+look up itself. A refinement that skipped a required writeback counts as
+partial.
 
-## Why it is shaped this way: the context economy
+## 9.6 Why it is shaped this way: the context economy
 
-Everything above follows from one constraint. A worker's context window is
-limited, and every token in it costs money and displaces something else. The
-library is not built to be *complete*; at eight million tokens it could never
-be loaded whole anyway. It is built so that a worker with a specific question
-can load *only the part that answers it*.
+Everything above follows from one constraint: a worker's context window is
+limited, and every token in it costs money and displaces something else. (For
+the money side of that sentence, see chapter 8, § 8.5.) The library is not
+built to be *complete*; at eight million tokens it could never be loaded whole
+anyway. It is built so that a worker with a specific question can load *only
+the part that answers it*.
 
 ### The authoring discipline
 
-The [context-library](../../skills/context-library/SKILL.md) skill states the
-rules the library's authors follow (and which the garden's `context/` operator
-manual and project trees follow too):
+The [context-library](../../skills/context-library/SKILL.md) skill (chapter 6,
+§ 6.8) states the rules the library's authors follow, as do the garden's
+`context/` operator manual and the project trees:
 
 - **Directory as hierarchy.** Every directory in a context tree has a
   `README.md` index whose rows are abstracts that tell the reader what they
@@ -370,10 +398,9 @@ manual and project trees follow too):
   subject so that any query predictably lands in exactly one child. When two
   siblings keep colliding, the fix is usually a deeper hierarchy, not a longer
   document.
-- **Prefer many small files to one long file.** The failure mode the skill
-  exists to prevent is a single file with numbered sections, where readers
-  grep for keywords instead of navigating and new content is appended as yet
-  another section.
+- **Prefer many small files to one long file.** The skill exists to prevent a
+  single file with numbered sections, where readers grep for keywords instead
+  of navigating and new content is appended as yet another section.
 
 ### What partitioning buys a subagent
 
@@ -385,11 +412,10 @@ In a library written as a handful of long documents, the relevant paragraph
 would live somewhere inside a design document of tens of thousands of tokens.
 To find it, the builder (or a subagent it sent) would load the document, or at
 least large chunks of it, and most of what it loaded would be about other
-things. Those tokens are not free. They are paid for on the way in, they are
-paid for again on every later turn that re-reads the context, and they push
-the job's own code, diffs, and test output toward the edge of the window.
-Irrelevant material in context is also a correctness risk: a model reasons
-over whatever is in front of it.
+things. Those tokens are paid for on the way in, paid for again on every later
+turn that re-reads the context, and they push the job's own code, diffs, and
+test output toward the edge of the window. Irrelevant material in context is
+also a correctness risk: a model reasons over whatever is in front of it.
 
 In the partitioned library, the same lookup reads one line of grep output, a
 concept page of a few hundred tokens, and one or two sections of a few hundred
@@ -397,8 +423,8 @@ tokens each: on the order of a thousand to fifteen hundred tokens, nearly all
 of it on topic. Each step is cheap enough that reading an abstract and
 *rejecting* the page is a reasonable move, which is exactly what the
 exit-criteria contract asks for. The cost of a lookup scales with the
-question, not with the size of the library. That is the property that lets
-the library keep growing without making every job more expensive.
+question, not with the size of the library, and that property lets the library
+keep growing without making every job more expensive.
 
 The concept page is the sharpest example. The skill caps it at about a screen
 and says that if it grows past that, the material wants to be a topic page or
@@ -407,28 +433,29 @@ reader who lands on it pays only for the pointer and the definition.
 
 ### The same discipline, applied to writing
 
-The scholar's limits are the same economy applied on the writing side. A
-cycle of three to five sources or about 25 section writes keeps each ingest
-job's own context bounded: the scholar holds the source, the sections it is
-cutting, and the indexes it is updating, and nothing else. The idempotency
-check means an unchanged source costs a `git log` rather than a read. The
-follow-on job for remainder work means a large repository never has to fit in
-one context; it is spread across many fresh ones, each doing a bounded
-amount. And the small-file shape the scholar writes into is what makes the
-reader's bounded lookups possible in the first place.
+The scholar's limits (§ 9.3) are the same economy applied on the writing side.
+The section budget keeps each ingest job's own context bounded: the scholar
+holds the source, the sections it is cutting, and the indexes it is updating,
+and nothing else. The idempotency check means an unchanged source costs a
+`git log` rather than a read. The follow-on job for remainder work means a
+large repository never has to fit in one context; it is spread across many
+fresh ones, each doing a bounded amount. And the small-file shape the scholar
+writes into is what makes the reader's bounded lookups possible in the first
+place.
 
 The researcher's budget completes the picture. Its output is a handful of
 citations with half-line justifications, not a digest of everything it read,
-so the design or build job that inlines it receives a pointer set of a few
-hundred tokens and can follow any pointer, through library-lookup, only if the
-work actually needs it.
+so the design or build job that inlines it receives a few hundred tokens of
+pointers and follows one, through library-lookup, only if the work actually
+needs it.
 
-Read together, the three roles form one loop. The scholar writes small,
-abstract-first, provenance-pinned pages in bounded cycles. Every reader looks
-them up by term, pays only for what it reads, and leaves the index a little
-sharper than it found it. The researcher turns that into a short grounding
-section in front of each design and build. None of the three ever needs the
-whole library in context, and that is the point of its shape.
+Read together, the scholar, the lookup callers, and the researcher form one
+loop. The scholar writes small, abstract-first, provenance-pinned pages in
+bounded cycles. Every reader looks them up by term, pays only for what it
+reads, and leaves the index a little sharper than it found it. The researcher
+turns that into a short grounding section in front of each design and build.
+None of them ever needs the whole library in context, and that is the point of
+its shape.
 
 ## Sources
 

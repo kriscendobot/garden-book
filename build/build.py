@@ -9,6 +9,7 @@ OUT = sys.argv[2]
 GH = "https://github.com/kriscendobot/garden/blob/main2/"
 BOOK_SRC_REPO = "https://github.com/kriscendobot/garden-book/blob/main/chapters/"
 TITLE = "Better Code and Gardens"
+ART = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "art"))
 
 # The book's five parts, a growing season: each part has a line-drawn growth
 # stage (seed, seedling, leafy stem, bloom, seed head) that marks its chapters
@@ -45,6 +46,26 @@ SPRITE = ('<svg class="sprite" aria-hidden="true" focusable="false" width="0" he
                     f'stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" overflow="visible">{v}</symbol>'
                     for k, v in GLYPHS.items())
           + "</defs></svg>")
+
+
+def inline_svg(name, cls, decorative=False):
+    """Load source art into the generated document; the clip fetches no asset."""
+    svg = open(os.path.join(ART, name), encoding="utf-8").read().strip()
+    svg = re.sub(r'<svg\s+xmlns="[^"]+"', f'<svg class="{cls}"', svg, count=1)
+    if decorative:
+        svg = re.sub(r'\s+(?:role|aria-labelledby)="[^"]+"', "", svg, count=2)
+        svg = re.sub(r'\s*<(?:title|desc)\b[^>]*>.*?</(?:title|desc)>', "", svg, flags=re.S)
+        svg = svg.replace(f'<svg class="{cls}"',
+                          f'<svg class="{cls}" aria-hidden="true" focusable="false"', 1)
+    return svg
+
+
+TITLE_ART = inline_svg("title-garden.svg", "title-art", decorative=True)
+GARDEN_BED_FIGURE = (
+    '<figure class="chapter-figure garden-bed">'
+    + inline_svg("figure-garden-bed.svg", "garden-bed-art")
+    + '<figcaption>Different kinds of work, coordinated through one shared plot.</figcaption>'
+    + '</figure>')
 
 
 def glyph(key, cls="glyph"):
@@ -168,7 +189,10 @@ for c in chapters:
         mark = (f'<p class="partmark">{glyph(part[4])}<span>Part {part[0]} &middot; {part[1]}</span></p>\n'
                 if part else "")
         body_html = mark + body_html
-    body_html = body_html.replace("</h2>", "</h2>\n" + prov_html, 1)
+    opening = "</h2>\n" + prov_html
+    if c["n"] == 2 and c["part"] == 1:
+        opening += "\n" + GARDEN_BED_FIGURE
+    body_html = body_html.replace("</h2>", opening, 1)
     # "Source:" lines under catalog entries linked back to the entry itself;
     # cite the actual file on main2, in the margin.
     body_html = re.sub(
@@ -243,7 +267,9 @@ frieze.append("</ol>")
 
 included = ", ".join(c["file"] for c in chapters)
 intro = open(os.path.join(os.path.dirname(__file__), "intro.html"), encoding="utf-8").read()
-intro = intro.replace("{{INCLUDED}}", html.escape(included)).replace("{{FRIEZE}}", "".join(frieze))
+intro = (intro.replace("{{INCLUDED}}", html.escape(included))
+        .replace("{{FRIEZE}}", "".join(frieze))
+        .replace("{{TITLE_ART}}", TITLE_ART))
 
 page = f"""<!DOCTYPE html>
 <html lang="en">

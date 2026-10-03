@@ -79,7 +79,12 @@ test("makeHrefResolver resolves every link shape", () => {
     resolve("scripts/x/../jobs/post-job.sh", "ch2"),
     `${SOURCE}scripts/jobs/post-job.sh`,
   );
-  assert.equal(resolve("..", "ch2"), `${SOURCE}.`);
+  assert.equal(resolve("..", "ch2"), `${SOURCE}..`);
+  assert.equal(
+    resolve("../../../roles/builder/AGENT.md", "ch2"),
+    `${SOURCE}../roles/builder/AGENT.md`,
+  );
+  assert.equal(resolve("x/../../y/../z", "ch2"), `${SOURCE}../z`);
 });
 
 test("tree-io rejects non-text entries and unwritable trees", async () => {

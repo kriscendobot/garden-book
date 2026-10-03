@@ -138,7 +138,7 @@ const normalizePosixPath = (path) => {
     if (segment === "" || segment === ".") {
       continue;
     }
-    if (segment === "..") {
+    if (segment === ".." && segments.length > 0 && segments.at(-1) !== "..") {
       segments.pop();
     } else {
       segments.push(segment);

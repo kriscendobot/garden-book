@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title-garden-title title-garden-description">
+  <title id="title-garden-title">A quiet garden growing around an open page</title>
+  <desc id="title-garden-description">Pastel leaves, beds, flowers, and a small trellis gather along the right and lower edges, fading into warm paper around an open center.</desc>
+  <defs>
+    <radialGradient id="title-garden-paper-wash" cx="66%" cy="61%" r="66%">
+      <stop offset="0" stop-color="#E8D8B9" stop-opacity="0.42"/>
+      <stop offset="0.58" stop-color="#FBF8F0" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#FBF8F0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="title-garden-bed-wash" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#C98267" stop-opacity="0"/>
+      <stop offset="0.28" stop-color="#C98267" stop-opacity="0.2"/>
+      <stop offset="0.72" stop-color="#A98569" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#A98569" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="title-garden-vine-fade" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#627A57" stop-opacity="0"/>
+      <stop offset="0.25" stop-color="#627A57" stop-opacity="0.7"/>
+      <stop offset="0.86" stop-color="#627A57" stop-opacity="0.56"/>
+      <stop offset="1" stop-color="#627A57" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="title-garden-soften" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="790" cy="425" rx="470" ry="330" fill="url(#title-garden-paper-wash)"/>
+  <path d="M208 641C396 583 534 611 684 645C850 683 1035 654 1198 583V720H105C108 687 146 660 208 641Z" fill="url(#title-garden-bed-wash)"/>
+  <ellipse cx="929" cy="654" rx="216" ry="30" fill="#A98569" opacity="0.11" filter="url(#title-garden-soften)"/>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1015 613C1002 536 1015 450 1054 367C1088 294 1094 208 1071 121" stroke="url(#title-garden-vine-fade)" stroke-width="6"/>
+    <path d="M1053 379C1009 356 979 319 968 274" stroke="#627A57" stroke-width="3" opacity="0.62"/>
+    <path d="M1068 306C1115 283 1143 248 1153 207" stroke="#627A57" stroke-width="3" opacity="0.56"/>
+    <path d="M1082 230C1042 211 1019 179 1014 144" stroke="#627A57" stroke-width="3" opacity="0.46"/>
+  </g>
+
+  <g opacity="0.82">
+    <path d="M968 274C936 260 922 229 929 196C964 203 984 229 968 274Z" fill="#9CAF88"/>
+    <path d="M1153 207C1180 184 1187 151 1173 122C1140 136 1129 169 1153 207Z" fill="#B8CF9B"/>
+    <path d="M1014 144C981 135 963 108 967 77C1000 81 1020 105 1014 144Z" fill="#9CAF88"/>
+    <path d="M1053 379C1091 366 1114 337 1112 301C1076 304 1050 332 1053 379Z" fill="#B8CF9B"/>
+  </g>
+
+  <g fill="none" stroke="#A98569" stroke-linecap="round" opacity="0.62">
+    <path d="M796 593V353M918 604V328" stroke-width="7"/>
+    <path d="M774 378C825 350 880 340 939 351M772 430C829 400 884 397 944 410M775 483C831 454 887 453 944 467" stroke-width="5"/>
+  </g>
+  <g fill="none" stroke="#627A57" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M814 586C832 530 817 476 840 428C857 392 885 371 920 350" stroke-width="5" opacity="0.72"/>
+    <path d="M842 425C813 418 793 399 788 372" stroke-width="3" opacity="0.62"/>
+    <path d="M866 390C875 361 895 343 922 334" stroke-width="3" opacity="0.62"/>
+    <path d="M827 501C857 490 878 470 889 441" stroke-width="3" opacity="0.62"/>
+  </g>
+  <path d="M788 372C767 356 759 331 768 309C793 318 804 340 788 372Z" fill="#9CAF88" opacity="0.78"/>
+  <path d="M922 334C949 326 969 306 974 280C946 279 925 297 922 334Z" fill="#B8CF9B" opacity="0.76"/>
+  <path d="M889 441C917 436 938 417 946 390C916 386 893 406 889 441Z" fill="#9CAF88" opacity="0.8"/>
+
+  <g opacity="0.84">
+    <path d="M867 374C856 359 858 340 872 328C888 338 892 357 882 373C877 379 871 379 867 374Z" fill="#D8A6A6"/>
+    <circle cx="875" cy="363" r="7" fill="#E6CF7A"/>
+    <path d="M1027 474C1015 457 1018 436 1034 424C1051 436 1054 457 1042 474C1037 481 1032 481 1027 474Z" fill="#B9ACCC"/>
+    <circle cx="1035" cy="462" r="7" fill="#E6CF7A"/>
+    <path d="M1121 294C1109 278 1112 258 1127 246C1144 257 1147 278 1136 294C1131 300 1126 300 1121 294Z" fill="#D8A6A6"/>
+    <circle cx="1129" cy="283" r="6" fill="#E6CF7A"/>
+  </g>
+
+  <g opacity="0.74">
+    <path d="M520 640C543 596 568 579 598 584C600 617 578 639 520 640Z" fill="#9CAF88"/>
+    <path d="M603 653C625 609 653 591 686 598C684 632 658 653 603 653Z" fill="#B8CF9B"/>
+    <path d="M720 649C738 604 766 584 799 589C801 623 776 646 720 649Z" fill="#9CAF88"/>
+    <path d="M960 647C977 602 1007 583 1041 591C1040 626 1012 648 960 647Z" fill="#B8CF9B"/>
+  </g>
+
+  <g fill="none" stroke="#DDD5C4" stroke-width="3" stroke-linecap="round" opacity="0.66">
+    <path d="M137 613C262 581 367 590 470 624"/>
+    <path d="M171 648C291 618 392 625 486 653"/>
+    <path d="M680 682C823 652 958 660 1102 691"/>
+  </g>
+  <g fill="#E6CF7A" opacity="0.58">
+    <circle cx="702" cy="115" r="4"/>
+    <circle cx="756" cy="84" r="3"/>
+    <circle cx="811" cy="134" r="3.5"/>
+    <circle cx="901" cy="91" r="3"/>
+  </g>
+</svg>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 460" role="img" aria-labelledby="figure-trellis-title figure-trellis-description">
+  <title id="figure-trellis-title">A vine learning a trellis</title>
+  <desc id="figure-trellis-description">A pastel climbing vine winds through a simple wooden trellis, with leaves and two small blossoms against a soft sand wash.</desc>
+  <defs>
+    <radialGradient id="figure-trellis-wash" cx="52%" cy="54%" r="56%">
+      <stop stop-color="#E8D8B9" stop-opacity="0.48"/>
+      <stop offset="0.72" stop-color="#E8D8B9" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#FBF8F0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <path d="M92 91C148 28 278 10 385 51C484 89 535 182 501 283C469 378 360 446 243 428C119 410 43 321 54 215C59 164 70 116 92 91Z" fill="url(#figure-trellis-wash)"/>
+  <g fill="none" stroke="#A98569" stroke-linecap="round" opacity="0.72">
+    <path d="M171 383V92M389 383V92" stroke-width="12"/>
+    <path d="M139 119C211 88 345 87 421 119M139 193C214 162 346 162 421 193M139 267C214 236 347 236 421 267" stroke-width="7"/>
+    <path d="M166 93L392 383M394 93L168 383" stroke-width="5" opacity="0.44"/>
+  </g>
+  <g fill="none" stroke="#627A57" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M237 390C205 342 217 299 258 265C300 231 292 183 260 155C235 133 240 100 278 75" stroke-width="7" opacity="0.88"/>
+    <path d="M245 275C210 272 184 251 172 219" stroke-width="4" opacity="0.68"/>
+    <path d="M286 226C324 218 350 195 361 163" stroke-width="4" opacity="0.68"/>
+    <path d="M259 155C292 150 316 132 329 105" stroke-width="4" opacity="0.68"/>
+    <path d="M222 330C253 323 275 303 285 276" stroke-width="4" opacity="0.68"/>
+  </g>
+  <g opacity="0.88">
+    <path d="M172 219C132 210 110 180 116 145C156 148 181 177 172 219Z" fill="#9CAF88"/>
+    <path d="M361 163C399 150 428 122 434 88C396 91 367 117 361 163Z" fill="#B8CF9B"/>
+    <path d="M329 105C361 96 383 74 388 46C355 49 331 70 329 105Z" fill="#9CAF88"/>
+    <path d="M285 276C325 270 354 246 366 211C325 211 293 235 285 276Z" fill="#B8CF9B"/>
+    <path d="M222 330C187 326 160 306 148 276C184 274 214 294 222 330Z" fill="#9CAF88"/>
+  </g>
+  <g opacity="0.92">
+    <g transform="translate(263 155)">
+      <ellipse cy="-12" rx="9" ry="15" fill="#D8A6A6"/>
+      <ellipse cx="12" rx="15" ry="9" fill="#D8A6A6"/>
+      <ellipse cy="12" rx="9" ry="15" fill="#D8A6A6"/>
+      <ellipse cx="-12" rx="15" ry="9" fill="#D8A6A6"/>
+      <circle r="7" fill="#E6CF7A"/>
+    </g>
+    <g transform="translate(246 276)">
+      <ellipse cy="-11" rx="8" ry="14" fill="#B9ACCC"/>
+      <ellipse cx="11" rx="14" ry="8" fill="#B9ACCC"/>
+      <ellipse cy="11" rx="8" ry="14" fill="#B9ACCC"/>
+      <ellipse cx="-11" rx="14" ry="8" fill="#B9ACCC"/>
+      <circle r="6" fill="#E6CF7A"/>
+    </g>
+  </g>
+  <path d="M107 391C198 371 350 374 453 401" fill="none" stroke="#DDD5C4" stroke-width="4" stroke-linecap="round" opacity="0.72"/>
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 150" role="img" aria-labelledby="divider-sprout-title divider-sprout-description">
+  <title id="divider-sprout-title">Sprout chapter divider</title>
+  <desc id="divider-sprout-description">A single new sprout rises through a softly broken garden line, with seed-like dots fading toward the edges.</desc>
+  <defs>
+    <linearGradient id="divider-sprout-line-fade" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#9CAF88" stop-opacity="0"/>
+      <stop offset="0.2" stop-color="#9CAF88" stop-opacity="0.48"/>
+      <stop offset="0.8" stop-color="#9CAF88" stop-opacity="0.48"/>
+      <stop offset="1" stop-color="#9CAF88" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="divider-sprout-glow" cx="50%" cy="50%" r="50%">
+      <stop stop-color="#E6CF7A" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#E6CF7A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="500" cy="70" rx="110" ry="68" fill="url(#divider-sprout-glow)"/>
+  <path d="M42 105C244 93 374 106 444 105M556 105C640 100 768 93 958 104" fill="none" stroke="url(#divider-sprout-line-fade)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M500 111C500 83 499 60 499 39" fill="none" stroke="#627A57" stroke-width="5" stroke-linecap="round"/>
+  <path d="M499 62C468 61 447 46 441 21C469 17 494 32 499 62Z" fill="#9CAF88" opacity="0.88"/>
+  <path d="M501 79C534 77 555 61 561 35C531 32 505 48 501 79Z" fill="#B8CF9B" opacity="0.9"/>
+  <path d="M471 111C481 101 518 100 530 111" fill="none" stroke="#A98569" stroke-width="4" stroke-linecap="round" opacity="0.52"/>
+  <g fill="#C98267" opacity="0.52">
+    <circle cx="202" cy="100" r="4"/>
+    <circle cx="283" cy="102" r="3"/>
+    <circle cx="357" cy="104" r="4"/>
+    <circle cx="643" cy="102" r="4"/>
+    <circle cx="717" cy="99" r="3"/>
+    <circle cx="798" cy="101" r="4"/>
+  </g>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 420" role="img" aria-labelledby="figure-seed-packet-title figure-seed-packet-description">
+  <title id="figure-seed-packet-title">Seed packet and scattered seeds</title>
+  <desc id="figure-seed-packet-description">A hand-drawn seed packet marked by a simple sprout rests on a soft terracotta shape, with seeds beginning a dotted path outward.</desc>
+  <defs>
+    <radialGradient id="figure-seed-packet-wash" cx="48%" cy="55%" r="60%">
+      <stop stop-color="#C98267" stop-opacity="0.23"/>
+      <stop offset="0.75" stop-color="#E8D8B9" stop-opacity="0.13"/>
+      <stop offset="1" stop-color="#FBF8F0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="figure-seed-packet-paper" x1="0" y1="0" x2="0.8" y2="1">
+      <stop stop-color="#FBF8F0"/>
+      <stop offset="1" stop-color="#E8D8B9"/>
+    </linearGradient>
+  </defs>
+  <path d="M84 74C152 17 273 11 371 52C464 91 505 180 472 270C437 365 327 415 218 397C108 379 34 300 45 210C52 148 52 102 84 74Z" fill="url(#figure-seed-packet-wash)"/>
+  <g transform="rotate(-6 253 205)">
+    <path d="M151 68H350L335 342H166Z" fill="url(#figure-seed-packet-paper)" stroke="#A98569" stroke-width="6" stroke-linejoin="round" opacity="0.94"/>
+    <path d="M153 69L251 131L349 69" fill="#D8A6A6" fill-opacity="0.5" stroke="#A98569" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M184 286C222 268 282 267 320 289" fill="none" stroke="#DDD5C4" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="252" cy="216" r="59" fill="#B8CF9B" opacity="0.26"/>
+    <path d="M252 252V194" fill="none" stroke="#627A57" stroke-width="7" stroke-linecap="round"/>
+    <path d="M251 213C218 211 197 194 193 167C224 166 247 184 251 213Z" fill="#9CAF88"/>
+    <path d="M253 225C286 221 307 202 310 175C279 176 256 195 253 225Z" fill="#B8CF9B"/>
+    <g fill="#6A6253" opacity="0.54">
+      <circle cx="216" cy="309" r="3"/>
+      <circle cx="235" cy="307" r="3"/>
+      <circle cx="254" cy="306" r="3"/>
+      <circle cx="273" cy="307" r="3"/>
+      <circle cx="292" cy="309" r="3"/>
+    </g>
+  </g>
+  <g fill="#A98569" opacity="0.72">
+    <ellipse cx="380" cy="316" rx="10" ry="6" transform="rotate(28 380 316)"/>
+    <ellipse cx="414" cy="294" rx="9" ry="6" transform="rotate(-19 414 294)"/>
+    <ellipse cx="432" cy="331" rx="10" ry="6" transform="rotate(12 432 331)"/>
+    <ellipse cx="390" cy="356" rx="9" ry="6" transform="rotate(-31 390 356)"/>
+  </g>
+  <path d="M351 290C376 277 399 271 427 270" fill="none" stroke="#C98267" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 12" opacity="0.48"/>
+</svg>

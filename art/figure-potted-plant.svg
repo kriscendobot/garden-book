@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 450" role="img" aria-labelledby="figure-potted-plant-title figure-potted-plant-description">
+  <title id="figure-potted-plant-title">A many-leaved potted plant</title>
+  <desc id="figure-potted-plant-description">A simple terracotta pot holds a balanced cluster of sage and fresh-green leaves, softened by a lavender paper wash.</desc>
+  <defs>
+    <radialGradient id="figure-potted-plant-wash" cx="52%" cy="50%" r="60%">
+      <stop stop-color="#B9ACCC" stop-opacity="0.2"/>
+      <stop offset="0.76" stop-color="#E8D8B9" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#FBF8F0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="figure-potted-plant-pot" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#D99A7E"/>
+      <stop offset="1" stop-color="#C98267"/>
+    </linearGradient>
+  </defs>
+  <path d="M83 87C138 27 252 11 346 48C436 84 477 172 450 262C422 356 329 421 227 419C121 417 42 344 42 247C42 177 45 129 83 87Z" fill="url(#figure-potted-plant-wash)"/>
+  <g fill="none" stroke="#627A57" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M251 294V84" stroke-width="7"/>
+    <path d="M249 234C215 214 193 184 184 146" stroke-width="5"/>
+    <path d="M252 204C288 187 312 160 326 126" stroke-width="5"/>
+    <path d="M250 166C222 151 204 128 198 99" stroke-width="5"/>
+    <path d="M252 259C287 249 315 227 334 196" stroke-width="5"/>
+  </g>
+  <g opacity="0.92">
+    <path d="M184 146C139 139 112 107 117 68C161 70 190 102 184 146Z" fill="#9CAF88"/>
+    <path d="M326 126C369 114 399 83 405 45C361 48 329 80 326 126Z" fill="#B8CF9B"/>
+    <path d="M198 99C163 89 142 63 145 31C180 33 202 59 198 99Z" fill="#B8CF9B"/>
+    <path d="M334 196C378 188 411 159 421 121C377 120 341 149 334 196Z" fill="#9CAF88"/>
+    <path d="M249 234C207 230 176 206 166 171C207 170 240 194 249 234Z" fill="#B8CF9B"/>
+    <path d="M251 132C285 120 307 95 312 64C278 68 254 93 251 132Z" fill="#9CAF88"/>
+  </g>
+  <path d="M157 280C196 268 306 268 345 280L320 384C283 397 221 397 183 384Z" fill="url(#figure-potted-plant-pot)" opacity="0.92"/>
+  <path d="M150 277C193 264 309 264 352 277L344 309C301 320 202 320 158 309Z" fill="#C98267" stroke="#A98569" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M184 384C225 396 279 397 320 384" fill="none" stroke="#A98569" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M92 405C185 384 324 386 409 408" fill="none" stroke="#DDD5C4" stroke-width="4" stroke-linecap="round" opacity="0.72"/>
+  <g fill="#E6CF7A" opacity="0.68">
+    <circle cx="97" cy="153" r="4"/>
+    <circle cx="424" cy="249" r="4"/>
+    <circle cx="385" cy="79" r="3"/>
+  </g>
+</svg>

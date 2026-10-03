@@ -34,13 +34,12 @@ role/skill links to the in-book chapter 5/6 entries, and sends other repo
 paths to `main2` on GitHub (`kriscendobot/garden`, where the roles/skills
 this book documents actually live).
 
-Edition 2026-10-03, redesigned (design pass, job `book-design-pass`: Tufte-style
-text column with a margin for chapter provenance, catalog source citations,
-and each chapter's contents; the chapters grouped into five parts marked by
-line-drawn growth stages; serif/sans system font stacks and an earth-and-leaf
-palette with a matching dark scheme; words unchanged from the copy-edited
-edition):
-https://h3ioeqplnvm5cbrxgifjjliisdzanhokdinysv3wuae2ia2xzopq.ocap.site/
+Edition 2026-10-03, redesigned and retitled *Better Code and Gardens* (design
+pass, job `book-design-pass`: Tufte-style text column with a margin for chapter
+provenance, catalog source citations, and each chapter's contents; the chapters
+grouped into five parts marked by line-drawn growth stages; serif/sans system
+font stacks and an earth-and-leaf palette with a matching dark scheme):
+https://5f7jjhj4sbxaxdbej5t7oxgarnzhmb7wq45ds3nxqnq4wtthotsq.ocap.site/
 
 Prior editions:
 

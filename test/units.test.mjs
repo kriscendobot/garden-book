@@ -25,6 +25,7 @@ test("splitFrontmatter parses, passes through, and rejects unterminated", () => 
     splitFrontmatter("---\nauthor: a: b\nnot a pair\n---\nbody"),
     [{ author: "a: b" }, "body"],
   );
+  assert.deepEqual(splitFrontmatter("---\n---\nbody"), [{}, "body"]);
   assert.throws(
     () => splitFrontmatter("---\nauthor: a\n"),
     /Unterminated chapter frontmatter/,

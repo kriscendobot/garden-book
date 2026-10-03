@@ -111,7 +111,7 @@ export const splitFrontmatter = (text) => {
   if (!text.startsWith("---\n")) {
     return [metadata, text];
   }
-  const end = text.indexOf("\n---\n", 4);
+  const end = text.indexOf("\n---\n", 3);
   if (end < 0) {
     throw new SyntaxError("Unterminated chapter frontmatter");
   }

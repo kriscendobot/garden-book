@@ -40,6 +40,14 @@ export const publishBook = async ({
   peer,
   powersName = "garden-book-inert",
 }) => {
+  // powers becomes every visitor's bootstrap, so it must stay inert rather
+  // than the guest's real sites capability, which writeText would clobber
+  // (skills/minion-town-clip-publishing on kriscendobot/garden).
+  if (powersName === "sites") {
+    throw new RangeError(
+      'Refusing to overwrite the "sites" capability with inert powers',
+    );
+  }
   await peer.call("initialize", {
     protocolVersion: "2025-03-26",
     capabilities: {},

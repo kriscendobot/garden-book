@@ -88,6 +88,25 @@ test("assembleBook uses tree capabilities and writes the complete clip", async (
   assert.equal(output["styles.css"], "body { color: green; }\n");
 });
 
+test("publishBook refuses to clobber the sites capability", async () => {
+  const peer = {
+    async call() {
+      assert.fail("publishBook must not reach the bridge");
+    },
+    notify() {
+      assert.fail("publishBook must not reach the bridge");
+    },
+  };
+  await assert.rejects(
+    publishBook({
+      outputTree: makeReadableTree({}),
+      peer,
+      powersName: "sites",
+    }),
+    /Refusing to overwrite the "sites" capability/,
+  );
+});
+
 test("publishBook sends inert powers and UTF-8 clip content", async () => {
   assert.equal(
     encodeBase64(

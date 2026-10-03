@@ -13,6 +13,12 @@ def recv(i):
 send({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"garden-book","version":"1"}}})
 recv(1)
 send({"jsonrpc":"2.0","method":"notifications/initialized"})
-send({"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"publish","arguments":{"powers":"sites","content":content}}})
-print(json.dumps(recv(2))[:2000])
+# `powers` becomes the public CapTP bootstrap every visitor receives, so a
+# static book must not pass "sites" or "@agent". Publish an inert, empty text
+# value instead (skills/minion-town-clip-publishing on kriscendobot/garden).
+INERT = os.environ.get("GARDEN_BOOK_POWERS", "garden-book-inert")
+send({"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"writeText","arguments":{"name":INERT,"text":""}}})
+recv(2)
+send({"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"publish","arguments":{"powers":INERT,"content":content}}})
+print(json.dumps(recv(3))[:2000])
 proc.stdin.close(); proc.terminate()

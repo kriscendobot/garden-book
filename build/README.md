@@ -18,22 +18,39 @@ the live source.
     source <garden-checkout>/scripts/jobs/minion-mcp-lib.sh; minion_mcp_prepare
     python3 publish.py "$(minion_mcp_env_json)"   # run from this dir; prints the clip URL
 
+Design hooks in `build.py`: `PARTS` maps chapter numbers to the book's five
+parts (update it when chapters are added or renumbered; a chapter outside
+every part is listed after them); `GLYPHS` holds each part's inline SVG
+growth stage (presentation attributes only, since the CSP forbids inline
+style). Margin notes are `.marginnote` elements: chapter provenance, each
+catalog entry's `Source:` line (hoisted beside its heading and linked to
+`main2`), and the chapter's own `Contents` list. `publish.py` publishes with
+an inert empty-text pet name as `powers`, never `sites`, because `powers`
+becomes every visitor's bootstrap.
+
 `build.py` reads `intro.html` (the title page; update its edition note) from
 its own directory. It prefixes heading ids per chapter, rewrites relative
 role/skill links to the in-book chapter 5/6 entries, and sends other repo
 paths to `main2` on GitHub (`kriscendobot/garden`, where the roles/skills
 this book documents actually live).
 
-Edition 2026-10-03 (copy-edit pass, job `book-copyedit`: terminology normalized
-across chapters, tense/voice/audience made consistent, cross-references added
-between chapters including into chapters 9 and 10, repeated explanations
-collapsed to one home, house style applied; chapters 8-10 gained Contents
-lists and chapters 9-10 numbered sections; published from PR branch
-`book-copyedit` ahead of merge, as the job requested):
-https://7uzjtuxvwf7m6dcqjhrvdxuv7wr43245b5pgypkvrtqqudpoepsa.ocap.site/
+Edition 2026-10-03, redesigned (design pass, job `book-design-pass`: Tufte-style
+text column with a margin for chapter provenance, catalog source citations,
+and each chapter's contents; the chapters grouped into five parts marked by
+line-drawn growth stages; serif/sans system font stacks and an earth-and-leaf
+palette with a matching dark scheme; words unchanged from the copy-edited
+edition):
+https://h3ioeqplnvm5cbrxgifjjliisdzanhokdinysv3wuae2ia2xzopq.ocap.site/
 
 Prior editions:
 
+- 2026-10-03 (copy-edit pass, job `book-copyedit`: terminology normalized
+  across chapters, tense/voice/audience made consistent, cross-references added
+  between chapters including into chapters 9 and 10, repeated explanations
+  collapsed to one home, house style applied; chapters 8-10 gained Contents
+  lists and chapters 9-10 numbered sections; published from PR branch
+  `book-copyedit` ahead of merge, as the job requested):
+  https://7uzjtuxvwf7m6dcqjhrvdxuv7wr43245b5pgypkvrtqqudpoepsa.ocap.site/
 - 2026-10-01 (migrated into `kriscendobot/garden-book`; content unchanged from
   the prior journal-sourced edition):
   https://dajt26qwtcxayo7bbm5sfokdhosqznrmwm7uahtuyxofbggo5nza.ocap.site/
@@ -41,8 +58,8 @@ Prior editions:
 Assembled from `journal/projects/garden-book/` before this repo existed:
 
 - 2026-09-30 (revised: title *The Garden That Tends Code*; chapters 9 and 10
-  added; the title is set in `intro.html` and in `build.py`'s `<title>` and
-  nav — update all of those together if the title changes again):
+  added; the title is set in `intro.html` and in `build.py`'s `TITLE`
+  — update both together if the title changes again):
   https://dajt26qwtcxayo7bbm5sfokdhosqznrmwm7uahtuyxofbggo5nza.ocap.site/
 - 2026-09-30 (first edition, 8 chapters):
   https://qxx6onyv2lkrchlytrmh2dos4xndfz5erojrkwfplor65h2ipgrq.ocap.site/

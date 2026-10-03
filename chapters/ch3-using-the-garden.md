@@ -14,6 +14,13 @@ happen. It is grounded in the liaison's operating brief,
 table in [`README.md`][readme] § Key vocabulary. Where this chapter and those
 files disagree, the files win.
 
+The chapter is written as a how-to for someone at the liaison's terminal, so
+where it speaks of approvals, the inbox, or the ferry, "you" means the
+**maintainer** of the instance at hand: the person whose inbox the workers
+write to and whose approval gates merges. On an instance you stand up
+yourself (chapter 4), that is you. On an instance someone else maintains,
+read those passages as a description of the maintainer's part.
+
 The vocabulary is optional. Plain language always works: "rebase #96 and get
 it green again" is understood. The verbs exist because they are precise,
 because deterministic watchers also recognize some of them in PR comments,

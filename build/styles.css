@@ -1,49 +1,226 @@
-:root{--fg:#1d2021;--muted:#5b6166;--bg:#fbfaf6;--panel:#f1efe7;--rule:#dcd8cc;--accent:#2f6b3a;--code:#efece2;--side:17rem}
-@media (prefers-color-scheme:dark){:root{--fg:#e4e2da;--muted:#a3a79f;--bg:#181a17;--panel:#20231f;--rule:#363a33;--accent:#8cc98f;--code:#262a24}}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:1rem}
-body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.62 Charter,"Bitstream Charter","Iowan Old Style",Georgia,serif}
-a{color:var(--accent)}
-a:hover{text-decoration-thickness:2px}
-.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--side);overflow-y:auto;padding:1.4rem 1rem 2rem;background:var(--panel);border-right:1px solid var(--rule);font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
-.sidebar .nav-title{font-weight:700;font-size:1.05rem;margin:0 0 .8rem}
-.sidebar .nav-title a{color:var(--fg);text-decoration:none}
-.sidebar ol{list-style:none;margin:0;padding:0}
-.sidebar li{margin:.1rem 0}
-.sidebar li a{display:block;padding:.35rem .5rem;border-radius:4px;color:var(--fg);text-decoration:none}
-.sidebar li a:hover{background:var(--rule)}
-main{margin-left:var(--side);padding:2rem 3rem 4rem;max-width:calc(var(--side) + 50rem)}
-main>*{max-width:46rem}
-.titlepage{padding:3rem 0 2rem;border-bottom:1px solid var(--rule);margin-bottom:2rem}
-.kicker{font:600 13px/1 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.titlepage h1{font-size:3.2rem;line-height:1.05;margin:.3rem 0 .4rem}
-.subtitle{font-size:1.3rem;color:var(--muted);margin-top:0;font-style:italic}
-.edition{background:var(--panel);border-left:4px solid var(--accent);padding:.6rem 1rem;margin:1.5rem 0;font-size:.95rem}
-.note,.provenance{color:var(--muted);font-size:.9rem}
-.provenance{font-style:italic;margin-top:-.4rem}
-.contents ol.toc{padding-left:1.2rem}
-.contents ol.toc>li{margin:.5rem 0;font-weight:600}
-.contents ol.toc ol{font-weight:400;font-size:.93rem;columns:2;column-gap:2rem;padding-left:1rem;margin:.2rem 0 .8rem}
-.chapter{border-top:3px double var(--rule);margin-top:3.5rem;padding-top:1rem}
-h2{font-size:2.1rem;line-height:1.15;margin:1.5rem 0 .6rem}
-h3{font-size:1.45rem;margin:2.2rem 0 .5rem;border-bottom:1px solid var(--rule);padding-bottom:.2rem}
-h4{font-size:1.15rem;margin:1.8rem 0 .4rem}
-h5,h6{font-size:1rem;margin:1.4rem 0 .3rem}
-code{font:.86em/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;background:var(--code);padding:.08em .3em;border-radius:3px;overflow-wrap:anywhere}
-pre{background:var(--code);padding:.8rem 1rem;border-radius:5px;overflow-x:auto;max-width:100%}
-pre code{background:none;padding:0;overflow-wrap:normal}
-blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--rule);color:var(--muted)}
-table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;font-size:.9rem;margin:1rem 0;line-height:1.45}
-th,td{border:1px solid var(--rule);padding:.4rem .6rem;vertical-align:top;text-align:left}
-th{background:var(--panel)}
-.chapter main>*,.chapter table{max-width:none}
-.back{font:13px system-ui,sans-serif;margin-top:2rem}
-footer{border-top:1px solid var(--rule);margin-top:4rem;color:var(--muted);font-size:.85rem}
-@media (max-width:900px){
- .sidebar{position:static;width:auto;border-right:0;border-bottom:1px solid var(--rule)}
- .sidebar ol{display:flex;flex-wrap:wrap;gap:.2rem}
- main{margin-left:0;padding:1rem 1.2rem 3rem}
- .contents ol.toc ol{columns:1}
- .titlepage h1{font-size:2.4rem}
+/* The Garden That Tends Code: book stylesheet.
+   Two references, one discipline. From Tufte: a measured text column with a
+   margin for sidenotes, a serif for reading, hairline rules, and color only
+   where it carries meaning. From the gardening book: paper, soil, and leaf
+   rather than screen blue, and five line-drawn growth stages marking the
+   book's five parts. Every value below is a token so the dark scheme is a
+   palette swap, not a second design. No external resources: the clip CSP is
+   style-src 'self'. */
+
+:root{
+  /* Paper and ink. */
+  --paper:#fbf8f0;      /* unbleached paper */
+  --ink:#2a2823;        /* warm near-black: body text */
+  --soil:#6a6253;       /* muted: notes, captions, chrome (5.6:1 on paper) */
+  --rule:#ddd5c4;       /* hairlines */
+  --bed:#f3eee2;        /* sidebar and code wells: one step darker than paper */
+  /* Two growing colors, used sparingly. */
+  --leaf:#3b6a34;       /* links and the part glyphs (6.0:1 on paper) */
+  --leaf-faint:#3b6a3447;
+  --clay:#9a4f2c;       /* section numbers: the one warm accent (5.7:1) */
+  --code-ink:#4e4233;   /* code reads as code by face, not by a box */
+
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua","TeX Gyre Pagella",P052,"URW Palladio L","Noto Serif",Georgia,serif;
+  --sans:"Gill Sans","Gill Sans MT",Seravek,Candara,"Noto Sans","Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;
+
+  --side:15rem;         /* sidebar */
+  --text:36rem;         /* reading measure, about 65 characters */
+  --gutter:2.5rem;
+  --margin:14rem;       /* sidenote column */
+  --wide:calc(var(--text) + var(--gutter) + var(--margin));
+  color-scheme:light dark;
 }
-@media print{.sidebar{display:none}main{margin:0}}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#1a1c18; --ink:#e4dfd1; --soil:#a39c8b; --rule:#3a3d35; --bed:#21241f;
+  --leaf:#9cc38c; --leaf-faint:#9cc38c55; --clay:#d99470; --code-ink:#d8ccb4;
+}}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:1.5rem;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--serif);font-size:1.125rem;line-height:1.6;
+  font-variant-numeric:oldstyle-nums;font-kerning:normal;
+  text-rendering:optimizeLegibility;hanging-punctuation:first}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+
+/* Links: a quiet leaf underline, not a shout. */
+a{color:var(--leaf);text-decoration:underline;text-decoration-color:var(--leaf-faint);
+  text-decoration-thickness:1px;text-underline-offset:.18em}
+a:hover{text-decoration-color:currentColor}
+a:focus-visible{outline:2px solid var(--leaf);outline-offset:2px;border-radius:2px}
+
+/* ---- Sidebar: the book's contents, always at hand ---------------------- */
+.sidebar{position:fixed;inset:0 auto 0 0;width:var(--side);overflow-y:auto;
+  padding:2.2rem 1.4rem 2rem 1.6rem;background:var(--bed);
+  border-right:1px solid var(--rule);font:.86rem/1.35 var(--sans)}
+.sidebar p{margin:0}
+.nav-title{font:italic 1.08rem/1.25 var(--serif);margin-bottom:1.6rem!important}
+.nav-title a{color:var(--ink);text-decoration:none}
+.nav-jump{display:none}
+.nav-part{display:flex;align-items:flex-end;gap:.45rem;margin:1.3rem 0 .35rem!important;
+  color:var(--soil);font-size:.72rem;letter-spacing:.11em;text-transform:uppercase}
+.nav-part .glyph{width:1.35rem;height:1.35rem;color:var(--leaf);flex:none}
+.sidebar ol{list-style:none;margin:0;padding:0}
+.sidebar li a{display:flex;gap:.55rem;padding:.28rem 0;color:var(--ink);text-decoration:none}
+.sidebar li a:hover .ct{text-decoration:underline;text-decoration-color:var(--leaf-faint)}
+.cn{flex:none;width:1.35rem;text-align:right;color:var(--soil);font-variant-numeric:lining-nums tabular-nums}
+
+/* ---- The page: a text column with a margin to its right ----------------- */
+main{margin-left:var(--side);padding:0 3rem 6rem 3.5rem}
+main>header,main>section,main>footer{max-width:var(--text)}
+p{margin:0 0 1rem}
+ul,ol{padding-left:1.4rem}
+li{margin:.25rem 0}
+li>p{margin:.25rem 0}
+strong{font-weight:600}
+
+/* Title page. */
+.titlepage{padding:5.5rem 0 2.5rem}
+.kicker{font:.74rem/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--soil);margin-bottom:1.4rem}
+.titlepage h1{font-weight:400;font-size:3.4rem;line-height:1.04;letter-spacing:-.01em;margin:0 0 .9rem}
+.subtitle{font-style:italic;font-size:1.32rem;line-height:1.4;color:var(--soil);margin-bottom:2.8rem}
+ul.parts{list-style:none;padding:0}
+ul.parts li{margin:.55rem 0}
+
+/* The frieze: the book's five parts as a row of growth stages. */
+ol.frieze{list-style:none;padding:0;margin:0 0 3rem;display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));gap:.4rem;width:var(--wide);max-width:100%}
+ol.frieze li{margin:0}
+ol.frieze a{display:flex;flex-direction:column;align-items:center;text-align:center;
+  text-decoration:none;color:var(--ink);padding:.3rem 0}
+ol.frieze .big{width:4.2rem;height:4.2rem;color:var(--leaf);margin-bottom:.35rem}
+ol.frieze .pn{font:.72rem/1 var(--sans);letter-spacing:.12em;color:var(--soil)}
+ol.frieze .pt{font-size:1.08rem;line-height:1.3;margin:.2rem 0 .1rem}
+ol.frieze .pc{font:.74rem/1.2 var(--sans);color:var(--soil)}
+ol.frieze a:hover .pt{text-decoration:underline;text-decoration-color:var(--leaf-faint)}
+
+/* Contents. */
+.contents{padding-top:2rem}
+.contents>h2{font:.78rem/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--soil);margin:0 0 1.6rem}
+ol.toc,ol.toc ol{list-style:none;padding:0;margin:0}
+.toc-part{margin:0 0 2.2rem}
+.toc-part-head{display:grid;grid-template-columns:2rem auto;column-gap:.7rem;align-items:end;margin:0 0 .8rem}
+.toc-part-head .glyph{grid-row:span 2;width:2rem;height:2rem;color:var(--leaf)}
+.toc-part-head .pt{font:.8rem/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.toc-part-head .pd{grid-column:2;font-style:italic;font-size:.95rem;color:var(--soil);line-height:1.35}
+.toc-part>ol>li{margin:0 0 1rem}
+.toc-part>ol>li>a{display:flex;gap:.7rem;font-size:1.12rem;color:var(--ink);text-decoration:none}
+.toc-part>ol>li>a:hover .ct{text-decoration:underline;text-decoration-color:var(--leaf-faint)}
+.toc-part>ol>li>a .cn{width:2rem;font-size:1.12rem}
+.toc-part>ol>li>ol{margin:.2rem 0 0 2.7rem;font-size:.9rem;line-height:1.4;columns:2;column-gap:1.8rem}
+.toc-part>ol>li>ol li{margin:.12rem 0;break-inside:avoid}
+.toc-part>ol>li>ol a{color:var(--ink);text-decoration:none}
+.toc-part>ol>li>ol a:hover{color:var(--leaf)}
+.sn{color:var(--soil);font-variant-numeric:lining-nums tabular-nums;font-size:.9em}
+
+/* ---- Chapters ----------------------------------------------------------- */
+.chapter{padding-top:6rem}
+.partmark{display:flex;align-items:flex-end;gap:.55rem;margin:0 0 1.6rem;
+  font:.72rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--soil)}
+.partmark .glyph{width:2.4rem;height:2.4rem;color:var(--leaf)}
+.chapter h2{font-weight:400;font-size:2.35rem;line-height:1.12;letter-spacing:-.005em;margin:0 0 2rem}
+.chapnum{display:block;font:.78rem/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--clay);margin-bottom:.7rem}
+h3,h4,h5,h6{font-family:var(--sans);font-weight:600;color:var(--ink);line-height:1.25}
+h3{font-size:1.32rem;margin:3.2rem 0 1rem}
+h4{font-size:1.06rem;margin:2.4rem 0 .6rem}
+h5,h6{font-size:.95rem;margin:1.8rem 0 .4rem}
+h4 code,h3 code{font-size:.92em;color:inherit}
+.secnum{color:var(--clay);font-weight:400;font-variant-numeric:lining-nums tabular-nums;margin-right:.35em}
+p.runin>strong:first-child{font:600 .74em/1 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--clay);margin-right:.3em}
+/* Catalog entries (chapters 5 and 6) read like a plant directory: each entry
+   opens under a hairline, its source file cited in the margin. */
+li>p.runin>strong:first-child{font:inherit;font-weight:600;letter-spacing:0;text-transform:none;color:inherit;margin:0}
+.part-leaves h4{border-top:1px solid var(--rule);padding-top:1.5rem;margin-top:2.8rem}
+
+blockquote{margin:1.4rem 0 1.4rem 1.6rem;padding:0;font-style:italic}
+blockquote strong{font-style:normal}
+blockquote code{font-style:normal}
+
+code{font-family:var(--mono);font-size:.82em;color:var(--code-ink);overflow-wrap:anywhere}
+pre{background:var(--bed);border-left:2px solid var(--rule);padding:.8rem 1rem;margin:1.2rem 0;
+  overflow-x:auto;line-height:1.45;font-size:1rem}
+pre code{overflow-wrap:normal;font-size:.78em}
+
+/* Tables: rules only where the eye needs a boundary (booktabs, not a grid). */
+table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%;margin:1.6rem 0;
+  font-size:.86rem;line-height:1.42;font-variant-numeric:lining-nums tabular-nums;
+  border-top:1px solid var(--soil);border-bottom:1px solid var(--soil)}
+th,td{padding:.45rem .9rem .45rem 0;vertical-align:top;text-align:left}
+th{font:600 .74rem/1.3 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--soil);
+  border-bottom:1px solid var(--rule);padding-top:.6rem}
+tbody tr+tr td{border-top:1px solid var(--rule)}
+td code{font-size:.88em}
+
+hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
+.back{font:.78rem/1 var(--sans);letter-spacing:.06em;margin:3rem 0 0}
+.back a{color:var(--soil);text-decoration:none}
+.back a:hover{color:var(--leaf)}
+footer{margin-top:6rem;padding-top:1rem;border-top:1px solid var(--rule);font:.8rem/1.5 var(--sans);color:var(--soil)}
+
+/* ---- Margin notes ------------------------------------------------------- */
+/* Narrow layouts: inline, set small and quiet beneath what they annotate. */
+.marginnote{display:block;font:.8rem/1.45 var(--sans);color:var(--soil);margin:.2rem 0 1.2rem;
+  padding-left:.8rem;border-left:1px solid var(--rule)}
+.marginnote p{margin:0 0 .5rem}
+.marginnote code{font-size:.9em;color:inherit}
+.marginnote a{color:var(--leaf)}
+.marginnote.edition strong{color:var(--ink)}
+.chapter-contents .mn-head{font:.7rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--soil);margin:0 0 .5rem}
+.chapter-contents ul{list-style:none;padding:0;margin:0}
+.chapter-contents ul ul{padding-left:.8rem}
+.chapter-contents li{margin:.15rem 0}
+.chapter-contents a{color:var(--ink);text-decoration:none}
+.chapter-contents a:hover{color:var(--leaf)}
+.marginnote.source{border-left:0;padding:0;margin-top:-.4rem}
+
+/* Wide layouts: the margin column opens and notes float into it, beside the
+   text they annotate; wide tables may use the margin too. */
+@media (min-width:76em){
+  .marginnote{float:right;clear:right;width:var(--margin);border-left:0;padding:0;
+    margin:.3rem calc(-1 * (var(--margin) + var(--gutter))) 1.2rem 0}
+  .marginnote.source{margin-top:-2.1rem}
+  .chapter table{width:max-content;max-width:var(--wide);clear:right}
+  .chapter pre{max-width:var(--wide)}
+}
+
+/* Medium: the sidebar narrows. */
+@media (max-width:68em){:root{--side:12.5rem} main{padding:0 2rem 5rem 2.5rem}}
+
+/* Phones and narrow windows: the sidebar becomes a slim bar that keeps the
+   title and a way back to the contents in reach; the contents list itself
+   is the one after the title page. */
+@media (max-width:52em){
+  html{scroll-padding-top:3.4rem}
+  body{font-size:1.06rem;line-height:1.55}
+  .sidebar{position:sticky;inset:0 auto auto auto;z-index:2;width:auto;display:flex;align-items:center;
+    justify-content:space-between;gap:1rem;height:2.8rem;padding:0 1.1rem;overflow:hidden;
+    border-right:0;border-bottom:1px solid var(--rule);background:var(--bed)}
+  .sidebar .nav-part,.sidebar ol{display:none}
+  .nav-title{margin:0!important;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nav-jump{display:block;font:.72rem/1 var(--sans);letter-spacing:.12em;text-transform:uppercase}
+  .nav-jump a{text-decoration:none}
+  main{margin-left:0;padding:0 1.15rem 4rem}
+  .titlepage{padding-top:2.6rem}
+  .titlepage h1{font-size:2.4rem}
+  .subtitle{font-size:1.15rem;margin-bottom:2rem}
+  ol.frieze{gap:0}
+  ol.frieze .big{width:2.9rem;height:2.9rem}
+  ol.frieze .pt{font-size:.86rem}
+  ol.frieze .pc{display:none}
+  .toc-part>ol>li>ol{columns:1;margin-left:2.7rem}
+  .chapter{padding-top:4rem}
+  .chapter h2{font-size:1.85rem}
+  h3{font-size:1.18rem;margin-top:2.4rem}
+  blockquote{margin-left:1rem}
+  pre{margin-left:-1.15rem;margin-right:-1.15rem;border-left:0}
+}
+
+@media print{
+  .sidebar,.back{display:none}
+  main{margin:0;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  .chapter{break-before:page;padding-top:0}
+  a{color:inherit;text-decoration:none}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

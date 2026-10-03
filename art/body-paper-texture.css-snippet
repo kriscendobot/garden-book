@@ -1,0 +1,27 @@
+/* Subtle body texture for the book's existing #FBF8F0 paper. The layers are
+   deliberately broad and translucent, so the result reads as paper and garden
+   light rather than a repeated decorative tile. */
+.garden-paper-texture {
+  background-color: #FBF8F0;
+  background-image:
+    radial-gradient(ellipse at 8% 18%, #9CAF8814 0 1.3rem, transparent 7.5rem),
+    radial-gradient(ellipse at 92% 32%, #D8A6A612 0 1rem, transparent 8rem),
+    radial-gradient(ellipse at 28% 92%, #E6CF7A12 0 1.5rem, transparent 9rem),
+    radial-gradient(ellipse at 72% 76%, #C982670D 0 1.25rem, transparent 8.5rem),
+    repeating-linear-gradient(8deg, transparent 0 18px, #A9856908 19px, transparent 20px 38px);
+  background-size: 31rem 29rem, 37rem 33rem, 41rem 35rem, 43rem 39rem, 100% 100%;
+  background-position: 0 0, 11rem 7rem, 4rem 15rem, 17rem 20rem, 0 0;
+}
+
+/* Optional dark-scheme companion for the existing book palette. */
+@media (prefers-color-scheme: dark) {
+  .garden-paper-texture {
+    background-color: #1A1C18;
+    background-image:
+      radial-gradient(ellipse at 8% 18%, #9CC38C12 0 1.3rem, transparent 7.5rem),
+      radial-gradient(ellipse at 92% 32%, #B9ACCC0E 0 1rem, transparent 8rem),
+      radial-gradient(ellipse at 28% 92%, #E6CF7A0C 0 1.5rem, transparent 9rem),
+      radial-gradient(ellipse at 72% 76%, #D994700C 0 1.25rem, transparent 8.5rem),
+      repeating-linear-gradient(8deg, transparent 0 18px, #E8D8B906 19px, transparent 20px 38px);
+  }
+}

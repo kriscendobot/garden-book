@@ -1,24 +1,14 @@
 // prefer-endo-primitives-exempt: garden-book is a standalone package with no
-// @endo/* dependency; TextEncoder is the web standard, and encodeBase64 is a
-// small hand-rolled encoder kept to avoid adding @endo/base64 for two files.
+// @endo/* dependency; TextEncoder and btoa are web standards, keeping this
+// module free of Node built-ins such as Buffer.
 import { readText } from "./tree-io.mjs";
 
-const BASE64_ALPHABET =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
 export const encodeBase64 = (bytes) => {
-  let encoded = "";
-  for (let index = 0; index < bytes.length; index += 3) {
-    const first = bytes[index];
-    const second = bytes[index + 1];
-    const third = bytes[index + 2];
-    const value = (first << 16) | ((second || 0) << 8) | (third || 0);
-    encoded += BASE64_ALPHABET[(value >> 18) & 63];
-    encoded += BASE64_ALPHABET[(value >> 12) & 63];
-    encoded += second === undefined ? "=" : BASE64_ALPHABET[(value >> 6) & 63];
-    encoded += third === undefined ? "=" : BASE64_ALPHABET[value & 63];
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
   }
-  return encoded;
+  return btoa(binary);
 };
 
 export const makePublishContent = async (builtTree) => {

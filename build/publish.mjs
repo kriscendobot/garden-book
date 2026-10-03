@@ -15,9 +15,18 @@ if (!environmentArgument || extras.length > 0) {
   );
   process.exitCode = 2;
 } else {
+  let bridgeOverrides;
+  try {
+    bridgeOverrides = JSON.parse(environmentArgument);
+  } catch (error) {
+    throw new SyntaxError(
+      `Invalid <bridge-environment-json> argument: ${error.message}`,
+      { cause: error },
+    );
+  }
   const bridgeEnvironment = {
     ...process.env,
-    ...JSON.parse(environmentArgument),
+    ...bridgeOverrides,
   };
   const gardenRoot = process.env.GARDEN_ROOT || homedir();
   const peer = startJsonRpcPeer({

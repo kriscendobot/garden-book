@@ -13,23 +13,31 @@ assembled directly from `journal/projects/garden-book/` before this repo
 existed; that history is preserved in the garden journal but is no longer
 the live source.
 
-    python3 -m venv venv && ./venv/bin/pip install markdown-it-py mdit-py-plugins
-    ./venv/bin/python build.py ../chapters out && cp styles.css out/
+    npm ci
+    node build/build.mjs chapters out
     source <garden-checkout>/scripts/jobs/minion-mcp-lib.sh; minion_mcp_prepare
-    python3 publish.py "$(minion_mcp_env_json)"   # run from this dir; prints the clip URL
+    node build/publish.mjs "$(minion_mcp_env_json)" out   # prints the clip URL response
 
-Design hooks in `build.py`: `PARTS` maps chapter numbers to the book's five
+The build command writes both `index.html` and `styles.css`. Its portable core
+works over readable trees with Endo's name-based `list` / `lookup` shape and
+text blobs, plus a small output-tree `writeText` operation. `node-tree.mjs` is
+the only filesystem adapter; rendering, anchor assignment, link resolution,
+and template assembly have no direct filesystem access. A future Endo guest can
+therefore wrap `EndoReadableTree` / `SnapshotTree` capabilities and a writable
+tree behind the same small interface without changing the renderer.
+
+Design hooks in `render-book.mjs`: `PARTS` maps chapter numbers to the book's five
 parts (update it when chapters are added or renumbered; a chapter outside
 every part is listed after them); `GLYPHS` holds each part's inline SVG
 growth stage (presentation attributes only, since the CSP forbids inline
 style). Margin notes are `.marginnote` elements: chapter provenance, each
 catalog entry's `Source:` line (hoisted beside its heading and linked to
-`main2`), and the chapter's own `Contents` list. `publish.py` publishes with
+`main2`), and the chapter's own `Contents` list. `publish.mjs` publishes with
 an inert empty-text pet name as `powers`, never `sites`, because `powers`
 becomes every visitor's bootstrap.
 
-`build.py` reads `intro.html` (the title page; update its edition note) from
-its own directory. It prefixes heading ids per chapter, rewrites relative
+`build.mjs` reads `intro.html` (the title page; update its edition note) from
+the build directory. It prefixes heading ids per chapter, rewrites relative
 role/skill links to the in-book chapter 5/6 entries, and sends other repo
 paths to `main2` on GitHub (`kriscendobot/garden`, where the roles/skills
 this book documents actually live).
@@ -65,7 +73,7 @@ Prior editions:
 Assembled from `journal/projects/garden-book/` before this repo existed:
 
 - 2026-09-30 (revised: title *The Garden That Tends Code*; chapters 9 and 10
-  added; the title is set in `intro.html` and in `build.py`'s `TITLE`
+  added; the title is set in `intro.html` and in `render-book.mjs`'s `TITLE`
   — update both together if the title changes again):
   https://dajt26qwtcxayo7bbm5sfokdhosqznrmwm7uahtuyxofbggo5nza.ocap.site/
 - 2026-09-30 (first edition, 8 chapters):

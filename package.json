@@ -1,0 +1,18 @@
+{
+  "name": "garden-book",
+  "version": "1.0.0",
+  "description": "The source and build tooling for Better Code and Gardens.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build/build.mjs chapters out",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "markdown-it": "^15.0.2",
+    "markdown-it-anchor": "^10.0.0"
+  }
+}

@@ -23,7 +23,7 @@ if (!environmentArgument || extras.length > 0) {
   const peer = startJsonRpcPeer({
     command: "python3",
     arguments: [`${gardenRoot}/scripts/jobs/minion-mcp-bridge.py`],
-    env: bridgeEnvironment,
+    environment: bridgeEnvironment,
   });
   try {
     const outputTree = makeNodeReadableTree(

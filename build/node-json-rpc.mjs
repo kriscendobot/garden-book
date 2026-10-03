@@ -4,10 +4,10 @@ import { createInterface } from "node:readline";
 export const startJsonRpcPeer = ({
   command,
   arguments: commandArguments,
-  env,
+  environment,
 }) => {
   const child = spawn(command, commandArguments, {
-    env,
+    env: environment,
     stdio: ["pipe", "pipe", "inherit"],
   });
   const pending = new Map();
@@ -28,7 +28,12 @@ export const startJsonRpcPeer = ({
       pending.clear();
       return;
     }
-    if (message.id === undefined || !pending.has(message.id)) {
+    if (
+      message === null ||
+      typeof message !== "object" ||
+      message.id === undefined ||
+      !pending.has(message.id)
+    ) {
       return;
     }
     const { resolve, reject } = pending.get(message.id);
@@ -38,6 +43,13 @@ export const startJsonRpcPeer = ({
     } else {
       resolve(message);
     }
+  });
+
+  child.on("error", (error) => {
+    for (const { reject } of pending.values()) {
+      reject(error);
+    }
+    pending.clear();
   });
 
   child.on("exit", (code, signal) => {

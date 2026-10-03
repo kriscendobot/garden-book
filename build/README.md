@@ -41,15 +41,19 @@ role/skill links to the in-book chapter 5/6 entries, and sends other repo
 paths to `main2` on GitHub (`kriscendobot/garden`, where the roles/skills
 this book documents actually live).
 
-Edition 2026-10-03, illustrated (job `book-illustrations-integrate-after-pr4`,
+Edition 2026-10-03, portable JavaScript build (PR #6, published from merged
+`main` with `node build/build.mjs chapters out` and `build/publish.mjs`):
+https://g2d5d5z6x25qmf43fhv5tm4zmv4ozbxgk5gtke3mkrydrojehaea.ocap.site/
+
+Prior editions:
+
+- 2026-10-03, illustrated (job `book-illustrations-integrate-after-pr4`,
 PR #5: the `art/` title garden scene inlined behind the title page, the
 garden-bed figure beside chapter 2, and a faint paper texture behind the
 reading surface; the three dividers and the trellis, seed-packet, and
 potted-plant figures are left unused so they don't compete with the five
 growth-stage glyphs):
 https://xwo4jjai3z3lqwmls3tqlxnn6fqzawktp6lskvmyywdox52c272a.ocap.site/
-
-Prior editions:
 
 - 2026-10-03, redesigned and retitled *Better Code and Gardens* (design
   pass, job `book-design-pass`: Tufte-style text column with a margin for

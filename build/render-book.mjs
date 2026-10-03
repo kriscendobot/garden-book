@@ -218,7 +218,14 @@ export const renderBook = ({ chapterSources, introSource, artwork }) => {
   const skillAnchors = new Map();
   for (const chapter of chapters) {
     for (const line of chapter.body.split("\n")) {
-      const match = /^(#{2,4}) (.*`([a-z0-9-]+)`.*)$/.exec(line);
+      // Only a catalog entry heading names its own role or skill: an optional
+      // section number (or "The"), the backticked name, an optional "role" or
+      // "skill", and an optional parenthetical without further backticked
+      // names, so a heading that merely mentions another entry never claims it.
+      const match =
+        /^(#{2,4}) ((?:[\d.]+ |The )?`([a-z0-9-]+)`(?: role| skill)?(?: \([^`]*\))?)$/.exec(
+          line,
+        );
       if (!match) {
         continue;
       }

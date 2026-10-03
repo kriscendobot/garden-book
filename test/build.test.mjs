@@ -60,6 +60,39 @@ test("renderBook assigns chapter anchors and resolves catalog links", () => {
   assert.doesNotMatch(result.html, /tabindex=/);
 });
 
+test("renderBook keys catalog anchors on each entry's own heading", () => {
+  const result = renderBook({
+    chapterSources: [
+      {
+        fileName: "ch1-introduction.md",
+        text: "# Chapter 1: Introduction\n\n[builder](../../roles/builder/AGENT.md), [foreman](../../roles/foreman/AGENT.md), [conductor](../../roles/conductor/AGENT.md), [panel](../../skills/panel/SKILL.md)\n",
+      },
+      {
+        fileName: "ch5-roles.md",
+        text: "# Chapter 5: Roles\n\n### 5.1 `builder` (built on `foreman`)\n\n#### See also `conductor`\n\n### 5.2 `foreman`\n\n### 5.3 `conductor` (merges)\n",
+      },
+      {
+        fileName: "ch6-skills.md",
+        text: "# Chapter 6: Skills\n\n### `panel`\n",
+      },
+    ],
+    introSource: "{{TITLE_ART}}{{FRIEZE}}{{INCLUDED}}",
+    artwork,
+  });
+
+  assert.equal(result.roleCount, 2);
+  assert.match(result.html, /<a href="#ch5-52-foreman">foreman<\/a>/);
+  assert.match(
+    result.html,
+    /<a href="#ch5-53-conductor-merges">conductor<\/a>/,
+  );
+  assert.match(result.html, /<a href="#ch6-panel">panel<\/a>/);
+  assert.match(
+    result.html,
+    /<a href="https:\/\/github\.com\/kriscendobot\/garden\/blob\/main2\/roles\/builder\/AGENT\.md" rel="noopener">builder<\/a>/,
+  );
+});
+
 test("assembleBook uses tree capabilities and writes the complete clip", async () => {
   const output = {};
   const outputTree = {

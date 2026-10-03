@@ -11,6 +11,7 @@ import {
 } from "../build/node-tree.mjs";
 import {
   chapterKey,
+  githubSlug,
   renderBook,
   makeHrefResolver,
   splitFrontmatter,
@@ -30,6 +31,21 @@ test("splitFrontmatter parses, passes through, and rejects unterminated", () => 
     () => splitFrontmatter("---\nauthor: a\n"),
     /Unterminated chapter frontmatter/,
   );
+});
+
+test("githubSlug lowercases, strips punctuation, and is idempotent", () => {
+  const cases = [
+    ["Hello, World!", "hello-world"],
+    ["  The `gardener` role  ", "the-gardener-role"],
+    ["Ünïcode & snake_case-ok", "ünïcode--snake_case-ok"],
+    ["", ""],
+  ];
+  for (const [input, expected] of cases) {
+    const slug = githubSlug(input);
+    assert.equal(slug, expected);
+    assert.match(slug, /^[\p{L}\p{N}_-]*$/u);
+    assert.equal(githubSlug(slug), slug);
+  }
 });
 
 test("chapterKey orders parts and rejects stray names", () => {

@@ -88,6 +88,22 @@ test("assembleBook uses tree capabilities and writes the complete clip", async (
   assert.equal(output["styles.css"], "body { color: green; }\n");
 });
 
+test("encodeBase64 matches the standard encoding at every padding boundary", () => {
+  assert.equal(encodeBase64(new Uint8Array([])), "");
+  assert.equal(encodeBase64(new Uint8Array([97])), "YQ==");
+  assert.equal(encodeBase64(new Uint8Array([97, 98])), "YWI=");
+  assert.equal(encodeBase64(new Uint8Array([97, 98, 99])), "YWJj");
+  const bytes = Uint8Array.from({ length: 256 }, (_, index) => 255 - index);
+  for (let length = 0; length <= bytes.length; length += 1) {
+    const prefix = bytes.subarray(0, length);
+    assert.equal(
+      encodeBase64(prefix),
+      Buffer.from(prefix).toString("base64"),
+      `length ${length}`,
+    );
+  }
+});
+
 test("publishBook refuses to clobber the sites capability", async () => {
   const peer = {
     async call() {

@@ -18,13 +18,11 @@ the live source.
     source <garden-checkout>/scripts/jobs/minion-mcp-lib.sh; minion_mcp_prepare
     node build/publish.mjs "$(minion_mcp_env_json)" out   # prints the clip URL response
 
-The build command writes both `index.html` and `styles.css`. Its portable core
-works over readable trees with Endo's name-based `list` / `lookup` shape and
-text blobs, plus a small output-tree `writeText` operation. `node-tree.mjs` is
-the only filesystem adapter; rendering, anchor assignment, link resolution,
-and template assembly have no direct filesystem access. A future Endo guest can
-therefore wrap `EndoReadableTree` / `SnapshotTree` capabilities and a writable
-tree behind the same small interface without changing the renderer.
+The build command writes both `index.html` and `styles.css` into the output
+directory (`out/` above). They are build artifacts, not committed: the
+publish step uploads them as the clip, and a rebuild overwrites them.
+`node-tree.mjs` is the only filesystem adapter; the renderer works over
+name-based readable and writable trees.
 
 Design hooks in `render-book.mjs`: `PARTS` maps chapter numbers to the book's five
 parts (update it when chapters are added or renumbered; a chapter outside
@@ -34,7 +32,8 @@ style). Margin notes are `.marginnote` elements: chapter provenance, each
 catalog entry's `Source:` line (hoisted beside its heading and linked to
 `main2`), and the chapter's own `Contents` list. `publish.mjs` publishes with
 an inert empty-text pet name as `powers`, never `sites`, because `powers`
-becomes every visitor's bootstrap.
+becomes every visitor's bootstrap (see `skills/minion-town-clip-publishing`
+on `kriscendobot/garden`); it refuses `GARDEN_BOOK_POWERS=sites`.
 
 `build.mjs` reads `intro.html` (the title page; update its edition note) from
 the build directory. It prefixes heading ids per chapter, rewrites relative

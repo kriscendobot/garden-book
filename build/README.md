@@ -24,12 +24,21 @@ role/skill links to the in-book chapter 5/6 entries, and sends other repo
 paths to `main2` on GitHub (`kriscendobot/garden`, where the roles/skills
 this book documents actually live).
 
-Edition 2026-10-01 (migrated into `kriscendobot/garden-book`; content
-unchanged from the prior journal-sourced edition):
-https://dajt26qwtcxayo7bbm5sfokdhosqznrmwm7uahtuyxofbggo5nza.ocap.site/
+Edition 2026-10-03 (copy-edit pass, job `book-copyedit`: terminology normalized
+across chapters, tense/voice/audience made consistent, cross-references added
+between chapters including into chapters 9 and 10, repeated explanations
+collapsed to one home, house style applied; chapters 8-10 gained Contents
+lists and chapters 9-10 numbered sections; published from PR branch
+`book-copyedit` ahead of merge, as the job requested):
+https://7uzjtuxvwf7m6dcqjhrvdxuv7wr43245b5pgypkvrtqqudpoepsa.ocap.site/
 
-Prior editions (assembled from `journal/projects/garden-book/` before this
-repo existed):
+Prior editions:
+
+- 2026-10-01 (migrated into `kriscendobot/garden-book`; content unchanged from
+  the prior journal-sourced edition):
+  https://dajt26qwtcxayo7bbm5sfokdhosqznrmwm7uahtuyxofbggo5nza.ocap.site/
+
+Assembled from `journal/projects/garden-book/` before this repo existed:
 
 - 2026-09-30 (revised: title *The Garden That Tends Code*; chapters 9 and 10
   added; the title is set in `intro.html` and in `build.py`'s `<title>` and

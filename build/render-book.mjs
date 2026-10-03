@@ -129,9 +129,18 @@ export const chapterKey = (fileName) => {
   if (!match) {
     throw new TypeError(`Invalid chapter file name: ${fileName}`);
   }
-  return [Number(match[1]), Number(match[3] || 1)];
+  // An unsuffixed file is part 1, so an explicit suffix starts at 2: "-part0"
+  // or "-part1" would share the unsuffixed chapter's anchor prefix.
+  const part = Number(match[3] || 1);
+  if (match[3] !== undefined && part < 2) {
+    throw new RangeError(`Chapter part must be at least 2: ${fileName}`);
+  }
+  return [Number(match[1]), part];
 };
 
+// Hand-rolled rather than node:path's posix.normalize because this module is
+// kept free of Node built-ins (they stay confined to the node-*.mjs adapters),
+// and the URL parser's resolution drops a surplus leading "..".
 const normalizePosixPath = (path) => {
   const segments = [];
   for (const segment of path.split("/")) {
@@ -220,10 +229,12 @@ export const renderBook = ({ chapterSources, introSource, artwork }) => {
     for (const line of chapter.body.split("\n")) {
       // Only a catalog entry heading names its own role or skill: an optional
       // section number (or "The"), the backticked name, an optional "role" or
-      // "skill", and an optional parenthetical without further backticked
-      // names, so a heading that merely mentions another entry never claims it.
+      // "skill", and an optional parenthetical. Only the leading name claims an
+      // anchor, so a heading that merely mentions another entry never claims
+      // it, and a parenthetical naming another entry never voids the subject's
+      // own claim.
       const match =
-        /^(#{2,4}) ((?:[\d.]+ |The )?`([a-z0-9-]+)`(?: role| skill)?(?: \([^`]*\))?)$/.exec(
+        /^(#{2,4}) ((?:[\d.]+ |The )?`([a-z0-9-]+)`(?: role| skill)?(?: \(.*\))?)$/.exec(
           line,
         );
       if (!match) {

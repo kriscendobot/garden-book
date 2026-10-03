@@ -38,6 +38,7 @@ test("githubSlug lowercases, strips punctuation, and is idempotent", () => {
     ["Hello, World!", "hello-world"],
     ["  The `gardener` role  ", "the-gardener-role"],
     ["Ünïcode & snake_case-ok", "ünïcode--snake_case-ok"],
+    ["Astral 𝒜 😀 end", "astral-𝒜--end"],
     ["", ""],
   ];
   for (const [input, expected] of cases) {
@@ -52,6 +53,14 @@ test("chapterKey orders parts and rejects stray names", () => {
   assert.deepEqual(chapterKey("ch5-roles.md"), [5, 1]);
   assert.deepEqual(chapterKey("ch6-skills-part2.md"), [6, 2]);
   assert.throws(() => chapterKey("notes.md"), /Invalid chapter file name/);
+  assert.throws(() => chapterKey("ch5-roles-part0.md"), {
+    name: "RangeError",
+    message: /at least 2/,
+  });
+  assert.throws(() => chapterKey("ch5-roles-part1.md"), {
+    name: "RangeError",
+    message: /at least 2/,
+  });
 });
 
 test("makeHrefResolver resolves every link shape", () => {

@@ -80,17 +80,17 @@ test("renderBook keys catalog anchors on each entry's own heading", () => {
     artwork,
   });
 
-  assert.equal(result.roleCount, 2);
+  assert.equal(result.roleCount, 3);
+  assert.match(
+    result.html,
+    /<a href="#ch5-51-builder-built-on-foreman">builder<\/a>/,
+  );
   assert.match(result.html, /<a href="#ch5-52-foreman">foreman<\/a>/);
   assert.match(
     result.html,
     /<a href="#ch5-53-conductor-merges">conductor<\/a>/,
   );
   assert.match(result.html, /<a href="#ch6-panel">panel<\/a>/);
-  assert.match(
-    result.html,
-    /<a href="https:\/\/github\.com\/kriscendobot\/garden\/blob\/main2\/roles\/builder\/AGENT\.md" rel="noopener">builder<\/a>/,
-  );
 });
 
 test("assembleBook uses tree capabilities and writes the complete clip", async () => {

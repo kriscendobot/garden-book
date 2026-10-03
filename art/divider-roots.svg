@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 140" role="img" aria-labelledby="divider-roots-title divider-roots-description">
+  <title id="divider-roots-title">Roots chapter divider</title>
+  <desc id="divider-roots-description">A quiet soil line with branching roots and three resting seeds, fading to transparent at both edges.</desc>
+  <defs>
+    <linearGradient id="divider-roots-line-fade" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#A98569" stop-opacity="0"/>
+      <stop offset="0.18" stop-color="#A98569" stop-opacity="0.54"/>
+      <stop offset="0.82" stop-color="#A98569" stop-opacity="0.54"/>
+      <stop offset="1" stop-color="#A98569" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="divider-roots-soil-wash" cx="50%" cy="0" r="80%">
+      <stop stop-color="#E8D8B9" stop-opacity="0.36"/>
+      <stop offset="1" stop-color="#E8D8B9" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="500" cy="88" rx="420" ry="48" fill="url(#divider-roots-soil-wash)"/>
+  <path d="M48 56C258 47 732 64 952 55" fill="none" stroke="url(#divider-roots-line-fade)" stroke-width="3" stroke-linecap="round"/>
+  <g fill="none" stroke="#A98569" stroke-linecap="round" stroke-linejoin="round" opacity="0.58">
+    <path d="M500 58C498 77 492 94 478 113" stroke-width="4"/>
+    <path d="M495 78C476 83 461 94 450 108" stroke-width="3"/>
+    <path d="M491 90C509 97 520 108 526 123" stroke-width="3"/>
+    <path d="M350 56C352 74 345 90 332 105" stroke-width="3"/>
+    <path d="M650 57C647 75 652 91 666 108" stroke-width="3"/>
+  </g>
+  <g fill="#C98267" opacity="0.7">
+    <ellipse cx="350" cy="55" rx="13" ry="8" transform="rotate(-11 350 55)"/>
+    <ellipse cx="500" cy="56" rx="14" ry="9" transform="rotate(8 500 56)"/>
+    <ellipse cx="650" cy="56" rx="13" ry="8" transform="rotate(-8 650 56)"/>
+  </g>
+  <g fill="#E6CF7A" opacity="0.6">
+    <circle cx="289" cy="52" r="3"/>
+    <circle cx="711" cy="58" r="3"/>
+  </g>
+</svg>

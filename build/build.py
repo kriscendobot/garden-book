@@ -8,7 +8,7 @@ SRC = sys.argv[1]
 OUT = sys.argv[2]
 GH = "https://github.com/kriscendobot/garden/blob/main2/"
 BOOK_SRC_REPO = "https://github.com/kriscendobot/garden-book/blob/main/chapters/"
-TITLE = "The Garden That Tends Code"
+TITLE = "Better Code and Gardens"
 
 # The book's five parts, a growing season: each part has a line-drawn growth
 # stage (seed, seedling, leafy stem, bloom, seed head) that marks its chapters

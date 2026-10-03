@@ -171,7 +171,8 @@ Two operational rules follow:
   can hold a peer's uncommitted changes. Content edits under `library/` or
   `projects/` go through `scripts/jobs/land-journal-edit.sh`, which applies
   the change in the producer clone on the current tip, with the same CAS loop
-  and a verify-pushed guard. (This chapter was landed that way.)
+  and a verify-pushed guard. Earlier editions used that path while the book
+  lived in the journal; this edition lives in its own repository.
 
 ## 2.2 The job lifecycle
 

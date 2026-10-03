@@ -1,4 +1,6 @@
-// prefer-endo-primitives-exempt: this standalone tool uses the web-standard encoder for portability.
+// prefer-endo-primitives-exempt: garden-book is a standalone package with no
+// @endo/* dependency; TextEncoder is the web standard, and encodeBase64 is a
+// small hand-rolled encoder kept to avoid adding @endo/base64 for two files.
 import { readText } from "./tree-io.mjs";
 
 const BASE64_ALPHABET =
@@ -19,7 +21,7 @@ export const encodeBase64 = (bytes) => {
   return encoded;
 };
 
-export const makePublishContent = async (outputTree) => {
+export const makePublishContent = async (builtTree) => {
   const files = [
     ["index.html", "text/html; charset=utf-8"],
     ["styles.css", "text/css; charset=utf-8"],
@@ -29,23 +31,37 @@ export const makePublishContent = async (outputTree) => {
       path,
       contentType,
       bytes: encodeBase64(
-        new TextEncoder().encode(await readText(outputTree, path)),
+        new TextEncoder().encode(await readText(builtTree, path)),
       ),
     })),
   );
 };
 
+const INERT_POWERS_NAME = /^garden-book-[a-z0-9-]+$/;
+
+/**
+ * Publishes the built book as a minion.town clip.
+ *
+ * @param {object} options
+ * @param {object} options.builtTree readable tree holding `index.html` and
+ *   `styles.css` from a prior build.
+ * @param {object} options.peer JSON-RPC peer connected to the minion MCP bridge.
+ * @param {string} [options.powersName] pet name for the clip's `powers`,
+ *   which becomes every visitor's bootstrap. It is overwritten with inert
+ *   empty text first, so it must never name a real capability such as
+ *   `sites` or a reserved `@`-name like `@agent`
+ *   (skills/minion-town-clip-publishing on kriscendobot/garden). Only names
+ *   matching `garden-book-<name>` are accepted; the default is
+ *   `garden-book-inert`.
+ */
 export const publishBook = async ({
-  outputTree,
+  builtTree,
   peer,
   powersName = "garden-book-inert",
 }) => {
-  // powers becomes every visitor's bootstrap, so it must stay inert rather
-  // than the guest's real sites capability, which writeText would clobber
-  // (skills/minion-town-clip-publishing on kriscendobot/garden).
-  if (powersName === "sites") {
+  if (typeof powersName !== "string" || !INERT_POWERS_NAME.test(powersName)) {
     throw new RangeError(
-      'Refusing to overwrite the "sites" capability with inert powers',
+      `Refusing powers name ${JSON.stringify(powersName)}: it must match ${INERT_POWERS_NAME} so writeText cannot overwrite a real capability`,
     );
   }
   await peer.call("initialize", {
@@ -62,7 +78,7 @@ export const publishBook = async ({
     name: "publish",
     arguments: {
       powers: powersName,
-      content: await makePublishContent(outputTree),
+      content: await makePublishContent(builtTree),
     },
   });
 };

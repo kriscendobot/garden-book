@@ -148,12 +148,46 @@ test("publishBook refuses to clobber the sites capability", async () => {
   };
   await assert.rejects(
     publishBook({
-      outputTree: makeReadableTree({}),
+      builtTree: makeReadableTree({}),
       peer,
       powersName: "sites",
     }),
-    /Refusing to overwrite the "sites" capability/,
+    /Refusing powers name "sites"/,
   );
+});
+
+test("publishBook accepts only garden-book-prefixed powers names", async () => {
+  const peer = {
+    async call() {
+      assert.fail("publishBook must not reach the bridge");
+    },
+    notify() {
+      assert.fail("publishBook must not reach the bridge");
+    },
+  };
+  for (const powersName of [
+    "@agent",
+    "@host",
+    "@mail",
+    "@nets",
+    "@planes",
+    "@self",
+    "@main",
+    "MAIN",
+    "Sites",
+    " sites",
+    "garden-book-",
+    "garden-book-Inert",
+    "garden-book-inert/x",
+    "",
+    42,
+  ]) {
+    await assert.rejects(
+      publishBook({ builtTree: makeReadableTree({}), peer, powersName }),
+      RangeError,
+      `powers name ${JSON.stringify(powersName)}`,
+    );
+  }
 });
 
 test("publishBook sends inert powers and UTF-8 clip content", async () => {
@@ -175,20 +209,20 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
     },
   };
   const response = await publishBook({
-    outputTree: makeReadableTree({
+    builtTree: makeReadableTree({
       "index.html": "<h1>Garden ✓</h1>",
       "styles.css": "body {}",
     }),
     peer,
-    powersName: "inert-test",
+    powersName: "garden-book-test",
   });
 
   assert.deepEqual(notifications, [["notifications/initialized", {}]]);
   assert.deepEqual(calls[1], [
     "tools/call",
-    { name: "writeText", arguments: { name: "inert-test", text: "" } },
+    { name: "writeText", arguments: { name: "garden-book-test", text: "" } },
   ]);
-  assert.equal(calls[2][1].arguments.powers, "inert-test");
+  assert.equal(calls[2][1].arguments.powers, "garden-book-test");
   assert.deepEqual(
     calls[2][1].arguments.content.map((entry) => [
       entry.path,

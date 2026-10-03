@@ -26,11 +26,11 @@ if (!environmentArgument || extras.length > 0) {
     environment: bridgeEnvironment,
   });
   try {
-    const outputTree = makeNodeReadableTree(
+    const builtTree = makeNodeReadableTree(
       pathToFileURL(`${resolve(outputArgument)}/`),
     );
     const response = await publishBook({
-      outputTree,
+      builtTree,
       peer,
       powersName: process.env.GARDEN_BOOK_POWERS || "garden-book-inert",
     });

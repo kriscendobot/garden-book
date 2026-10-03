@@ -73,3 +73,46 @@ test("startJsonRpcPeer rejects every pending call when the bridge exits", async 
     peer.close();
   }
 });
+
+test("startJsonRpcPeer names the signal when the bridge is killed", async () => {
+  const peer = startJsonRpcPeer({
+    command: process.execPath,
+    arguments: [
+      "-e",
+      'process.stdin.once("data", () => process.kill(process.pid, "SIGTERM"));',
+    ],
+    environment: process.env,
+  });
+  try {
+    await assert.rejects(
+      peer.call("one"),
+      /Bridge closed before replying \(code=null, signal=SIGTERM\)/,
+    );
+  } finally {
+    peer.close();
+  }
+});
+
+test("startJsonRpcPeer rejects a call made after the bridge exits", async () => {
+  const peer = startJsonRpcPeer({
+    command: process.execPath,
+    arguments: ["-e", 'process.stdin.once("data", () => process.exit(0));'],
+    environment: process.env,
+  });
+  try {
+    await assert.rejects(peer.call("first"), /code=0/);
+    await assert.rejects(peer.call("late"), /code=0/);
+  } finally {
+    peer.close();
+  }
+});
+
+test("startJsonRpcPeer rejects a call made after close", async () => {
+  const peer = startJsonRpcPeer({
+    command: process.execPath,
+    arguments: ["-e", "process.stdin.resume();"],
+    environment: process.env,
+  });
+  peer.close();
+  await assert.rejects(peer.call("late"), /Bridge closed by caller/);
+});

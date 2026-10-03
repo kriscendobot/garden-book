@@ -12,6 +12,16 @@ export const startJsonRpcPeer = ({
   });
   const pending = new Map();
   let nextIdentifier = 1;
+  // Latched once the bridge can no longer reply, so a call made after
+  // closure rejects instead of waiting on an event that never fires again.
+  let closedError;
+  const closeWith = (error) => {
+    closedError ??= error;
+    for (const { reject } of pending.values()) {
+      reject(error);
+    }
+    pending.clear();
+  };
   const lines = createInterface({ input: child.stdout });
 
   lines.on("line", (line) => {
@@ -20,12 +30,9 @@ export const startJsonRpcPeer = ({
       message = JSON.parse(line);
     } catch (error) {
       child.kill();
-      for (const { reject } of pending.values()) {
-        reject(
-          new SyntaxError(`Bridge returned invalid JSON: ${error.message}`),
-        );
-      }
-      pending.clear();
+      closeWith(
+        new SyntaxError(`Bridge returned invalid JSON: ${error.message}`),
+      );
       return;
     }
     if (
@@ -45,22 +52,19 @@ export const startJsonRpcPeer = ({
     }
   });
 
-  child.on("error", (error) => {
-    for (const { reject } of pending.values()) {
-      reject(error);
-    }
-    pending.clear();
-  });
+  child.on("error", closeWith);
 
   child.on("exit", (code, signal) => {
-    const error = new Error(
-      `Bridge closed before replying (code=${code}, signal=${signal})`,
+    closeWith(
+      new Error(
+        `Bridge closed before replying (code=${code}, signal=${signal})`,
+      ),
     );
-    for (const { reject } of pending.values()) {
-      reject(error);
-    }
-    pending.clear();
   });
+
+  // A write racing the child's exit fails with EPIPE; the exit handler
+  // reports the closure, so the stream error itself carries nothing new.
+  child.stdin.on("error", () => {});
 
   const send = (message) => {
     child.stdin.write(`${JSON.stringify(message)}\n`);
@@ -71,8 +75,17 @@ export const startJsonRpcPeer = ({
       const id = nextIdentifier;
       nextIdentifier += 1;
       return new Promise((resolve, reject) => {
+        if (closedError !== undefined) {
+          reject(closedError);
+          return;
+        }
         pending.set(id, { resolve, reject });
-        send({ jsonrpc: "2.0", id, method, params });
+        try {
+          send({ jsonrpc: "2.0", id, method, params });
+        } catch (error) {
+          pending.delete(id);
+          throw error;
+        }
       });
     },
 
@@ -81,6 +94,7 @@ export const startJsonRpcPeer = ({
     },
 
     close() {
+      closedError ??= new Error("Bridge closed by caller");
       lines.close();
       child.stdin.end();
       child.kill();

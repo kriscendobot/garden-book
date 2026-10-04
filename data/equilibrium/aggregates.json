@@ -1,0 +1,1500 @@
+{
+  "provenance": {
+    "journalRevision": "6485a3b8d83b250470a2447bbc947ae1a1e7fd24",
+    "journalCutoff": "2026-10-04T06:16:22+00:00",
+    "githubFetchedAt": "2026-10-04T06:23:52Z",
+    "firstEventRecordedAt": "2026-07-14T03:04:20Z",
+    "lastEventRecordedAt": "2026-10-04T06:10:26Z",
+    "reputationEvents": 8623,
+    "usageFiles": 6632,
+    "usageLines": 11418,
+    "completionReports": 10793,
+    "eventsWithReport": 8086,
+    "panelRunRecords": 1188
+  },
+  "eventFields": {
+    "targets": {
+      "main2": 8623
+    },
+    "accepted": {
+      "true": 8090,
+      "false": 533
+    },
+    "acceptedBySource": {
+      "live:true": 8090,
+      "fallback:false": 533
+    },
+    "humanDollarsNonZero": 0,
+    "costSource": {
+      "wallclock": 6041,
+      "absent": 2106,
+      "ledger": 290,
+      "none": 186
+    },
+    "providers": {
+      "anthropic": 5913,
+      "openai": 2058,
+      "moonshot": 560,
+      "local": 51,
+      "fireworks": 41
+    }
+  },
+  "regimeCounts": {
+    "ebfb": 4703,
+    "other": 1362,
+    "unclassified": 1277,
+    "garden": 1276,
+    "upstream": 5
+  },
+  "regimes": {
+    "garden": {
+      "events": 1276,
+      "eventsAcceptedTrue": 1276,
+      "eventsTargetMain2": 1276,
+      "eventHumanDollarsNonZero": 0,
+      "durationSecondsPerEvent": {
+        "n": 1275,
+        "mean": 467,
+        "p25": 151,
+        "median": 297,
+        "p75": 566,
+        "p90": 1014,
+        "max": 11127,
+        "total": 595456
+      },
+      "trueBasisDollarsPerEvent": {
+        "n": 611,
+        "mean": 0.0438,
+        "p25": 0.0082,
+        "median": 0.0177,
+        "p75": 0.0407,
+        "p90": 0.0716,
+        "max": 3.3652,
+        "total": 26.7332
+      },
+      "trueBasisPricedEvents": 611,
+      "usageLines": 1376,
+      "attemptOutcomes": {
+        "tada": 1017,
+        "requeue": 287,
+        "fail": 72
+      },
+      "elapsedSecondsPerPricedEngagement": {
+        "n": 861,
+        "mean": 439,
+        "p25": 81,
+        "median": 228,
+        "p75": 566,
+        "p90": 979,
+        "max": 11774,
+        "total": 378287
+      },
+      "notionalDollarsPerPricedEngagement": {
+        "n": 861,
+        "mean": 2.362,
+        "p25": 0.669,
+        "median": 1.298,
+        "p75": 3.025,
+        "p90": 5.483,
+        "max": 27.566,
+        "total": 2033.276
+      },
+      "notionalDollarsPerPricedBase": {
+        "n": 714,
+        "mean": 2.848,
+        "p25": 0.896,
+        "median": 1.584,
+        "p75": 3.423,
+        "p90": 6.161,
+        "max": 35.204,
+        "total": 2033.276
+      },
+      "allocatedDollarsPerPricedBase": {
+        "n": 671,
+        "mean": 0.1801,
+        "p25": 0.0493,
+        "median": 0.0899,
+        "p75": 0.2019,
+        "p90": 0.3782,
+        "max": 2.6027,
+        "total": 120.8639
+      },
+      "pricedBases": 714,
+      "basesWithUsage": 1015,
+      "outputTokensPerPricedEngagement": {
+        "n": 861,
+        "mean": 20182,
+        "p25": 4667,
+        "median": 12406,
+        "p75": 28281,
+        "p90": 48496,
+        "max": 180928,
+        "total": 17376295
+      },
+      "inputTokensPerPricedEngagement": {
+        "n": 861,
+        "mean": 2404800,
+        "p25": 457944,
+        "median": 1088328,
+        "p75": 2953632,
+        "p90": 5980811,
+        "max": 37754659,
+        "total": 2070532903
+      }
+    },
+    "ebfb": {
+      "events": 4703,
+      "eventsAcceptedTrue": 4445,
+      "eventsTargetMain2": 4703,
+      "eventHumanDollarsNonZero": 0,
+      "durationSecondsPerEvent": {
+        "n": 4445,
+        "mean": 718,
+        "p25": 125,
+        "median": 336,
+        "p75": 862,
+        "p90": 1799,
+        "max": 11934,
+        "total": 3191555
+      },
+      "trueBasisDollarsPerEvent": {
+        "n": 2908,
+        "mean": 0.0984,
+        "p25": 0.0073,
+        "median": 0.0244,
+        "p75": 0.0604,
+        "p90": 0.1382,
+        "max": 18.3019,
+        "total": 286.0591
+      },
+      "trueBasisPricedEvents": 2908,
+      "usageLines": 7079,
+      "attemptOutcomes": {
+        "tada": 4039,
+        "requeue": 2606,
+        "fail": 434
+      },
+      "elapsedSecondsPerPricedEngagement": {
+        "n": 5031,
+        "mean": 566,
+        "p25": 35,
+        "median": 205,
+        "p75": 690,
+        "p90": 1415,
+        "max": 11265,
+        "total": 2850042
+      },
+      "notionalDollarsPerPricedEngagement": {
+        "n": 5031,
+        "mean": 1.844,
+        "p25": 0.425,
+        "median": 0.938,
+        "p75": 1.901,
+        "p90": 4.375,
+        "max": 53.338,
+        "total": 9276.904
+      },
+      "notionalDollarsPerPricedBase": {
+        "n": 3115,
+        "mean": 2.978,
+        "p25": 0.829,
+        "median": 1.484,
+        "p75": 3.237,
+        "p90": 6.882,
+        "max": 53.338,
+        "total": 9276.904
+      },
+      "allocatedDollarsPerPricedBase": {
+        "n": 3033,
+        "mean": 0.185,
+        "p25": 0.0471,
+        "median": 0.0894,
+        "p75": 0.199,
+        "p90": 0.4282,
+        "max": 3.5393,
+        "total": 560.9736
+      },
+      "pricedBases": 3115,
+      "basesWithUsage": 3834,
+      "outputTokensPerPricedEngagement": {
+        "n": 5031,
+        "mean": 13118,
+        "p25": 1669,
+        "median": 5640,
+        "p75": 15483,
+        "p90": 34434,
+        "max": 295098,
+        "total": 65998629
+      },
+      "inputTokensPerPricedEngagement": {
+        "n": 5031,
+        "mean": 2036934,
+        "p25": 258771,
+        "median": 788876,
+        "p75": 1877468,
+        "p90": 4881331,
+        "max": 82556445,
+        "total": 10247817182
+      }
+    },
+    "upstream": {
+      "events": 5,
+      "eventsAcceptedTrue": 5,
+      "eventsTargetMain2": 5,
+      "eventHumanDollarsNonZero": 0,
+      "durationSecondsPerEvent": {
+        "n": 5,
+        "mean": 263,
+        "p25": 134,
+        "median": 158,
+        "p75": 203,
+        "p90": 514,
+        "max": 721,
+        "total": 1313
+      },
+      "trueBasisDollarsPerEvent": {
+        "n": 3,
+        "mean": 0.0249,
+        "p25": 0.0125,
+        "median": 0.014,
+        "p75": 0.0319,
+        "p90": 0.0426,
+        "max": 0.0497,
+        "total": 0.0747
+      },
+      "trueBasisPricedEvents": 3,
+      "usageLines": 10,
+      "attemptOutcomes": {
+        "requeue": 7,
+        "tada": 3
+      },
+      "elapsedSecondsPerPricedEngagement": {
+        "n": 4,
+        "mean": 271,
+        "p25": 119,
+        "median": 181,
+        "p75": 333,
+        "p90": 566,
+        "max": 721,
+        "total": 1084
+      },
+      "notionalDollarsPerPricedEngagement": {
+        "n": 4,
+        "mean": 1.789,
+        "p25": 0.779,
+        "median": 1.231,
+        "p75": 2.241,
+        "p90": 3.712,
+        "max": 4.693,
+        "total": 7.155
+      },
+      "notionalDollarsPerPricedBase": {
+        "n": 3,
+        "mean": 2.385,
+        "p25": 1.231,
+        "median": 1.424,
+        "p75": 3.058,
+        "p90": 4.039,
+        "max": 4.693,
+        "total": 7.155
+      },
+      "allocatedDollarsPerPricedBase": {
+        "n": 3,
+        "mean": 0.1597,
+        "p25": 0.0777,
+        "median": 0.0982,
+        "p75": 0.2109,
+        "p90": 0.2786,
+        "max": 0.3237,
+        "total": 0.479
+      },
+      "pricedBases": 3,
+      "basesWithUsage": 3,
+      "outputTokensPerPricedEngagement": {
+        "n": 4,
+        "mean": 16105,
+        "p25": 5951,
+        "median": 10378,
+        "p75": 20531,
+        "p90": 34411,
+        "max": 43664,
+        "total": 64419
+      },
+      "inputTokensPerPricedEngagement": {
+        "n": 4,
+        "mean": 1765187,
+        "p25": 546222,
+        "median": 895772,
+        "p75": 2114737,
+        "p90": 4007417,
+        "max": 5269204,
+        "total": 7060748
+      }
+    },
+    "other": {
+      "events": 1362,
+      "eventsAcceptedTrue": 1362,
+      "eventsTargetMain2": 1362,
+      "eventHumanDollarsNonZero": 0,
+      "durationSecondsPerEvent": {
+        "n": 1362,
+        "mean": 445,
+        "p25": 117,
+        "median": 291,
+        "p75": 556,
+        "p90": 898,
+        "max": 8832,
+        "total": 606388
+      },
+      "trueBasisDollarsPerEvent": {
+        "n": 1014,
+        "mean": 0.0317,
+        "p25": 0.0066,
+        "median": 0.019,
+        "p75": 0.037,
+        "p90": 0.0583,
+        "max": 3.6444,
+        "total": 32.1075
+      },
+      "trueBasisPricedEvents": 1014,
+      "usageLines": 1803,
+      "attemptOutcomes": {
+        "tada": 1276,
+        "requeue": 470,
+        "fail": 57
+      },
+      "elapsedSecondsPerPricedEngagement": {
+        "n": 1396,
+        "mean": 360,
+        "p25": 64,
+        "median": 205,
+        "p75": 482,
+        "p90": 810,
+        "max": 8832,
+        "total": 502797
+      },
+      "notionalDollarsPerPricedEngagement": {
+        "n": 1396,
+        "mean": 1.77,
+        "p25": 0.564,
+        "median": 0.955,
+        "p75": 1.753,
+        "p90": 3.791,
+        "max": 43.617,
+        "total": 2470.324
+      },
+      "notionalDollarsPerPricedBase": {
+        "n": 1057,
+        "mean": 2.337,
+        "p25": 0.731,
+        "median": 1.217,
+        "p75": 2.37,
+        "p90": 4.602,
+        "max": 61.299,
+        "total": 2470.324
+      },
+      "allocatedDollarsPerPricedBase": {
+        "n": 1055,
+        "mean": 0.1418,
+        "p25": 0.0408,
+        "median": 0.0691,
+        "p75": 0.1448,
+        "p90": 0.286,
+        "max": 3.3727,
+        "total": 149.5914
+      },
+      "pricedBases": 1057,
+      "basesWithUsage": 1232,
+      "outputTokensPerPricedEngagement": {
+        "n": 1396,
+        "mean": 13278,
+        "p25": 2851,
+        "median": 6754,
+        "p75": 16111,
+        "p90": 34118,
+        "max": 198205,
+        "total": 18535717
+      },
+      "inputTokensPerPricedEngagement": {
+        "n": 1396,
+        "mean": 1733872,
+        "p25": 354952,
+        "median": 830052,
+        "p75": 1622666,
+        "p90": 3943769,
+        "max": 70238153,
+        "total": 2420485386
+      }
+    },
+    "unclassified": {
+      "events": 1277,
+      "eventsAcceptedTrue": 1002,
+      "eventsTargetMain2": 1277,
+      "eventHumanDollarsNonZero": 0,
+      "durationSecondsPerEvent": {
+        "n": 816,
+        "mean": 524,
+        "p25": 109,
+        "median": 227,
+        "p75": 664,
+        "p90": 1328,
+        "max": 10217,
+        "total": 427666
+      },
+      "trueBasisDollarsPerEvent": {
+        "n": 194,
+        "mean": 0.0952,
+        "p25": 0.0049,
+        "median": 0.0096,
+        "p75": 0.0553,
+        "p90": 0.122,
+        "max": 4.1954,
+        "total": 18.4648
+      },
+      "trueBasisPricedEvents": 194,
+      "usageLines": 1150,
+      "attemptOutcomes": {
+        "requeue": 622,
+        "tada": 453,
+        "fail": 75
+      },
+      "elapsedSecondsPerPricedEngagement": {
+        "n": 510,
+        "mean": 310,
+        "p25": 3,
+        "median": 54,
+        "p75": 330,
+        "p90": 1027,
+        "max": 4764,
+        "total": 158229
+      },
+      "notionalDollarsPerPricedEngagement": {
+        "n": 510,
+        "mean": 1.753,
+        "p25": 0,
+        "median": 0.544,
+        "p75": 1.483,
+        "p90": 5.255,
+        "max": 28.345,
+        "total": 893.99
+      },
+      "notionalDollarsPerPricedBase": {
+        "n": 304,
+        "mean": 2.941,
+        "p25": 0.38,
+        "median": 0.926,
+        "p75": 3.564,
+        "p90": 8.096,
+        "max": 28.745,
+        "total": 893.99
+      },
+      "allocatedDollarsPerPricedBase": {
+        "n": 295,
+        "mean": 0.1939,
+        "p25": 0.0223,
+        "median": 0.053,
+        "p75": 0.2477,
+        "p90": 0.5726,
+        "max": 1.8959,
+        "total": 57.1869
+      },
+      "pricedBases": 304,
+      "basesWithUsage": 548,
+      "outputTokensPerPricedEngagement": {
+        "n": 510,
+        "mean": 12442,
+        "p25": 0,
+        "median": 2374,
+        "p75": 9773,
+        "p90": 42880,
+        "max": 147100,
+        "total": 6345230
+      },
+      "inputTokensPerPricedEngagement": {
+        "n": 510,
+        "mean": 1861290,
+        "p25": 0,
+        "median": 305946,
+        "p75": 1135633,
+        "p90": 5727346,
+        "max": 30017348,
+        "total": 949257649
+      }
+    }
+  },
+  "reconciliation": {
+    "subscriptionDollarsPerMonth": 400,
+    "byMonth": {
+      "2026-07": {
+        "pricedAnthropicLines": 111,
+        "notional": 250.34,
+        "flatDollars": 47.01,
+        "overstatement": 5.3
+      },
+      "2026-08": {
+        "pricedAnthropicLines": 2682,
+        "notional": 5799.37,
+        "flatDollars": 400,
+        "overstatement": 14.5
+      },
+      "2026-09": {
+        "pricedAnthropicLines": 4178,
+        "notional": 7269.89,
+        "flatDollars": 400,
+        "overstatement": 18.2
+      },
+      "2026-10": {
+        "pricedAnthropicLines": 627,
+        "notional": 819.07,
+        "flatDollars": 42.08,
+        "overstatement": 19.5
+      }
+    },
+    "windowNotional": 14138.66,
+    "windowFlat": 889.09,
+    "windowOverstatement": 15.9,
+    "eventEstimateBasis": "estimated_dollars = duration_secs x card rate on every Anthropic wallclock event",
+    "anthropicEventsWithBothPrices": 4666,
+    "notionalTotal": 12981.86,
+    "trueBasisTotal": 192.27,
+    "ratioOfTotals": 67.5,
+    "medianPerEventRatio": 92.7
+  },
+  "weeklySeries": [
+    {
+      "week": "2026-07-27",
+      "tada": 400,
+      "requeue": 348,
+      "fail": 133,
+      "medianModelSeconds": 124,
+      "pricedEngagements": 517
+    },
+    {
+      "week": "2026-08-03",
+      "tada": 208,
+      "requeue": 94,
+      "fail": 2,
+      "medianModelSeconds": 344,
+      "pricedEngagements": 162
+    },
+    {
+      "week": "2026-08-10",
+      "tada": 518,
+      "requeue": 300,
+      "fail": 1,
+      "medianModelSeconds": 387,
+      "pricedEngagements": 405
+    },
+    {
+      "week": "2026-08-17",
+      "tada": 557,
+      "requeue": 833,
+      "fail": 0,
+      "medianModelSeconds": 271,
+      "pricedEngagements": 605
+    },
+    {
+      "week": "2026-08-24",
+      "tada": 700,
+      "requeue": 267,
+      "fail": 63,
+      "medianModelSeconds": 261,
+      "pricedEngagements": 612
+    },
+    {
+      "week": "2026-08-31",
+      "tada": 1150,
+      "requeue": 1562,
+      "fail": 176,
+      "medianModelSeconds": 53,
+      "pricedEngagements": 2190
+    },
+    {
+      "week": "2026-09-07",
+      "tada": 327,
+      "requeue": 64,
+      "fail": 1,
+      "medianModelSeconds": 286,
+      "pricedEngagements": 331
+    },
+    {
+      "week": "2026-09-14",
+      "tada": 612,
+      "requeue": 292,
+      "fail": 82,
+      "medianModelSeconds": 245,
+      "pricedEngagements": 628
+    },
+    {
+      "week": "2026-09-21",
+      "tada": 876,
+      "requeue": 131,
+      "fail": 109,
+      "medianModelSeconds": 136,
+      "pricedEngagements": 901
+    },
+    {
+      "week": "2026-09-28",
+      "tada": 1440,
+      "requeue": 101,
+      "fail": 71,
+      "medianModelSeconds": 392,
+      "pricedEngagements": 1451
+    }
+  ],
+  "gauntletStages": {
+    "clean": {
+      "events": 194,
+      "durationSeconds": {
+        "n": 194,
+        "mean": 554,
+        "p25": 21,
+        "median": 29,
+        "p75": 443,
+        "p90": 2220,
+        "max": 6736,
+        "total": 107385
+      },
+      "trueBasisDollars": {
+        "n": 182,
+        "mean": 0.0373,
+        "p25": 0.0014,
+        "median": 0.0019,
+        "p75": 0.0283,
+        "p90": 0.1542,
+        "max": 0.4648,
+        "total": 6.7824
+      },
+      "notionalDollars": {
+        "n": 3,
+        "mean": 2.956,
+        "p25": 1.269,
+        "median": 2.538,
+        "p75": 4.434,
+        "p90": 5.571,
+        "max": 6.33,
+        "total": 8.868
+      }
+    },
+    "panel": {
+      "events": 628,
+      "durationSeconds": {
+        "n": 628,
+        "mean": 555,
+        "p25": 308,
+        "median": 424,
+        "p75": 691,
+        "p90": 965,
+        "max": 6532,
+        "total": 348701
+      },
+      "trueBasisDollars": {
+        "n": 606,
+        "mean": 0.0415,
+        "p25": 0.0212,
+        "median": 0.0288,
+        "p75": 0.0467,
+        "p90": 0.0663,
+        "max": 1.7369,
+        "total": 25.1275
+      },
+      "notionalDollars": {
+        "n": 4,
+        "mean": 1.676,
+        "p25": 0.544,
+        "median": 1.148,
+        "p75": 2.279,
+        "p90": 3.556,
+        "max": 4.407,
+        "total": 6.702
+      }
+    },
+    "fix": {
+      "events": 549,
+      "durationSeconds": {
+        "n": 549,
+        "mean": 1274,
+        "p25": 137,
+        "median": 885,
+        "p75": 1720,
+        "p90": 3288,
+        "max": 7104,
+        "total": 699674
+      },
+      "trueBasisDollars": {
+        "n": 532,
+        "mean": 0.0867,
+        "p25": 0.0083,
+        "median": 0.0607,
+        "p75": 0.1146,
+        "p90": 0.2266,
+        "max": 0.4902,
+        "total": 46.1389
+      },
+      "notionalDollars": {
+        "n": 6,
+        "mean": 4.556,
+        "p25": 2.265,
+        "median": 2.696,
+        "p75": 5.863,
+        "p90": 8.889,
+        "max": 10.979,
+        "total": 27.338
+      }
+    },
+    "undraft": {
+      "events": 14,
+      "durationSeconds": {
+        "n": 14,
+        "mean": 65,
+        "p25": 12,
+        "median": 18,
+        "p75": 103,
+        "p90": 168,
+        "max": 229,
+        "total": 914
+      },
+      "trueBasisDollars": {
+        "n": 14,
+        "mean": 0.0045,
+        "p25": 0.0008,
+        "median": 0.0012,
+        "p75": 0.0071,
+        "p90": 0.0116,
+        "max": 0.0158,
+        "total": 0.0631
+      },
+      "notionalDollars": {
+        "n": 0,
+        "mean": null,
+        "p25": null,
+        "median": null,
+        "p75": null,
+        "p90": null,
+        "max": null,
+        "total": 0
+      }
+    },
+    "viability": {
+      "events": 53,
+      "durationSeconds": {
+        "n": 53,
+        "mean": 38,
+        "p25": 26,
+        "median": 30,
+        "p75": 39,
+        "p90": 66,
+        "max": 125,
+        "total": 2006
+      },
+      "trueBasisDollars": {
+        "n": 53,
+        "mean": 0.0026,
+        "p25": 0.0018,
+        "median": 0.0021,
+        "p75": 0.0027,
+        "p90": 0.0046,
+        "max": 0.0086,
+        "total": 0.1384
+      },
+      "notionalDollars": {
+        "n": 0,
+        "mean": null,
+        "p25": null,
+        "median": null,
+        "p75": null,
+        "p90": null,
+        "max": null,
+        "total": 0
+      }
+    }
+  },
+  "panel": {
+    "runsAllRepos": 1188,
+    "ebfbRuns": 869,
+    "ebfbPullRequestsWithRuns": 188,
+    "dispositions": {
+      "must-fix": 675,
+      "error": 111,
+      "seat-error": 40,
+      "passed": 19,
+      "interrupted": 15,
+      "max-rounds-exceeded": 4,
+      "passed-no-review-surface": 3,
+      "decider-error": 2
+    },
+    "runsWithVerdict": 697,
+    "runsWithoutVerdict": 172,
+    "mustFixRunsAtCap": 346,
+    "mustFixRunsSingleRound": 675,
+    "firstRecordedRun": "2026-09-23T05:45:39+00:00",
+    "kinds": {
+      "code": 481,
+      "design": 388
+    },
+    "roundsPerRun": {
+      "n": 869,
+      "mean": 1.01,
+      "p25": 1,
+      "median": 1,
+      "p75": 1,
+      "p90": 1,
+      "max": 6,
+      "total": 874
+    },
+    "decidedRunsPerPr": {
+      "n": 174,
+      "mean": 4.01,
+      "p25": 1,
+      "median": 4,
+      "p75": 6,
+      "p90": 7,
+      "max": 18,
+      "total": 697
+    },
+    "prsEndingPass": 18,
+    "prsWithAnyPass": 22,
+    "prsWithDecidedRun": 174,
+    "multiRun": {
+      "prs": 116,
+      "firstMustFix": {
+        "n": 116,
+        "mean": 15.2,
+        "p25": 11,
+        "median": 18.5,
+        "p75": 20,
+        "p90": 20,
+        "max": 20,
+        "total": 1767
+      },
+      "lastMustFix": {
+        "n": 116,
+        "mean": 14.7,
+        "p25": 10.8,
+        "median": 20,
+        "p75": 20,
+        "p90": 20,
+        "max": 20,
+        "total": 1707
+      },
+      "lastBelowFirst": 42,
+      "lastEqualFirst": 35,
+      "lastAboveFirst": 39
+    },
+    "firstDecidedMustFixByMonth": {
+      "2026-09": {
+        "n": 157,
+        "mean": 14.7,
+        "p25": 10,
+        "median": 18,
+        "p75": 20,
+        "p90": 20,
+        "max": 20,
+        "total": 2309
+      },
+      "2026-10": {
+        "n": 17,
+        "mean": 16.7,
+        "p25": 16,
+        "median": 20,
+        "p75": 20,
+        "p90": 20,
+        "max": 20,
+        "total": 284
+      }
+    },
+    "dispositionByMonth": {
+      "2026-09": {
+        "must-fix": 574,
+        "error": 111,
+        "seat-error": 39,
+        "passed": 17,
+        "interrupted": 13,
+        "max-rounds-exceeded": 4,
+        "passed-no-review-surface": 3,
+        "decider-error": 2
+      },
+      "2026-10": {
+        "must-fix": 101,
+        "passed": 2,
+        "interrupted": 2,
+        "seat-error": 1
+      }
+    }
+  },
+  "ebfb": {
+    "botPullRequests": 761,
+    "states": {
+      "OPEN": 323,
+      "MERGED": 296,
+      "CLOSED": 142
+    },
+    "openDrafts": 217,
+    "merged": {
+      "n": 296,
+      "humanRounds": {
+        "n": 296,
+        "mean": 2.42,
+        "p25": 1,
+        "median": 2,
+        "p75": 3,
+        "p90": 4,
+        "max": 29,
+        "total": 715
+      },
+      "withAtLeastOneHumanReview": 272,
+      "humanWords": {
+        "n": 296,
+        "mean": 31,
+        "p25": 0,
+        "median": 0,
+        "p75": 21,
+        "p90": 68,
+        "max": 2648,
+        "total": 9256
+      },
+      "hoursToFirstHumanReview": {
+        "n": 272,
+        "mean": 161,
+        "p25": 3,
+        "median": 24.3,
+        "p75": 106,
+        "p90": 456.7,
+        "max": 2681.8,
+        "total": 43787.5
+      },
+      "hoursToMerge": {
+        "n": 296,
+        "mean": 323.7,
+        "p25": 15.2,
+        "median": 59.9,
+        "p75": 375,
+        "p90": 1025.2,
+        "max": 2737.6,
+        "total": 95805.9
+      },
+      "formulaHumanDollars": {
+        "n": 296,
+        "mean": 28.42,
+        "p25": 10.42,
+        "median": 20.83,
+        "p75": 32.32,
+        "p90": 53.28,
+        "max": 355.1,
+        "total": 8412.08
+      },
+      "flatHumanDollars": {
+        "n": 296,
+        "mean": 72.47,
+        "p25": 30,
+        "median": 60,
+        "p75": 90,
+        "p90": 120,
+        "max": 870,
+        "total": 21450
+      }
+    },
+    "mergedJoined": {
+      "n": 107,
+      "machineAllocatedDollars": {
+        "n": 107,
+        "mean": 1.742,
+        "p25": 0.27,
+        "median": 0.63,
+        "p75": 1.936,
+        "p90": 3.725,
+        "max": 29.46,
+        "total": 186.428
+      },
+      "machineEventEstimateDollars": {
+        "n": 107,
+        "mean": 0.981,
+        "p25": 0.04,
+        "median": 0.121,
+        "p75": 0.6,
+        "p90": 2.672,
+        "max": 18.305,
+        "total": 104.96
+      },
+      "machineEngagements": {
+        "n": 107,
+        "mean": 19.1,
+        "p25": 5.5,
+        "median": 10,
+        "p75": 22,
+        "p90": 43.4,
+        "max": 307,
+        "total": 2045
+      },
+      "machineModelSeconds": {
+        "n": 107,
+        "mean": 6405,
+        "p25": 1113,
+        "median": 2084,
+        "p75": 7075,
+        "p90": 15726,
+        "max": 52245,
+        "total": 685369
+      },
+      "machineNotionalDollars": {
+        "n": 107,
+        "mean": 27.29,
+        "p25": 5.03,
+        "median": 10.71,
+        "p75": 29.28,
+        "p90": 54.11,
+        "max": 427.13,
+        "total": 2919.78
+      },
+      "machineEventSeconds": {
+        "n": 107,
+        "mean": 8605,
+        "p25": 1965,
+        "median": 3940,
+        "p75": 10315,
+        "p90": 18016,
+        "max": 94350,
+        "total": 920764
+      },
+      "machineEvents": {
+        "n": 107,
+        "mean": 12.6,
+        "p25": 5,
+        "median": 7,
+        "p75": 14.5,
+        "p90": 25.4,
+        "max": 185,
+        "total": 1351
+      },
+      "formulaHumanDollars": {
+        "n": 107,
+        "mean": 32.68,
+        "p25": 10.57,
+        "median": 21.77,
+        "p75": 34.32,
+        "p90": 54.15,
+        "max": 355.1,
+        "total": 3496.35
+      },
+      "perPrRatioFormulaOverAllocated": {
+        "n": 107,
+        "mean": 76,
+        "p25": 15,
+        "median": 38.2,
+        "p75": 81.2,
+        "p90": 178.8,
+        "max": 952,
+        "total": 8135
+      },
+      "perPrRatioFlatOverAllocated": {
+        "n": 107,
+        "mean": 199.2,
+        "p25": 37.7,
+        "median": 93,
+        "p75": 200,
+        "p90": 491.7,
+        "max": 2146.8,
+        "total": 21314
+      },
+      "humanRounds": {
+        "n": 107,
+        "mean": 2.55,
+        "p25": 1,
+        "median": 2,
+        "p75": 3,
+        "p90": 4,
+        "max": 29,
+        "total": 273
+      },
+      "perPrRatioFormulaOverNotional": {
+        "n": 107,
+        "mean": 4,
+        "p25": 0.9,
+        "median": 2.4,
+        "p75": 4.5,
+        "p90": 11,
+        "max": 22,
+        "total": 422.7
+      }
+    },
+    "allJoined": {
+      "prs": 419,
+      "machineAllocatedTotal": 378.31,
+      "machineAllocatedMergedTotal": 186.43,
+      "machineNotionalTotal": 6316.15,
+      "mergedAmongJoined": 160
+    },
+    "gauntletStagesPerPr": {
+      "prs": 161,
+      "panelStages": {
+        "n": 161,
+        "mean": 3.36,
+        "p25": 1,
+        "median": 3,
+        "p75": 6,
+        "p90": 6,
+        "max": 6,
+        "total": 541
+      },
+      "fixStages": {
+        "n": 161,
+        "mean": 2.9,
+        "p25": 0,
+        "median": 3,
+        "p75": 6,
+        "p90": 6,
+        "max": 6,
+        "total": 467
+      },
+      "panelStageCounts": {
+        "0": 14,
+        "1": 51,
+        "2": 11,
+        "3": 5,
+        "4": 12,
+        "5": 3,
+        "6": 65
+      },
+      "mergedWithStages": 39
+    },
+    "humanRoundsByMergeMonth": {
+      "2026-05": {
+        "n": 71,
+        "mean": 1.8,
+        "p25": 1,
+        "median": 1,
+        "p75": 2,
+        "p90": 3,
+        "max": 7,
+        "total": 128
+      },
+      "2026-06": {
+        "n": 35,
+        "mean": 4.54,
+        "p25": 1,
+        "median": 3,
+        "p75": 4,
+        "p90": 12,
+        "max": 27,
+        "total": 159
+      },
+      "2026-07": {
+        "n": 82,
+        "mean": 2,
+        "p25": 1,
+        "median": 1,
+        "p75": 2,
+        "p90": 4.9,
+        "max": 11,
+        "total": 164
+      },
+      "2026-08": {
+        "n": 70,
+        "mean": 2.64,
+        "p25": 1,
+        "median": 2,
+        "p75": 3,
+        "p90": 4,
+        "max": 29,
+        "total": 185
+      },
+      "2026-09": {
+        "n": 32,
+        "mean": 2.16,
+        "p25": 1,
+        "median": 2,
+        "p75": 3,
+        "p90": 4,
+        "max": 7,
+        "total": 69
+      },
+      "2026-10": {
+        "n": 6,
+        "mean": 1.67,
+        "p25": 1,
+        "median": 1.5,
+        "p75": 2.75,
+        "p90": 3,
+        "max": 3,
+        "total": 10
+      }
+    },
+    "humanRoundsMergedWithVsWithoutPanel": {
+      "withPanel": {
+        "n": 52,
+        "mean": 2.17,
+        "p25": 1,
+        "median": 2,
+        "p75": 3,
+        "p90": 3.9,
+        "max": 8,
+        "total": 113
+      },
+      "withoutPanel": {
+        "n": 244,
+        "mean": 2.47,
+        "p25": 1,
+        "median": 2,
+        "p75": 3,
+        "p90": 5,
+        "max": 29,
+        "total": 602
+      }
+    }
+  },
+  "upstream": {
+    "ferriedPullRequests": 19,
+    "states": {
+      "MERGED": 16,
+      "OPEN": 3
+    },
+    "openedBeforeFerryEra": 2,
+    "hoursToMergeFerryEra": {
+      "n": 14,
+      "mean": 235.4,
+      "p25": 24.5,
+      "median": 118.4,
+      "p75": 309.2,
+      "p90": 696.2,
+      "max": 910.6,
+      "total": 3295.7
+    },
+    "humanRounds": {
+      "n": 19,
+      "mean": 2,
+      "p25": 1,
+      "median": 1,
+      "p75": 2,
+      "p90": 5.6,
+      "max": 8,
+      "total": 38
+    },
+    "humanWords": {
+      "n": 19,
+      "mean": 13,
+      "p25": 0,
+      "median": 0,
+      "p75": 9,
+      "p90": 30,
+      "max": 129,
+      "total": 246
+    },
+    "commits": {
+      "n": 19,
+      "mean": 2.7,
+      "p25": 1,
+      "median": 2,
+      "p75": 3.5,
+      "p90": 6.4,
+      "max": 10,
+      "total": 52
+    }
+  },
+  "learning": {
+    "classifiedReviewComments": 534,
+    "processMisses": 112,
+    "newDirection": 422,
+    "missSeverity": {
+      "minor": 70,
+      "moderate": 21,
+      "major": 19,
+      "unknown": 2
+    },
+    "missCategory": {
+      "process": 21,
+      "style-convention": 20,
+      "naming": 13,
+      "correctness-bug": 11,
+      "docs-drift": 10,
+      "test-gap": 9,
+      "evaluator-gaming": 8,
+      "spec-violation": 8,
+      "security-hardening": 5,
+      "type-error": 3,
+      "unknown": 2,
+      "packaging-exports": 1,
+      "missed-edge-case": 1
+    },
+    "missesByMonth": {
+      "2026-08": 35,
+      "2026-07": 27,
+      "2026-09": 26,
+      "unknown": 24
+    },
+    "clusters": 52,
+    "clusterStatus": {
+      "open": 37,
+      "closed": 13,
+      "improvement-dispatched": 2
+    },
+    "improvedClusters": 18,
+    "improvedMembersBefore": 41,
+    "improvedMembersAfter": 8,
+    "improvedMembersUndated": 16,
+    "improvedClustersWithRecurrence": 5,
+    "improvedClusterDetail": [
+      {
+        "slug": "architectural-boundary-ownership",
+        "count": 1,
+        "improvedAt": "2026-09-16T23:15:52+00:00",
+        "before": 1,
+        "after": 0,
+        "undated": 0
+      },
+      {
+        "slug": "avoid-name-abbreviations",
+        "count": 7,
+        "improvedAt": "2026-07-11T02:04:03+00:00",
+        "before": 0,
+        "after": 3,
+        "undated": 4
+      },
+      {
+        "slug": "capability-hardening-attenuation",
+        "count": 6,
+        "improvedAt": "2026-08-04T05:25:14+00:00",
+        "before": 5,
+        "after": 0,
+        "undated": 1
+      },
+      {
+        "slug": "comment-banner-decoration",
+        "count": 1,
+        "improvedAt": "2026-09-29T20:03:36+00:00",
+        "before": 0,
+        "after": 0,
+        "undated": 1
+      },
+      {
+        "slug": "cross-platform-test-coverage",
+        "count": 3,
+        "improvedAt": "2026-09-29T18:15:03+00:00",
+        "before": 3,
+        "after": 0,
+        "undated": 0
+      },
+      {
+        "slug": "docs-claim-contradicts-code-semantics",
+        "count": 4,
+        "improvedAt": "2026-09-17T10:57:05+00:00",
+        "before": 3,
+        "after": 1,
+        "undated": 0
+      },
+      {
+        "slug": "existing-cli-surface-equivalence",
+        "count": 3,
+        "improvedAt": "2026-09-17T16:06:31+00:00",
+        "before": 2,
+        "after": 0,
+        "undated": 1
+      },
+      {
+        "slug": "exo-guard-matches-static-type",
+        "count": 5,
+        "improvedAt": "2026-07-20T16:44:08+00:00",
+        "before": 0,
+        "after": 0,
+        "undated": 5
+      },
+      {
+        "slug": "filler-phrase-concision",
+        "count": 3,
+        "improvedAt": "2026-09-27T17:22:06+00:00",
+        "before": 3,
+        "after": 0,
+        "undated": 0
+      },
+      {
+        "slug": "garden-design-pr-gauntlet-bypass",
+        "count": 5,
+        "improvedAt": "2026-08-14T06:02:40+00:00",
+        "before": 2,
+        "after": 2,
+        "undated": 1
+      },
+      {
+        "slug": "incomplete-sibling-transformation",
+        "count": 5,
+        "improvedAt": "2026-09-17T10:22:21+00:00",
+        "before": 5,
+        "after": 0,
+        "undated": 0
+      },
+      {
+        "slug": "inline-import-jsdoc",
+        "count": 2,
+        "improvedAt": "2026-07-16T05:14:49+00:00",
+        "before": 0,
+        "after": 1,
+        "undated": 1
+      },
+      {
+        "slug": "merge-base-pinning",
+        "count": 4,
+        "improvedAt": "2026-09-16T14:42:10+00:00",
+        "before": 4,
+        "after": 0,
+        "undated": 0
+      },
+      {
+        "slug": "phase-slice-substitutes-for-production-evidence",
+        "count": 1,
+        "improvedAt": "2026-09-27T18:05:42+00:00",
+        "before": 1,
+        "after": 0,
+        "undated": 0
+      },
+      {
+        "slug": "post-gauntlet-fixer-change-unreviewed",
+        "count": 4,
+        "improvedAt": "2026-09-27T16:40:53+00:00",
+        "before": 4,
+        "after": 0,
+        "undated": 0
+      },
+      {
+        "slug": "pr-description-reviewer-attention",
+        "count": 3,
+        "improvedAt": "2026-09-29T18:44:09+00:00",
+        "before": 1,
+        "after": 0,
+        "undated": 2
+      },
+      {
+        "slug": "prefer-endo-primitives",
+        "count": 7,
+        "improvedAt": "2026-08-04T05:25:14+00:00",
+        "before": 6,
+        "after": 1,
+        "undated": 0
+      },
+      {
+        "slug": "stale-related-design-direction",
+        "count": 1,
+        "improvedAt": "2026-08-22T07:50:43+00:00",
+        "before": 1,
+        "after": 0,
+        "undated": 0
+      }
+    ]
+  },
+  "gardenRepairShareByMonth": {
+    "2026-09": {
+      "events": 597,
+      "repair": 106
+    },
+    "2026-07": {
+      "events": 339,
+      "repair": 93
+    },
+    "2026-08": {
+      "events": 286,
+      "repair": 46
+    },
+    "2026-10": {
+      "events": 54,
+      "repair": 4
+    }
+  }
+}

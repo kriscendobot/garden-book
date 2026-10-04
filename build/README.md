@@ -44,6 +44,15 @@ on `kriscendobot/garden`); it refuses any `GARDEN_BOOK_POWERS` that is not
 `garden-book-<name>`, so `sites`, `@agent`, and the other reserved names are
 never overwritten.
 
+Chapter 8's review-economics section (8.8) is computed, not hand-written:
+`tools/equilibrium/analyze.mjs` reads one fixed `journal2` commit plus GitHub
+metadata saved by `tools/equilibrium/fetch-github.sh` and writes
+`data/equilibrium/aggregates.json`; `tools/equilibrium/scenario.mjs` derives
+the illustrative curves in `data/equilibrium/scenario.json`. The chart brief,
+including every classification rule and the exact commands, is
+`art/equilibrium-data-spec.md`. Only aggregates are committed, never journal
+or review text.
+
 `build.mjs` reads `intro.html` (the title page; update its edition note) from
 the build directory. It prefixes heading ids per chapter, rewrites relative
 role/skill links to the in-book chapter 5/6 entries, and sends other repo

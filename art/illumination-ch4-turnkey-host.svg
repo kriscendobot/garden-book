@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="illumination-ch4-turnkey-host-title illumination-ch4-turnkey-host-description">
+  <title id="illumination-ch4-turnkey-host-title">The turnkey host arrives empty of secrets</title>
+  <desc id="illumination-ch4-turnkey-host-description">A prebuilt floating garden host descends with beds and a conservatory but receives its three credentials only from a human after landing.</desc>
+  <rect x="10" y="10" width="940" height="520" rx="20" fill="#FBF8F0" stroke="#6A6253" stroke-width="5"/>
+  <rect x="24" y="24" width="912" height="492" rx="14" fill="none" stroke="#E6CF7A" stroke-width="3"/>
+  <path d="M28 92Q70 28 132 35M932 92Q890 28 828 35M28 448Q70 512 132 505M932 448Q890 512 828 505" fill="none" stroke="#627A57" stroke-width="5" stroke-linecap="round"/>
+  
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(82 45) rotate(-18) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(878 45) rotate(198) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(82 495) rotate(18) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(878 495) rotate(162) scale(0.65)"/>
+      <path d="M160 135C190 75 270 86 285 132C330 95 395 125 392 170H145C130 150 140 137 160 135ZM575 115C610 60 685 75 700 125C748 88 820 120 815 165H555C542 142 552 120 575 115Z" fill="#E8D8B9" stroke="#6A6253" stroke-width="5"/>
+      <path d="M250 170V260M685 165V260M250 260H685" fill="none" stroke="#A98569" stroke-width="7" stroke-dasharray="15 10"/>
+      <path d="M185 260H760L705 420H245Z" fill="#A98569" stroke="#6A6253" stroke-width="7"/>
+      
+  <g stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M265 310l180 -18.333333333333332l0 55l-180 18.333333333333332Z" fill="#9CAF88"/>
+    <path d="M265 310l180 -18.333333333333332" fill="none" stroke="#E8D8B9"/>
+  </g><path d="M510 355V245L585 190L660 245V355Z" fill="#FBF8F0" fill-opacity="0.55" stroke="#6A6253" stroke-width="5"/><path d="M585 190V355M510 245H660" stroke="#9CAF88" stroke-width="4"/>
+      <g fill="#FBF8F0" stroke="#E6CF7A" stroke-width="6"><path d="M705 300h34v46h-34z"/><path d="M705 350h34v46h-34z"/><path d="M660 325h34v46h-34z"/></g>
+      
+  <g transform="translate(145 445) scale(0.65)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>
+    <path d="M-16-18L0-26L17-16L13 28H-13Z" fill="#B9ACCC"/>
+    <path d="M-10 28L-16 58M10 28L18 58" fill="none"/>
+    
+  </g>
+  <g transform="translate(225 390) scale(0.55)" fill="none" stroke="#E6CF7A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="-20" r="15"/><path d="M-5 0H38M21 0V13M32 0V9"/>
+  </g>
+  <g transform="translate(185 420) scale(0.55)" fill="none" stroke="#E6CF7A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="-20" r="15"/><path d="M-5 0H38M21 0V13M32 0V9"/>
+  </g>
+  <g transform="translate(265 420) scale(0.55)" fill="none" stroke="#E6CF7A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="-20" r="15"/><path d="M-5 0H38M21 0V13M32 0V9"/>
+  </g>
+      <path d="M295 405C390 455 515 470 655 375" fill="none" stroke="#627A57" stroke-width="6"/><path d="M-18-13L9 0L-18 13Z" fill="#627A57" stroke="#6A6253" stroke-width="3" transform="translate(655 375) rotate(0)"/>
+</svg>

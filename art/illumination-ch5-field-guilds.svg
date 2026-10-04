@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-labelledby="illumination-ch5-field-guilds-title illumination-ch5-field-guilds-description">
+  <title id="illumination-ch5-field-guilds-title">Roles as the garden's field guilds</title>
+  <desc id="illumination-ch5-field-guilds-description">One generic gardener chooses an emblem and a slim operating brief from different guild alcoves for each kind of work.</desc>
+  <rect x="10" y="10" width="880" height="580" rx="20" fill="#FBF8F0" stroke="#6A6253" stroke-width="5"/>
+  <rect x="24" y="24" width="852" height="552" rx="14" fill="none" stroke="#E6CF7A" stroke-width="3"/>
+  <path d="M28 92Q70 28 132 35M872 92Q830 28 768 35M28 508Q70 572 132 565M872 508Q830 572 768 565" fill="none" stroke="#627A57" stroke-width="5" stroke-linecap="round"/>
+  
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(82 45) rotate(-18) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(818 45) rotate(198) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(82 555) rotate(18) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(818 555) rotate(162) scale(0.65)"/>
+      
+  <g transform="translate(450 420) scale(1.05)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>
+    <path d="M-16-18L0-26L17-16L13 28H-13Z" fill="#C98267"/>
+    <path d="M-10 28L-16 58M10 28L18 58" fill="none"/>
+    
+  </g>
+  <g stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M405 300Q427.5 288 450 308V372Q427.5 354 405 367Z" fill="#E6CF7A"/>
+    <path d="M495 300Q472.5 288 450 308V372Q472.5 354 495 367Z" fill="#E6CF7A"/>
+  </g>
+      <g fill="#E8D8B9" stroke="#6A6253" stroke-width="5"><path d="M70 365V195Q130 110 190 195V365Z"/><path d="M200 285V135Q260 55 320 135V285Z"/><path d="M580 285V135Q640 55 700 135V285Z"/><path d="M710 365V195Q770 110 830 195V365Z"/><path d="M330 245V110Q390 35 440 110V245Z"/><path d="M460 245V110Q510 35 570 110V245Z"/></g>
+      <g stroke="#6A6253" stroke-width="5" fill="none"><path d="M105 310l50-75M225 240h70M370 195l35-70 30 70M485 165h60M605 205l70-45M735 290h70"/></g>
+      <g transform="translate(155 235)" stroke="#6A6253" stroke-width="4"><rect x="-5" y="-28" width="10" height="18" rx="2" fill="#E6CF7A" transform="rotate(0)"/><rect x="-5" y="-28" width="10" height="18" rx="2" fill="#E6CF7A" transform="rotate(45)"/><rect x="-5" y="-28" width="10" height="18" rx="2" fill="#E6CF7A" transform="rotate(90)"/><rect x="-5" y="-28" width="10" height="18" rx="2" fill="#E6CF7A" transform="rotate(135)"/><rect x="-5" y="-28" width="10" height="18" rx="2" fill="#E6CF7A" transform="rotate(180)"/><rect x="-5" y="-28" width="10" height="18" rx="2" fill="#E6CF7A" transform="rotate(225)"/><rect x="-5" y="-28" width="10" height="18" rx="2" fill="#E6CF7A" transform="rotate(270)"/><rect x="-5" y="-28" width="10" height="18" rx="2" fill="#E6CF7A" transform="rotate(315)"/><circle r="18" fill="#E6CF7A"/><circle r="6.428571428571429" fill="#FBF8F0"/></g>
+  <g transform="translate(260 200) scale(0.6)" fill="#D8A6A6" stroke="#6A6253" stroke-width="2">
+    <circle cx="0" cy="-11" r="8"/><circle cx="10" cy="-3" r="8"/><circle cx="6" cy="9" r="8"/><circle cx="-6" cy="9" r="8"/><circle cx="-10" cy="-3" r="8"/><circle r="5" fill="#E6CF7A"/>
+  </g>
+  <g transform="translate(405 160) scale(0.7)" stroke="#6A6253" stroke-width="5" stroke-linecap="round">
+    <circle r="22" fill="#B9ACCC" fill-opacity="0.55"/><path d="M16 16L39 39"/>
+  </g>
+  <g stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M490 130Q502.5 118 515 138V182Q502.5 164 490 177Z" fill="#FBF8F0"/>
+    <path d="M540 130Q527.5 118 515 138V182Q527.5 164 540 177Z" fill="#FBF8F0"/>
+  </g>
+  <g transform="translate(640 180) scale(0.55)" fill="none" stroke="#E6CF7A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="-20" r="15"/><path d="M-5 0H38M21 0V13M32 0V9"/>
+  </g>
+  <g transform="translate(770 235) scale(0.55)" stroke="#6A6253" stroke-width="5">
+    <path d="M-18 0V-16A18 18 0 0136 0" fill="none" transform="translate(-9 0)"/><rect x="-27" y="0" width="54" height="43" rx="5" fill="#E6CF7A"/><circle cy="18" r="4" fill="#6A6253"/>
+  </g>
+      <path d="M450 294C370 250 315 235 285 225" fill="none" stroke="#C98267" stroke-width="7"/><path d="M-18-13L9 0L-18 13Z" fill="#C98267" stroke="#6A6253" stroke-width="3" transform="translate(285 225) rotate(180)"/>
+</svg>

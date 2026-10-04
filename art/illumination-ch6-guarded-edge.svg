@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" role="img" aria-labelledby="illumination-ch6-guarded-edge-title illumination-ch6-guarded-edge-description">
+  <title id="illumination-ch6-guarded-edge-title">The guarded edge of the garden</title>
+  <desc id="illumination-ch6-guarded-edge-description">An incoming scroll is classified before entry, and an outgoing note has its destination checked before leaving through a second gate.</desc>
+  <rect x="10" y="10" width="980" height="380" rx="20" fill="#FBF8F0" stroke="#6A6253" stroke-width="5"/>
+  <rect x="24" y="24" width="952" height="352" rx="14" fill="none" stroke="#E6CF7A" stroke-width="3"/>
+  <path d="M28 92Q70 28 132 35M972 92Q930 28 868 35M28 308Q70 372 132 365M972 308Q930 372 868 365" fill="none" stroke="#627A57" stroke-width="5" stroke-linecap="round"/>
+  
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(82 45) rotate(-18) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(918 45) rotate(198) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(82 355) rotate(18) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(918 355) rotate(162) scale(0.65)"/>
+      <path d="M390 70V330M610 70V330" stroke="#6A6253" stroke-width="32" stroke-dasharray="36 10"/>
+      
+  <g stroke="#6A6253" stroke-width="6" stroke-linejoin="round" fill="none">
+    <path d="M385 330V159Q437.5 107 490 159V330"/>
+    <path d="M371 330H504"/>
+    <path d="M442.75 163V330L532 314V173Z" fill="#E8D8B9"/>
+  </g>
+  <g stroke="#6A6253" stroke-width="6" stroke-linejoin="round" fill="none">
+    <path d="M510 330V159Q562.5 107 615 159V330"/>
+    <path d="M496 330H629"/>
+    <path d="M567.75 163V330L657 314V173Z" fill="#E8D8B9"/>
+  </g>
+      <path d="M70 180C175 135 240 260 345 215" fill="none" stroke="#A98569" stroke-width="11" stroke-dasharray="20 14"/>
+      
+  <g stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M110 155Q137.5 143 165 163V230Q137.5 212 110 225Z" fill="#FBF8F0"/>
+    <path d="M220 155Q192.5 143 165 163V230Q192.5 212 220 225Z" fill="#FBF8F0"/>
+  </g>
+  <g transform="translate(300 195) scale(0.95)" stroke="#6A6253" stroke-width="5" stroke-linecap="round">
+    <circle r="22" fill="#B9ACCC" fill-opacity="0.55"/><path d="M16 16L39 39"/>
+  </g>
+  <g transform="translate(365 285) scale(0.52)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>
+    <path d="M-16-18L0-26L17-16L13 28H-13Z" fill="#9CAF88"/>
+    <path d="M-10 28L-16 58M10 28L18 58" fill="none"/>
+    <path d="M16-5L34 17M30 13L40 3" fill="none"/>
+  </g>
+      
+  <g transform="translate(660 285) scale(0.52)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>
+    <path d="M-16-18L0-26L17-16L13 28H-13Z" fill="#C98267"/>
+    <path d="M-10 28L-16 58M10 28L18 58" fill="none"/>
+    <path d="M16-5L34 17M30 13L40 3" fill="none"/>
+  </g>
+  <g transform="translate(715 205) scale(0.52)" stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M-28-34H28L23 34H-23Z" fill="#E6CF7A"/>
+    <path d="M-28-34L0-16L28-34" fill="none"/>
+    <path d="M0 19V-4M0 7C-14 5-19-5-20-14C-8-14-1-7 0 7ZM0 12C13 10 18 2 19-7C8-7 1 2 0 12Z" fill="#9CAF88"/>
+  </g>
+      <path d="M755 210H910" stroke="#C98267" stroke-width="7" stroke-dasharray="18 10"/><path d="M-18-13L9 0L-18 13Z" fill="#C98267" stroke="#6A6253" stroke-width="3" transform="translate(910 210) rotate(0)"/>
+      <rect x="650" y="115" width="105" height="45" rx="8" fill="#FBF8F0" stroke="#6A6253" stroke-width="4"/><path d="M670 137h65" stroke="#E6CF7A" stroke-width="8"/>
+      <path d="M400 90C350 80 345 130 370 145M600 90C650 80 655 130 630 145" fill="none" stroke="#627A57" stroke-width="7"/>
+</svg>

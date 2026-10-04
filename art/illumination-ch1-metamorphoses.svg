@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="illumination-ch1-metamorphoses-title illumination-ch1-metamorphoses-description">
+  <title id="illumination-ch1-metamorphoses-title">The garden through its metamorphoses</title>
+  <desc id="illumination-ch1-metamorphoses-description">One continuous root passes through a shepherd plot, glasshouse, supervised nursery, and distributed garden joined at a central ledger.</desc>
+  <rect x="10" y="10" width="940" height="580" rx="20" fill="#FBF8F0" stroke="#6A6253" stroke-width="5"/>
+  <rect x="24" y="24" width="912" height="552" rx="14" fill="none" stroke="#E6CF7A" stroke-width="3"/>
+  <path d="M28 92Q70 28 132 35M932 92Q890 28 828 35M28 508Q70 572 132 565M932 508Q890 572 828 565" fill="none" stroke="#627A57" stroke-width="5" stroke-linecap="round"/>
+  
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(82 45) rotate(-18) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(878 45) rotate(198) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(82 555) rotate(18) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(878 555) rotate(162) scale(0.65)"/>
+      <path d="M65 485C235 410 305 505 470 450S735 490 890 408" fill="none" stroke="#A98569" stroke-width="15" stroke-linecap="round"/>
+      <path d="M70 475C235 400 310 495 470 440S730 480 890 398" fill="none" stroke="#E6CF7A" stroke-width="4" stroke-linecap="round"/>
+      <g fill="#E8D8B9" stroke="#6A6253" stroke-width="5"><path d="M62 190Q155 95 248 190V430H62Z"/><path d="M272 190Q365 95 458 190V430H272Z"/><path d="M482 190Q575 95 668 190V430H482Z"/><path d="M692 190Q785 95 898 190V430H692Z"/></g>
+      
+  <g transform="translate(155 330) scale(0.8)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>
+    <path d="M-16-18L0-26L17-16L13 28H-13Z" fill="#C98267"/>
+    <path d="M-10 28L-16 58M10 28L18 58" fill="none"/>
+    <path d="M16-5L34 17M30 13L40 3" fill="none"/>
+  </g><path d="M95 390H220" stroke="#627A57" stroke-width="8"/>
+      <path d="M300 382V226L365 156L430 226V382Z" fill="#FBF8F0" fill-opacity="0.6" stroke="#6A6253" stroke-width="5"/><path d="M365 157V382M300 226H430" stroke="#9CAF88" stroke-width="4"/>
+      
+  <g stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M506 330l130 -18l0 54l-130 18Z" fill="#9CAF88"/>
+    <path d="M506 330l130 -18" fill="none" stroke="#E8D8B9"/>
+  </g>
+  <g transform="translate(570 288) scale(0.62)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>
+    <path d="M-16-18L0-26L17-16L13 28H-13Z" fill="#B9ACCC"/>
+    <path d="M-10 28L-16 58M10 28L18 58" fill="none"/>
+    <path d="M16-5L34 17M30 13L40 3" fill="none"/>
+  </g><path d="M628 205h20v62h-20zM618 205l20-34 20 34z" fill="#A98569" stroke="#6A6253" stroke-width="4"/>
+  <g transform="translate(638 157) scale(0.45)" fill="#E6CF7A" stroke="#6A6253" stroke-width="2">
+    <circle cx="0" cy="-11" r="8"/><circle cx="10" cy="-3" r="8"/><circle cx="6" cy="9" r="8"/><circle cx="-6" cy="9" r="8"/><circle cx="-10" cy="-3" r="8"/><circle r="5" fill="#E6CF7A"/>
+  </g>
+      
+  <g stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M750 305Q772.5 293 795 313V380Q772.5 362 750 375Z" fill="#E6CF7A"/>
+    <path d="M840 305Q817.5 293 795 313V380Q817.5 362 840 375Z" fill="#E6CF7A"/>
+  </g><path d="M737 320C700 272 712 236 737 214M852 320C892 272 879 233 852 212" fill="none" stroke="#627A57" stroke-width="6"/>
+  <g transform="translate(726 382) scale(0.45)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>
+    <path d="M-16-18L0-26L17-16L13 28H-13Z" fill="#C98267"/>
+    <path d="M-10 28L-16 58M10 28L18 58" fill="none"/>
+    <path d="M16-5L34 17M30 13L40 3" fill="none"/>
+  </g>
+  <g transform="translate(866 382) scale(0.45)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>
+    <path d="M-16-18L0-26L17-16L13 28H-13Z" fill="#B9ACCC"/>
+    <path d="M-10 28L-16 58M10 28L18 58" fill="none"/>
+    <path d="M16-5L34 17M30 13L40 3" fill="none"/>
+  </g>
+</svg>

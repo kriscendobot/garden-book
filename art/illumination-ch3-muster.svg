@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 350" role="img" aria-labelledby="illumination-ch3-muster-title illumination-ch3-muster-description">
+  <title id="illumination-ch3-muster-title">Muster turns an overgrown inbox into decisions</title>
+  <desc id="illumination-ch3-muster-description">Tangled message leaves are compacted into bundles, classified into baskets, and presented one basket at a time for a gardener to decide.</desc>
+  <rect x="10" y="10" width="1030" height="330" rx="20" fill="#FBF8F0" stroke="#6A6253" stroke-width="5"/>
+  <rect x="24" y="24" width="1002" height="302" rx="14" fill="none" stroke="#E6CF7A" stroke-width="3"/>
+  <path d="M28 92Q70 28 132 35M1022 92Q980 28 918 35M28 258Q70 322 132 315M1022 258Q980 322 918 315" fill="none" stroke="#627A57" stroke-width="5" stroke-linecap="round"/>
+  
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(82 45) rotate(-18) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(968 45) rotate(198) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(82 305) rotate(18) scale(0.65)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(968 305) rotate(162) scale(0.65)"/>
+      <path d="M75 275H975" stroke="#A98569" stroke-width="13" stroke-linecap="round"/>
+      <g fill="none" stroke="#627A57" stroke-width="7"><path d="M95 235C140 95 255 285 310 135M100 115C185 280 230 92 308 224"/></g>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(130 150) rotate(-35) scale(0.7)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(220 200) rotate(25) scale(0.7)"/>
+  <g transform="translate(175 230) scale(0.45)" stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M-28-34H28L23 34H-23Z" fill="#D8A6A6"/>
+    <path d="M-28-34L0-16L28-34" fill="none"/>
+    <path d="M0 19V-4M0 7C-14 5-19-5-20-14C-8-14-1-7 0 7ZM0 12C13 10 18 2 19-7C8-7 1 2 0 12Z" fill="#9CAF88"/>
+  </g>
+      <g fill="#E8D8B9" stroke="#6A6253" stroke-width="4"><rect x="390" y="135" width="120" height="30" rx="5"/><rect x="375" y="180" width="145" height="30" rx="5"/><rect x="395" y="225" width="115" height="30" rx="5"/></g>
+      <g fill="#E6CF7A" stroke="#6A6253" stroke-width="5"><path d="M610 170h105l-14 92h-77z"/><path d="M745 170h105l-14 92h-77z"/></g>
+  <g transform="translate(662 208) scale(0.32)" stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M-28-34H28L23 34H-23Z" fill="#B8CF9B"/>
+    <path d="M-28-34L0-16L28-34" fill="none"/>
+    <path d="M0 19V-4M0 7C-14 5-19-5-20-14C-8-14-1-7 0 7ZM0 12C13 10 18 2 19-7C8-7 1 2 0 12Z" fill="#9CAF88"/>
+  </g>
+  <g transform="translate(797 208) scale(0.32)" stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M-28-34H28L23 34H-23Z" fill="#B9ACCC"/>
+    <path d="M-28-34L0-16L28-34" fill="none"/>
+    <path d="M0 19V-4M0 7C-14 5-19-5-20-14C-8-14-1-7 0 7ZM0 12C13 10 18 2 19-7C8-7 1 2 0 12Z" fill="#9CAF88"/>
+  </g>
+      
+  <g transform="translate(925 240) scale(0.67)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>
+    <path d="M-16-18L0-26L17-16L13 28H-13Z" fill="#C98267"/>
+    <path d="M-10 28L-16 58M10 28L18 58" fill="none"/>
+    
+  </g><path d="M845 190C875 160 895 160 910 178" fill="none" stroke="#6A6253" stroke-width="5"/>
+      <path d="M320 195H355M530 195H585M855 215H885" stroke="#C98267" stroke-width="5"/><path d="M-18-13L9 0L-18 13Z" fill="#C98267" stroke="#6A6253" stroke-width="3" transform="translate(355 195) rotate(0)"/><path d="M-18-13L9 0L-18 13Z" fill="#C98267" stroke="#6A6253" stroke-width="3" transform="translate(585 195) rotate(0)"/><path d="M-18-13L9 0L-18 13Z" fill="#C98267" stroke="#6A6253" stroke-width="3" transform="translate(885 215) rotate(0)"/>
+</svg>

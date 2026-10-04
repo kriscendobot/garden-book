@@ -155,7 +155,14 @@ const scenarioBanner = (x, y) =>
 
 const logScale = (min, max, start, end) => value =>
   start + ((Math.log10(value) - Math.log10(min)) / (Math.log10(max) - Math.log10(min))) * (end - start);
-const linearScale = (min, max, start, end) => value => start + ((value - min) / (max - min)) * (end - start);
+// A constant series has an empty domain; draw it at the start of the range
+// rather than dividing by zero.
+const linearScale = (min, max, start, end) => value =>
+  max === min ? start : start + ((value - min) / (max - min)) * (end - start);
+
+// tally() records only the keys it saw, so a category that falls to zero in a
+// later snapshot is absent, not 0. Fill a chart's fixed domain with zeros.
+const zeroFilled = (tally, keys) => Object.fromEntries(keys.map(key => [key, tally?.[key] ?? 0]));
 
 const polyline = points => points.map(([x, y], index) => `${index ? 'L' : 'M'}${fmt(x)} ${fmt(y)}`).join('');
 
@@ -170,7 +177,6 @@ const lossLabel = L => `${wholeDollars(L)} loss`;
 
 const cutoffLabel = aggregates => aggregates.provenance.journalCutoff.replace('+00:00', 'Z');
 
-// ---------------------------------------------------------------- E1
 const e1 = ({ aggregates }, prefix) => {
   const m = aggregates.ebfb.mergedJoined;
   const x = logScale(0.1, 100, 24, 329);
@@ -227,7 +233,6 @@ const e1 = ({ aggregates }, prefix) => {
   };
 };
 
-// ---------------------------------------------------------------- E2
 const e2 = ({ aggregates }, prefix) => {
   const r = aggregates.reconciliation;
   const months = Object.entries(r.byMonth);
@@ -272,7 +277,6 @@ const e2 = ({ aggregates }, prefix) => {
   return { height: 378, defs: hatch(prefix, 'moss', palette.moss), body: parts.join('') };
 };
 
-// ---------------------------------------------------------------- E3
 const e3 = ({ aggregates }, prefix) => {
   const weeks = aggregates.weeklySeries;
   const top = 96;
@@ -312,7 +316,6 @@ const e3 = ({ aggregates }, prefix) => {
   return { height: 312, defs: hatch(prefix, 'sage', palette.sage), body: parts.join('') };
 };
 
-// ---------------------------------------------------------------- E4
 const e4 = ({ aggregates }) => {
   const minute = 60;
   const hour = 3600;
@@ -369,7 +372,6 @@ const e4 = ({ aggregates }) => {
   return { height: 426, defs: '', body: parts.join('') };
 };
 
-// ---------------------------------------------------------------- E5
 const e5 = ({ aggregates }, prefix) => {
   const garden = aggregates.regimes.garden;
   const ebfb = aggregates.regimes.ebfb;
@@ -489,12 +491,20 @@ const e5 = ({ aggregates }, prefix) => {
   };
 };
 
-// ---------------------------------------------------------------- E6
 const e6 = ({ aggregates }) => {
-  const counts = aggregates.ebfb.gauntletStagesPerPullRequest.panelStageCounts;
+  const counts = zeroFilled(aggregates.ebfb.gauntletStagesPerPullRequest.panelStageCounts, ['0', '1', '2', '3', '4', '5', '6']);
   const prs = aggregates.ebfb.gauntletStagesPerPullRequest.pullRequests;
   const p = aggregates.panel;
-  const d = p.dispositions;
+  const d = zeroFilled(p.dispositions, [
+    'passed',
+    'passed-no-review-surface',
+    'must-fix',
+    'error',
+    'seat-error',
+    'interrupted',
+    'max-rounds-exceeded',
+    'decider-error',
+  ]);
   const pass = d.passed + d['passed-no-review-surface'];
   const parts = [];
   parts.push(text(0, 16, 'Where the gauntlet ends', { size: 13, weight: 600 }));
@@ -561,7 +571,6 @@ const e6 = ({ aggregates }) => {
   return { height: Math.ceil(note.bottom + 8), defs: '', body: parts.join('') };
 };
 
-// ---------------------------------------------------------------- E7
 const e7 = ({ aggregates }, prefix) => {
   const l = aggregates.learning;
   const parts = [];
@@ -595,12 +604,12 @@ const e7 = ({ aggregates }, prefix) => {
   parts.push(split.map(segment => segment.markup).join(''));
   parts.push(text(W - 2, 158, `misses (${pct(l.processMisses)})`, { anchor: 'end' }));
   parts.push(text(2, 158, 'no machine check could have made these', { italic: true }));
-  const s = l.missSeverity;
+  const s = zeroFilled(l.missSeverity, ['minor', 'moderate', 'major', 'unknown']);
   parts.push(text(W - 2, 174, `${s.minor} minor, ${s.moderate} moderate, ${s.major} major, ${s.unknown} unrecorded`, { anchor: 'end' }));
   const missCenter = (split[1].a + split[1].b) / 2;
   parts.push(arrowDown(missCenter, 178, 198));
   // Stage 3.
-  const status = l.clusterStatus;
+  const status = zeroFilled(l.clusterStatus, ['closed', 'open', 'improvement-dispatched']);
   parts.push(text(0, 222, `${l.clusters}`, { size: 24, weight: 600 }));
   parts.push(text(42, 222, 'clusters of misses'));
   const clusters = segmented(230, [
@@ -657,7 +666,6 @@ const e7 = ({ aggregates }, prefix) => {
   };
 };
 
-// ---------------------------------------------------------------- E8
 const e8 = ({ scenario }) => {
   const left = 40;
   const right = 250;
@@ -783,7 +791,6 @@ const e8 = ({ scenario }) => {
   return { height: cBottom + 62, defs: '', body: parts.join('') };
 };
 
-// ---------------------------------------------------------------- E9
 const e9 = ({ scenario }) => {
   const left = 40;
   const right = 268;

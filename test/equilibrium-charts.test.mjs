@@ -126,7 +126,7 @@ test('the spec tables agree with the committed data the charts read', () => {
     ),
   );
 
-  const counts = data.aggregates.ebfb.gauntletStagesPerPr.panelStageCounts;
+  const counts = data.aggregates.ebfb.gauntletStagesPerPullRequest.panelStageCounts;
   assert.ok(section('E6').includes(Object.entries(counts).map(([stage, count]) => `${stage}: ${count}`).join(', ')));
 
   const humanAxis = bulletSeries('E8');
@@ -187,7 +187,7 @@ const expected = {
     '70 minor, 21 moderate, 19 major, 2 unrecorded',
     'Clusters are dispatched only after three misses across two pull requests, so members accumulate before a fix by construction. Suggestive, not measured.',
   ],
-  E8: ['SCENARIO', '$100', '$400', '$1,600 loss', '$100 loss: 13 min, $71.82', '$400 loss: 41 min, $132.03', '$1,600 loss: 70 min, $194.96', '$1,311.19 at 0 min', 'k = 3', 'machine $1.36', '0', '60', '120', '180'],
+  E8: ['SCENARIO', '$100', '$400', '$1,600 loss', '$100 loss: 13 min, $71.89', '$400 loss: 42 min, $132.09', '$1,600 loss: 70 min, $195.02', '$1,311.26 at 0 min', 'k = 3', 'machine $1.42', '0', '60', '120', '180'],
   E9: ['SCENARIO', 'gauntlet cap', '$100 loss', '$400 loss', '$1,600 loss', '0', '1', '2', '3', '4', '5', '6', '7', '8', 'd = 0.7903'],
 };
 

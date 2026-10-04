@@ -179,8 +179,8 @@ const e1 = ({ aggregates }, prefix) => {
     { label: 'Machine, list price (observed, never charged)', q: m.machineNotionalDollars, fill: palette.sage },
     { label: 'Human, reducer formula (derived)', q: m.formulaHumanDollars, fill: `url(#${prefix}-hatch-terracotta)` },
   ];
-  const ratioAllocation = Math.round(m.perPrRatioFormulaOverAllocated.median);
-  const ratioList = m.perPrRatioFormulaOverNotional.median;
+  const ratioAllocation = Math.round(m.perPullRequestRatioFormulaOverAllocated.median);
+  const ratioList = m.perPullRequestRatioFormulaOverNotional.median;
   const top = 50;
   const axisY = 292;
   const parts = [];
@@ -491,8 +491,8 @@ const e5 = ({ aggregates }, prefix) => {
 
 // ---------------------------------------------------------------- E6
 const e6 = ({ aggregates }) => {
-  const counts = aggregates.ebfb.gauntletStagesPerPr.panelStageCounts;
-  const prs = aggregates.ebfb.gauntletStagesPerPr.prs;
+  const counts = aggregates.ebfb.gauntletStagesPerPullRequest.panelStageCounts;
+  const prs = aggregates.ebfb.gauntletStagesPerPullRequest.pullRequests;
   const p = aggregates.panel;
   const d = p.dispositions;
   const pass = d.passed + d['passed-no-review-surface'];
@@ -554,7 +554,7 @@ const e6 = ({ aggregates }) => {
   const note = paragraph(
     0,
     barTop + 122,
-    `${p.mustFixRunsAtCap} of the ${d['must-fix']} must-fix runs hit the 20-item recording cap, so must-fix counts cannot show convergence; ${p.prsEndingPass} of ${p.prsWithDecidedRun} PRs with a verdict ended on a pass.`,
+    `${p.mustFixRunsAtCap} of the ${d['must-fix']} must-fix runs hit the 20-item recording cap, so must-fix counts cannot show convergence; ${p.pullRequestsEndingPass} of ${p.pullRequestsWithDecidedRun} PRs with a verdict ended on a pass.`,
     W,
   );
   parts.push(note.markup);
@@ -893,7 +893,7 @@ export const charts = [
       'A histogram of the highest panel stage per pull request and one bar of panel-run outcomes. The most common outcome is a gauntlet that uses all six rounds; panel runs almost always return a must-fix list, and one in five returns no verdict at all.',
     kind: 'observed',
     caption: aggregates =>
-      `Observed: ${aggregates.ebfb.gauntletStagesPerPr.prs} PRs with gauntlet-stage events; ${aggregates.panel.ebfbRuns} panel runs from 2026-09-23. Cutoff ${cutoffLabel(aggregates)}.`,
+      `Observed: ${aggregates.ebfb.gauntletStagesPerPullRequest.pullRequests} PRs with gauntlet-stage events; ${aggregates.panel.ebfbRuns} panel runs from 2026-09-23. Cutoff ${cutoffLabel(aggregates)}.`,
   },
   {
     id: 'E7',

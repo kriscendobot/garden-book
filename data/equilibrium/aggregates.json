@@ -2,12 +2,13 @@
   "provenance": {
     "journalRevision": "6485a3b8d83b250470a2447bbc947ae1a1e7fd24",
     "journalCutoff": "2026-10-04T06:16:22+00:00",
-    "githubFetchedAt": "2026-10-04T06:23:52Z",
+    "githubFetchedAt": "2026-10-04T07:04:50Z",
     "firstEventRecordedAt": "2026-07-14T03:04:20Z",
     "lastEventRecordedAt": "2026-10-04T06:10:26Z",
     "reputationEvents": 8623,
     "usageFiles": 6632,
     "usageLines": 11418,
+    "usageLinesUnparsed": 0,
     "completionReports": 10793,
     "eventsWithReport": 8086,
     "panelRunRecords": 1188
@@ -665,15 +666,15 @@
         "max": 0.4648,
         "total": 6.7824
       },
-      "notionalDollars": {
-        "n": 3,
-        "mean": 2.956,
-        "p25": 1.269,
-        "median": 2.538,
-        "p75": 4.434,
-        "p90": 5.571,
-        "max": 6.33,
-        "total": 8.868
+      "allocatedDollarsPerBase": {
+        "n": 184,
+        "mean": 0.0692,
+        "p25": 0.0268,
+        "median": 0.0297,
+        "p75": 0.0718,
+        "p90": 0.1599,
+        "max": 0.5975,
+        "total": 12.7246
       }
     },
     "panel": {
@@ -698,15 +699,15 @@
         "max": 1.7369,
         "total": 25.1275
       },
-      "notionalDollars": {
-        "n": 4,
-        "mean": 1.676,
-        "p25": 0.544,
-        "median": 1.148,
-        "p75": 2.279,
-        "p90": 3.556,
-        "max": 4.407,
-        "total": 6.702
+      "allocatedDollarsPerBase": {
+        "n": 611,
+        "mean": 0.0823,
+        "p25": 0.0444,
+        "median": 0.06,
+        "p75": 0.096,
+        "p90": 0.1546,
+        "max": 0.6354,
+        "total": 50.309
       }
     },
     "fix": {
@@ -731,15 +732,15 @@
         "max": 0.4902,
         "total": 46.1389
       },
-      "notionalDollars": {
-        "n": 6,
-        "mean": 4.556,
-        "p25": 2.265,
-        "median": 2.696,
-        "p75": 5.863,
-        "p90": 8.889,
-        "max": 10.979,
-        "total": 27.338
+      "allocatedDollarsPerBase": {
+        "n": 540,
+        "mean": 0.2758,
+        "p25": 0.1083,
+        "median": 0.2036,
+        "p75": 0.3509,
+        "p90": 0.5813,
+        "max": 2.6318,
+        "total": 148.9324
       }
     },
     "undraft": {
@@ -764,15 +765,15 @@
         "max": 0.0158,
         "total": 0.0631
       },
-      "notionalDollars": {
-        "n": 0,
-        "mean": null,
-        "p25": null,
-        "median": null,
-        "p75": null,
-        "p90": null,
-        "max": null,
-        "total": 0
+      "allocatedDollarsPerBase": {
+        "n": 14,
+        "mean": 0.0286,
+        "p25": 0.0194,
+        "median": 0.0232,
+        "p75": 0.0276,
+        "p90": 0.0395,
+        "max": 0.1049,
+        "total": 0.3999
       }
     },
     "viability": {
@@ -797,15 +798,15 @@
         "max": 0.0086,
         "total": 0.1384
       },
-      "notionalDollars": {
-        "n": 0,
-        "mean": null,
-        "p25": null,
-        "median": null,
-        "p75": null,
-        "p90": null,
-        "max": null,
-        "total": 0
+      "allocatedDollarsPerBase": {
+        "n": 53,
+        "mean": 0.0297,
+        "p25": 0.0218,
+        "median": 0.0231,
+        "p75": 0.0342,
+        "p90": 0.0496,
+        "max": 0.0639,
+        "total": 1.5733
       }
     }
   },
@@ -842,7 +843,7 @@
       "max": 6,
       "total": 874
     },
-    "decidedRunsPerPr": {
+    "decidedRunsPerPullRequest": {
       "n": 174,
       "mean": 4.01,
       "p25": 1,
@@ -852,11 +853,11 @@
       "max": 18,
       "total": 697
     },
-    "prsEndingPass": 18,
-    "prsWithAnyPass": 22,
-    "prsWithDecidedRun": 174,
+    "pullRequestsEndingPass": 18,
+    "pullRequestsWithAnyPass": 22,
+    "pullRequestsWithDecidedRun": 174,
     "multiRun": {
-      "prs": 116,
+      "pullRequests": 116,
       "firstMustFix": {
         "n": 116,
         "mean": 15.2,
@@ -1076,7 +1077,7 @@
         "max": 355.1,
         "total": 3496.35
       },
-      "perPrRatioFormulaOverAllocated": {
+      "perPullRequestRatioFormulaOverAllocated": {
         "n": 107,
         "mean": 76,
         "p25": 15,
@@ -1086,7 +1087,7 @@
         "max": 952,
         "total": 8135
       },
-      "perPrRatioFlatOverAllocated": {
+      "perPullRequestRatioFlatOverAllocated": {
         "n": 107,
         "mean": 199.2,
         "p25": 37.7,
@@ -1106,7 +1107,7 @@
         "max": 29,
         "total": 273
       },
-      "perPrRatioFormulaOverNotional": {
+      "perPullRequestRatioFormulaOverNotional": {
         "n": 107,
         "mean": 4,
         "p25": 0.9,
@@ -1118,14 +1119,14 @@
       }
     },
     "allJoined": {
-      "prs": 419,
+      "pullRequests": 419,
       "machineAllocatedTotal": 378.31,
       "machineAllocatedMergedTotal": 186.43,
       "machineNotionalTotal": 6316.15,
       "mergedAmongJoined": 160
     },
-    "gauntletStagesPerPr": {
-      "prs": 161,
+    "gauntletStagesPerPullRequest": {
+      "pullRequests": 161,
       "panelStages": {
         "n": 161,
         "mean": 3.36,
@@ -1328,6 +1329,7 @@
       "improvement-dispatched": 2
     },
     "improvedClusters": 18,
+    "improvedByUnresolved": 0,
     "improvedMembersBefore": 41,
     "improvedMembersAfter": 8,
     "improvedMembersUndated": 16,

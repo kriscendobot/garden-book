@@ -95,8 +95,8 @@ Each chart was screenshotted and inspected in both schemes at 353 px:
   edge, so it cannot be read apart from the before/after evidence.
 - **E8.** "SCENARIO · illustrative model" banner top left. The $1,600 curve
   enters at the $400 ceiling with an upward arrow labeled "$1,600 loss off
-  scale: $1,311.19 at 0 min"; the three curves are drawn only through their
-  committed five-minute points (no smoothing), so the minima dots (13, 41, 70
+  scale: $1,311.26 at 0 min"; the three curves are drawn only through their
+  committed five-minute points (no smoothing), so the minima dots (13, 42, 70
   minutes, from `optimumMinutes`) sit within a fraction of a pixel of the
   polylines. Drop lines mark the minima on the x axis, and the $400 component
   panel shows the straight human-dollar line crossing the falling residual
@@ -106,10 +106,7 @@ Each chart was screenshotted and inspected in both schemes at 353 px:
 
 ## Data note for the supervisor
 
-In `scenario.json`, `humanAxis` reports the L = $400, k = 3 minimum at 41
-minutes while `split` reports 42 minutes for the same L and k, both with total
-$132.03. They tie at two decimals: `humanAxis` picks the first minimum of the
-rounded totals, `split` the minimum of the unrounded cost. (At full precision 42 is
-lower: $132.0292 against $132.0309.) The spec quotes each source faithfully
-(E8: 41 min; E9: 42 at k = 3), so E8 labels 41 and E9 plots 42, as specified. It is not a spec-versus-data discrepancy, but a reader
-comparing E8 and E9 may notice it.
+`humanAxis` picks the first minimum of the rounded totals and `split` the
+minimum of the unrounded cost, so the two can name different minutes when
+totals tie at two decimals. With the current anchors they agree: both put the
+L = $400, k = 3 minimum at 42 minutes, $132.09.

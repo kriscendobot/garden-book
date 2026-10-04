@@ -3,15 +3,23 @@
   "note": "Illustrative model. Anchors are observed or derived from aggregates.json; kappa, tauM, tauD, and L are assumptions.",
   "anchors": {
     "M": 0.63,
-    "c": 0.2418,
+    "c": 0.2636,
     "w": 2.0833,
     "d": 0.7903
   },
   "anchorSources": {
     "M": "ebfb.mergedJoined.machineAllocatedDollars.median (derived: subscription allocation)",
-    "c": "(gauntletStages.panel + gauntletStages.fix notional medians) / reconciliation.windowOverstatement (derived)",
+    "c": "gauntletStages.panel.allocatedDollarsPerBase.median + gauntletStages.fix.allocatedDollarsPerBase.median (derived: subscription allocation, Anthropic usage only)",
     "w": "GARDEN_REP_HOURLY_RATE default 125 $/hour in scripts/jobs/reputation.sh on main2 (configured, not measured)",
-    "d": "learning.newDirection / learning.classifiedReviewComments (observed share)"
+    "d": "learning.newDirection / learning.classifiedReviewComments (observed share, measured after machine review)"
+  },
+  "anchorSampleSizes": {
+    "M": 107,
+    "c": {
+      "panel": 611,
+      "fix": 540
+    },
+    "d": 534
   },
   "assumed": {
     "kappa": 1.5,
@@ -28,533 +36,533 @@
       "L": 100,
       "k": 3,
       "optimumMinutes": 13,
-      "optimumTotal": 71.82,
+      "optimumTotal": 71.89,
       "series": [
         {
           "h": 0,
           "human": 0,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 81.86,
-          "total": 83.22
+          "total": 83.29
         },
         {
           "h": 5,
           "human": 10.42,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 64.09,
-          "total": 75.86
+          "total": 75.92
         },
         {
           "h": 10,
           "human": 20.83,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 50.2,
-          "total": 72.39
+          "total": 72.46
         },
         {
           "h": 15,
           "human": 31.25,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 39.36,
-          "total": 71.97
+          "total": 72.03
         },
         {
           "h": 20,
           "human": 41.67,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 30.89,
-          "total": 73.91
+          "total": 73.98
         },
         {
           "h": 25,
           "human": 52.08,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 24.27,
-          "total": 77.71
+          "total": 77.77
         },
         {
           "h": 30,
           "human": 62.5,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 19.09,
-          "total": 82.95
+          "total": 83.01
         },
         {
           "h": 35,
           "human": 72.92,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 15.04,
-          "total": 89.31
+          "total": 89.37
         },
         {
           "h": 40,
           "human": 83.33,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 11.86,
-          "total": 96.55
+          "total": 96.62
         },
         {
           "h": 45,
           "human": 93.75,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 9.37,
-          "total": 104.48
+          "total": 104.54
         },
         {
           "h": 50,
           "human": 104.17,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 7.42,
-          "total": 112.94
+          "total": 113.01
         },
         {
           "h": 55,
           "human": 114.58,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 5.89,
-          "total": 121.83
+          "total": 121.89
         },
         {
           "h": 60,
           "human": 125,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 4.68,
-          "total": 131.04
+          "total": 131.1
         },
         {
           "h": 65,
           "human": 135.42,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 3.73,
-          "total": 140.51
+          "total": 140.57
         },
         {
           "h": 70,
           "human": 145.83,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 2.99,
-          "total": 150.17
+          "total": 150.24
         },
         {
           "h": 75,
           "human": 156.25,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 2.39,
-          "total": 160
+          "total": 160.07
         },
         {
           "h": 80,
           "human": 166.67,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.93,
-          "total": 169.95
+          "total": 170.01
         },
         {
           "h": 85,
           "human": 177.08,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.56,
-          "total": 180
+          "total": 180.06
         },
         {
           "h": 90,
           "human": 187.5,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.26,
-          "total": 190.12
+          "total": 190.18
         },
         {
           "h": 95,
           "human": 197.92,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.03,
-          "total": 200.3
+          "total": 200.36
         },
         {
           "h": 100,
           "human": 208.33,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.84,
-          "total": 210.53
+          "total": 210.59
         },
         {
           "h": 105,
           "human": 218.75,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.69,
-          "total": 220.8
+          "total": 220.86
         },
         {
           "h": 110,
           "human": 229.17,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.57,
-          "total": 231.09
+          "total": 231.16
         },
         {
           "h": 115,
           "human": 239.58,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.47,
-          "total": 241.41
+          "total": 241.48
         },
         {
           "h": 120,
           "human": 250,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.39,
-          "total": 251.75
+          "total": 251.81
         },
         {
           "h": 125,
           "human": 260.42,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.33,
-          "total": 262.1
+          "total": 262.17
         },
         {
           "h": 130,
           "human": 270.83,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.28,
-          "total": 272.47
+          "total": 272.53
         },
         {
           "h": 135,
           "human": 281.25,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.23,
-          "total": 282.84
+          "total": 282.9
         },
         {
           "h": 140,
           "human": 291.67,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.2,
-          "total": 293.22
+          "total": 293.29
         },
         {
           "h": 145,
           "human": 302.08,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.17,
-          "total": 303.61
+          "total": 303.67
         },
         {
           "h": 150,
           "human": 312.5,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.14,
-          "total": 314
+          "total": 314.07
         },
         {
           "h": 155,
           "human": 322.92,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.12,
-          "total": 324.4
+          "total": 324.46
         },
         {
           "h": 160,
           "human": 333.33,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.11,
-          "total": 334.8
+          "total": 334.86
         },
         {
           "h": 165,
           "human": 343.75,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.09,
-          "total": 345.2
+          "total": 345.26
         },
         {
           "h": 170,
           "human": 354.17,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.08,
-          "total": 355.6
+          "total": 355.67
         },
         {
           "h": 175,
           "human": 364.58,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.07,
-          "total": 366.01
+          "total": 366.07
         },
         {
           "h": 180,
           "human": 375,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.06,
-          "total": 376.42
+          "total": 376.48
         }
       ]
     },
     {
       "L": 400,
       "k": 3,
-      "optimumMinutes": 41,
-      "optimumTotal": 132.03,
+      "optimumMinutes": 42,
+      "optimumTotal": 132.09,
       "series": [
         {
           "h": 0,
           "human": 0,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 327.46,
-          "total": 328.81
+          "total": 328.88
         },
         {
           "h": 5,
           "human": 10.42,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 256.34,
-          "total": 268.11
+          "total": 268.18
         },
         {
           "h": 10,
           "human": 20.83,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 200.82,
-          "total": 223.01
+          "total": 223.07
         },
         {
           "h": 15,
           "human": 31.25,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 157.45,
-          "total": 190.06
+          "total": 190.12
         },
         {
           "h": 20,
           "human": 41.67,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 123.57,
-          "total": 166.59
+          "total": 166.66
         },
         {
           "h": 25,
           "human": 52.08,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 97.08,
-          "total": 150.52
+          "total": 150.58
         },
         {
           "h": 30,
           "human": 62.5,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 76.36,
-          "total": 140.22
+          "total": 140.28
         },
         {
           "h": 35,
           "human": 72.92,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 60.15,
-          "total": 134.42
+          "total": 134.48
         },
         {
           "h": 40,
           "human": 83.33,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 47.45,
-          "total": 132.14
+          "total": 132.2
         },
         {
           "h": 45,
           "human": 93.75,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 37.49,
-          "total": 132.6
+          "total": 132.66
         },
         {
           "h": 50,
           "human": 104.17,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 29.69,
-          "total": 135.21
+          "total": 135.27
         },
         {
           "h": 55,
           "human": 114.58,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 23.55,
-          "total": 139.49
+          "total": 139.56
         },
         {
           "h": 60,
           "human": 125,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 18.73,
-          "total": 145.09
+          "total": 145.15
         },
         {
           "h": 65,
           "human": 135.42,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 14.93,
-          "total": 151.71
+          "total": 151.77
         },
         {
           "h": 70,
           "human": 145.83,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 11.94,
-          "total": 159.13
+          "total": 159.2
         },
         {
           "h": 75,
           "human": 156.25,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 9.58,
-          "total": 167.18
+          "total": 167.25
         },
         {
           "h": 80,
           "human": 166.67,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 7.71,
-          "total": 175.73
+          "total": 175.8
         },
         {
           "h": 85,
           "human": 177.08,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 6.23,
-          "total": 184.66
+          "total": 184.73
         },
         {
           "h": 90,
           "human": 187.5,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 5.05,
-          "total": 193.9
+          "total": 193.97
         },
         {
           "h": 95,
           "human": 197.92,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 4.11,
-          "total": 203.38
+          "total": 203.45
         },
         {
           "h": 100,
           "human": 208.33,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 3.36,
-          "total": 213.05
+          "total": 213.11
         },
         {
           "h": 105,
           "human": 218.75,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 2.76,
-          "total": 222.87
+          "total": 222.93
         },
         {
           "h": 110,
           "human": 229.17,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 2.28,
-          "total": 232.8
+          "total": 232.86
         },
         {
           "h": 115,
           "human": 239.58,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.89,
-          "total": 242.83
+          "total": 242.89
         },
         {
           "h": 120,
           "human": 250,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.57,
-          "total": 252.93
+          "total": 252.99
         },
         {
           "h": 125,
           "human": 260.42,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.32,
-          "total": 263.09
+          "total": 263.15
         },
         {
           "h": 130,
           "human": 270.83,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.11,
-          "total": 273.3
+          "total": 273.36
         },
         {
           "h": 135,
           "human": 281.25,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.94,
-          "total": 283.54
+          "total": 283.61
         },
         {
           "h": 140,
           "human": 291.67,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.79,
-          "total": 293.82
+          "total": 293.88
         },
         {
           "h": 145,
           "human": 302.08,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.68,
-          "total": 304.12
+          "total": 304.18
         },
         {
           "h": 150,
           "human": 312.5,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.58,
-          "total": 314.44
+          "total": 314.5
         },
         {
           "h": 155,
           "human": 322.92,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.5,
-          "total": 324.77
+          "total": 324.84
         },
         {
           "h": 160,
           "human": 333.33,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.43,
-          "total": 335.12
+          "total": 335.18
         },
         {
           "h": 165,
           "human": 343.75,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.37,
-          "total": 345.48
+          "total": 345.54
         },
         {
           "h": 170,
           "human": 354.17,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.32,
-          "total": 355.85
+          "total": 355.91
         },
         {
           "h": 175,
           "human": 364.58,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.28,
-          "total": 366.22
+          "total": 366.29
         },
         {
           "h": 180,
           "human": 375,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.25,
-          "total": 376.6
+          "total": 376.67
         }
       ]
     },
@@ -562,266 +570,266 @@
       "L": 1600,
       "k": 3,
       "optimumMinutes": 70,
-      "optimumTotal": 194.96,
+      "optimumTotal": 195.02,
       "series": [
         {
           "h": 0,
           "human": 0,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1309.84,
-          "total": 1311.19
+          "total": 1311.26
         },
         {
           "h": 5,
           "human": 10.42,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1025.37,
-          "total": 1037.14
+          "total": 1037.21
         },
         {
           "h": 10,
           "human": 20.83,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 803.28,
-          "total": 825.46
+          "total": 825.53
         },
         {
           "h": 15,
           "human": 31.25,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 629.81,
-          "total": 662.42
+          "total": 662.48
         },
         {
           "h": 20,
           "human": 41.67,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 494.27,
-          "total": 537.3
+          "total": 537.36
         },
         {
           "h": 25,
           "human": 52.08,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 388.32,
-          "total": 441.76
+          "total": 441.82
         },
         {
           "h": 30,
           "human": 62.5,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 305.45,
-          "total": 369.3
+          "total": 369.37
         },
         {
           "h": 35,
           "human": 72.92,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 240.59,
-          "total": 314.86
+          "total": 314.93
         },
         {
           "h": 40,
           "human": 83.33,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 189.79,
-          "total": 274.48
+          "total": 274.55
         },
         {
           "h": 45,
           "human": 93.75,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 149.98,
-          "total": 245.08
+          "total": 245.15
         },
         {
           "h": 50,
           "human": 104.17,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 118.74,
-          "total": 224.26
+          "total": 224.33
         },
         {
           "h": 55,
           "human": 114.58,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 94.21,
-          "total": 210.15
+          "total": 210.21
         },
         {
           "h": 60,
           "human": 125,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 74.92,
-          "total": 201.28
+          "total": 201.34
         },
         {
           "h": 65,
           "human": 135.42,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 59.74,
-          "total": 196.51
+          "total": 196.58
         },
         {
           "h": 70,
           "human": 145.83,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 47.77,
-          "total": 194.96
+          "total": 195.02
         },
         {
           "h": 75,
           "human": 156.25,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 38.31,
-          "total": 195.92
+          "total": 195.99
         },
         {
           "h": 80,
           "human": 166.67,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 30.83,
-          "total": 198.86
+          "total": 198.92
         },
         {
           "h": 85,
           "human": 177.08,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 24.9,
-          "total": 203.34
+          "total": 203.41
         },
         {
           "h": 90,
           "human": 187.5,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 20.19,
-          "total": 209.05
+          "total": 209.11
         },
         {
           "h": 95,
           "human": 197.92,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 16.44,
-          "total": 215.71
+          "total": 215.78
         },
         {
           "h": 100,
           "human": 208.33,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 13.44,
-          "total": 223.13
+          "total": 223.2
         },
         {
           "h": 105,
           "human": 218.75,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 11.04,
-          "total": 231.14
+          "total": 231.21
         },
         {
           "h": 110,
           "human": 229.17,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 9.11,
-          "total": 239.63
+          "total": 239.7
         },
         {
           "h": 115,
           "human": 239.58,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 7.55,
-          "total": 248.49
+          "total": 248.56
         },
         {
           "h": 120,
           "human": 250,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 6.29,
-          "total": 257.65
+          "total": 257.71
         },
         {
           "h": 125,
           "human": 260.42,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 5.26,
-          "total": 267.04
+          "total": 267.1
         },
         {
           "h": 130,
           "human": 270.83,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 4.43,
-          "total": 276.62
+          "total": 276.68
         },
         {
           "h": 135,
           "human": 281.25,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 3.74,
-          "total": 286.35
+          "total": 286.41
         },
         {
           "h": 140,
           "human": 291.67,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 3.18,
-          "total": 296.2
+          "total": 296.26
         },
         {
           "h": 145,
           "human": 302.08,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 2.71,
-          "total": 306.15
+          "total": 306.21
         },
         {
           "h": 150,
           "human": 312.5,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 2.32,
-          "total": 316.17
+          "total": 316.24
         },
         {
           "h": 155,
           "human": 322.92,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.99,
-          "total": 326.27
+          "total": 326.33
         },
         {
           "h": 160,
           "human": 333.33,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.72,
-          "total": 336.41
+          "total": 336.48
         },
         {
           "h": 165,
           "human": 343.75,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.49,
-          "total": 346.6
+          "total": 346.66
         },
         {
           "h": 170,
           "human": 354.17,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.3,
-          "total": 356.82
+          "total": 356.88
         },
         {
           "h": 175,
           "human": 364.58,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 1.13,
-          "total": 367.07
+          "total": 367.13
         },
         {
           "h": 180,
           "human": 375,
-          "machine": 1.36,
+          "machine": 1.42,
           "residualLoss": 0.99,
-          "total": 377.34
+          "total": 377.41
         }
       ]
     }
@@ -842,65 +850,65 @@
           "k": 1,
           "bestHumanMinutes": 15,
           "humanDollars": 31.25,
-          "machineDollars": 0.87,
+          "machineDollars": 0.89,
           "residualLoss": 45.05,
-          "total": 77.17
+          "total": 77.19
         },
         {
           "k": 2,
           "bestHumanMinutes": 14,
           "humanDollars": 29.17,
-          "machineDollars": 1.11,
+          "machineDollars": 1.16,
           "residualLoss": 43.29,
-          "total": 73.57
+          "total": 73.62
         },
         {
           "k": 3,
           "bestHumanMinutes": 13,
           "humanDollars": 27.08,
-          "machineDollars": 1.36,
+          "machineDollars": 1.42,
           "residualLoss": 43.38,
-          "total": 71.82
+          "total": 71.89
         },
         {
           "k": 4,
           "bestHumanMinutes": 13,
           "humanDollars": 27.08,
-          "machineDollars": 1.6,
+          "machineDollars": 1.68,
           "residualLoss": 42.35,
-          "total": 71.03
+          "total": 71.11
         },
         {
           "k": 5,
           "bestHumanMinutes": 13,
           "humanDollars": 27.08,
-          "machineDollars": 1.84,
+          "machineDollars": 1.95,
           "residualLoss": 41.82,
-          "total": 70.74
+          "total": 70.85
         },
         {
           "k": 6,
           "bestHumanMinutes": 13,
           "humanDollars": 27.08,
-          "machineDollars": 2.08,
+          "machineDollars": 2.21,
           "residualLoss": 41.54,
-          "total": 70.71
+          "total": 70.84
         },
         {
           "k": 7,
           "bestHumanMinutes": 13,
           "humanDollars": 27.08,
-          "machineDollars": 2.32,
+          "machineDollars": 2.48,
           "residualLoss": 41.4,
-          "total": 70.81
+          "total": 70.96
         },
         {
           "k": 8,
           "bestHumanMinutes": 13,
           "humanDollars": 27.08,
-          "machineDollars": 2.56,
+          "machineDollars": 2.74,
           "residualLoss": 41.33,
-          "total": 70.98
+          "total": 71.15
         }
       ]
     },
@@ -919,65 +927,65 @@
           "k": 1,
           "bestHumanMinutes": 44,
           "humanDollars": 91.67,
-          "machineDollars": 0.87,
+          "machineDollars": 0.89,
           "residualLoss": 51.23,
-          "total": 143.77
+          "total": 143.79
         },
         {
           "k": 2,
           "bestHumanMinutes": 42,
           "humanDollars": 87.5,
-          "machineDollars": 1.11,
+          "machineDollars": 1.16,
           "residualLoss": 47.41,
-          "total": 136.02
+          "total": 136.06
         },
         {
           "k": 3,
           "bestHumanMinutes": 42,
           "humanDollars": 87.5,
-          "machineDollars": 1.36,
+          "machineDollars": 1.42,
           "residualLoss": 43.17,
-          "total": 132.03
+          "total": 132.09
         },
         {
           "k": 4,
           "bestHumanMinutes": 41,
           "humanDollars": 85.42,
-          "machineDollars": 1.6,
+          "machineDollars": 1.68,
           "residualLoss": 43.04,
-          "total": 130.05
+          "total": 130.14
         },
         {
           "k": 5,
           "bestHumanMinutes": 41,
           "humanDollars": 85.42,
-          "machineDollars": 1.84,
+          "machineDollars": 1.95,
           "residualLoss": 41.9,
-          "total": 129.15
+          "total": 129.26
         },
         {
           "k": 6,
           "bestHumanMinutes": 41,
           "humanDollars": 85.42,
-          "machineDollars": 2.08,
+          "machineDollars": 2.21,
           "residualLoss": 41.31,
-          "total": 128.81
+          "total": 128.94
         },
         {
           "k": 7,
           "bestHumanMinutes": 41,
           "humanDollars": 85.42,
-          "machineDollars": 2.32,
+          "machineDollars": 2.48,
           "residualLoss": 41.01,
-          "total": 128.75
+          "total": 128.9
         },
         {
           "k": 8,
           "bestHumanMinutes": 41,
           "humanDollars": 85.42,
-          "machineDollars": 2.56,
+          "machineDollars": 2.74,
           "residualLoss": 40.86,
-          "total": 128.84
+          "total": 129.01
         }
       ]
     },
@@ -996,65 +1004,65 @@
           "k": 1,
           "bestHumanMinutes": 76,
           "humanDollars": 158.33,
-          "machineDollars": 0.87,
+          "machineDollars": 0.89,
           "residualLoss": 60.11,
-          "total": 219.32
+          "total": 219.34
         },
         {
           "k": 2,
           "bestHumanMinutes": 72,
           "humanDollars": 150,
-          "machineDollars": 1.11,
+          "machineDollars": 1.16,
           "residualLoss": 52.41,
-          "total": 203.52
+          "total": 203.57
         },
         {
           "k": 3,
           "bestHumanMinutes": 70,
           "humanDollars": 145.83,
-          "machineDollars": 1.36,
+          "machineDollars": 1.42,
           "residualLoss": 47.77,
-          "total": 194.96
+          "total": 195.02
         },
         {
           "k": 4,
           "bestHumanMinutes": 69,
           "humanDollars": 143.75,
-          "machineDollars": 1.6,
+          "machineDollars": 1.68,
           "residualLoss": 45.17,
-          "total": 190.52
+          "total": 190.61
         },
         {
           "k": 5,
           "bestHumanMinutes": 69,
           "humanDollars": 143.75,
-          "machineDollars": 1.84,
+          "machineDollars": 1.95,
           "residualLoss": 42.72,
-          "total": 188.31
+          "total": 188.42
         },
         {
           "k": 6,
           "bestHumanMinutes": 69,
           "humanDollars": 143.75,
-          "machineDollars": 2.08,
+          "machineDollars": 2.21,
           "residualLoss": 41.47,
-          "total": 187.3
+          "total": 187.43
         },
         {
           "k": 7,
           "bestHumanMinutes": 68,
           "humanDollars": 141.67,
-          "machineDollars": 2.32,
+          "machineDollars": 2.48,
           "residualLoss": 42.89,
-          "total": 186.88
+          "total": 187.04
         },
         {
           "k": 8,
           "bestHumanMinutes": 68,
           "humanDollars": 141.67,
-          "machineDollars": 2.56,
+          "machineDollars": 2.74,
           "residualLoss": 42.56,
-          "total": 186.79
+          "total": 186.96
         }
       ]
     }

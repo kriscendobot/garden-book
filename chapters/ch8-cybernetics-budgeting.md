@@ -865,32 +865,37 @@ Treat each change as having an expected cost made of four parts: the machine
 work that produces it, machine review rounds, human review minutes, and the
 loss when a finding reaches the merged result unaddressed. Machine review
 can only remove the share of findings it is able to catch. Human review
-removes both kinds, but one minute of it costs as much as eight or nine
+removes both kinds, but one minute of it costs as much as about eight
 machine review rounds. In symbols,
 
 ```text
-C = M + c·k + w·h + L·R
-R = d·e^(−h/τD)
-  + (1 − d)·e^(−k/κ)·e^(−h/τM)
+C = M + c*k + w*h + L*R
+R = d*exp(-h/tauD)
+  + (1 - d)*exp(-k/kappa)*exp(-h/tauM)
 ```
 
 with `k` machine review rounds, `h` human minutes, and `R` the expected
 share of findings left unaddressed. Four inputs are
 anchored in the records: `M` = $0.63 (the median allocated machine cost of a
-merged pull request), `c` = $0.24 a round (median panel plus fix stage,
-allocated), `w` = $2.08 a minute (the reducer's $125 an hour), and `d` = 0.79
-(the new-direction share). Four are assumptions: the loss `L` from an
-unaddressed finding (shown at $100, $400, and $1,600), and how fast each kind
-of review works (`κ` = 1.5 rounds, `τM` = 45 minutes for a person to
-re-check mechanical findings, `τD` = 20 minutes for a person to judge
-direction).
+merged pull request), `c` = $0.26 a round (the median allocated cost of a
+panel stage job, over 611 jobs, plus that of a fix stage job, over 540; only
+Anthropic usage carries an allocation, so OpenAI's provisional prices never
+enter it), `w` = $2.08 a minute (the reducer's $125 an hour), and `d` = 0.79
+(the new-direction share of 534 classified review comments). That last
+figure is measured after machine review: the comments were written on pull
+requests the gauntlet had already worked over, so mechanical findings had
+already been removed, and the new-direction share before machine review is
+lower. Four inputs are assumptions: the loss `L` from an unaddressed finding
+(shown at $100, $400, and $1,600), and how fast each kind of review works
+(`kappa` = 1.5 rounds, `tauM` = 45 minutes for a person to re-check
+mechanical findings, `tauD` = 20 minutes for a person to judge direction).
 
 Under these assumptions, with the gauntlet's median three panel rounds:
 
 | Loss per finding | Best human minutes | Cost at the best point | Cost with no human review |
 | --- | --- | --- | --- |
 | $100 | 13 | $72 | $83 |
-| $400 | 41 | $132 | $329 |
+| $400 | 42 | $132 | $329 |
 | $1,600 | 70 | $195 | $1,311 |
 
 The minimum is the **marginal crossing**: the point where one more minute of
@@ -903,10 +908,12 @@ in the garden measures. In that sense the honest conclusion is the
 Machine review moves the crossing, but only so far. In the same scenario at
 $1,600, going from zero to six machine rounds lowers the best human time
 from 84 to 69 minutes and the expected cost from $246 to $187, for about
-$1.45 of machine work. Beyond six rounds, the curve is flat: the catchable
-share is used up, and what remains is the 79% that only a person can
-decide. The panel's observed behavior agrees: it runs to its six-round cap
-and rarely reaches a pass.
+$1.58 of machine work. Beyond six rounds, the curve is flat: the catchable
+share is used up, and what remains is the new-direction share that only a
+person can decide. Where the curve flattens follows from the assumed
+`kappa`, not from the records. The gauntlet's six-round cap is a configured
+default, so its falling at the same place is a coincidence of the chosen
+value, not evidence for it.
 
 Two conclusions survive the uncertainty. Machine review is cheap enough
 that its marginal round is almost always worth buying until it stops

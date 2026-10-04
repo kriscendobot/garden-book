@@ -14,7 +14,7 @@ discrepancy rather than adjusting the art.
 | --- | --- |
 | Journal revision | `journal2` at `6485a3b8d83b250470a2447bbc947ae1a1e7fd24` |
 | Journal cutoff | 2026-10-04T06:16:22Z (that commit's committer time) |
-| GitHub fetch | 2026-10-04T06:23:52Z (`tools/equilibrium/fetch-github.sh`) |
+| GitHub fetch | 2026-10-04T07:04:50Z (`tools/equilibrium/fetch-github.sh`) |
 | Reputation events | 8,623 (`reputation/events/*.md`), recorded 2026-07-14T03:04Z to 2026-10-04T06:10Z |
 | Usage ledger | 11,418 lines in 6,632 files (`usage/*.jsonl`); dated lines from the week of 2026-07-27 |
 | Completion reports | 10,793 (`jobs/tada/**`); 8,086 events have one |
@@ -345,21 +345,28 @@ paragraph the figure follows.
   off-scale and should be clipped with an arrow and its value labeled). Three
   dashed curves, one per loss value; a soft-yellow dot at each minimum.
   Optional inset for L = $400: the components (human dollars rising as a
-  straight line; residual loss falling; machine flat at $1.36).
+  straight line; residual loss falling; machine flat at $1.42).
 - **Data** (`scenario.json` `humanAxis`, machine rounds fixed at k = 3, the
   observed median panel stages per PR). Totals every 15 minutes, 0 to 180:
 
-  - L = $100: 83.22, 71.97, 82.95, 104.48, 131.04, 160.00, 190.12, 220.80, 251.75, 282.84, 314.00, 345.20, 376.42; minimum 13 min, $71.82.
-  - L = $400: 328.81, 190.06, 140.22, 132.60, 145.09, 167.18, 193.90, 222.87, 252.93, 283.54, 314.44, 345.48, 376.60; minimum 41 min, $132.03.
-  - L = $1,600: 1,311.19, 662.42, 369.30, 245.08, 201.28, 195.92, 209.05, 231.14, 257.65, 286.35, 316.17, 346.60, 377.34; minimum 70 min, $194.96.
+  - L = $100: 83.29, 72.03, 83.01, 104.54, 131.10, 160.07, 190.18, 220.86, 251.81, 282.90, 314.07, 345.26, 376.48; minimum 13 min, $71.89.
+  - L = $400: 328.88, 190.12, 140.28, 132.66, 145.15, 167.25, 193.97, 222.93, 252.99, 283.61, 314.50, 345.54, 376.67; minimum 42 min, $132.09.
+  - L = $1,600: 1,311.26, 662.48, 369.37, 245.15, 201.34, 195.99, 209.11, 231.21, 257.71, 286.41, 316.24, 346.66, 377.41; minimum 70 min, $195.02.
 
   Full 5-minute series with components are in `scenario.json`.
-- **Model and parameters.** `C = M + c·k + w·h + L·R`,
-  `R = d·e^(−h/τD) + (1 − d)·e^(−k/κ)·e^(−h/τM)`. Anchors: M = $0.63 (derived,
-  E1 median), c = $0.2418 per round (derived: panel plus fix stage median list
-  price, $1.148 + $2.696, divided by the window ratio 15.9), w = $2.0833 per
-  minute (configured $125/hour), d = 0.7903 (observed, 422 of 534). Assumed:
-  κ = 1.5 rounds, τM = 45 minutes, τD = 20 minutes, L ∈ {100, 400, 1,600}.
+- **Model and parameters.** `C = M + c*k + w*h + L*R`,
+  `R = d*exp(-h/tauD) + (1 - d)*exp(-k/kappa)*exp(-h/tauM)`. Anchors:
+  M = $0.63 (derived, E1 median, n = 107 merged PRs), c = $0.2636 per round
+  (derived: the median subscription-allocated cost of an endo-but-for-bots
+  panel stage job, $0.0600 over 611 jobs, plus that of a fix stage job,
+  $0.2036 over 540 jobs; Anthropic usage lines only, so OpenAI's provisional
+  ceiling prices never enter it), w = $2.0833 per minute (configured
+  $125/hour), d = 0.7903 (observed, 422 of 534 classified review comments).
+  The comments were written on PRs that had already been through the
+  gauntlet, so mechanical findings had already been removed: 0.7903 is the
+  new-direction share after machine review, and the share before it is
+  lower. Assumed: kappa = 1.5 rounds, tauM = 45 minutes, tauD = 20 minutes,
+  L in {100, 400, 1,600}.
 - **Alt text intent.** In an illustrative model, total expected cost first
   falls as review minutes rise, reaches a minimum, then rises along the cost
   of the reviewer's time; the higher the stakes, the later the minimum.
@@ -379,9 +386,9 @@ paragraph the figure follows.
   "gauntlet cap".
 - **Data** (`scenario.json` `split`), k = 0 to 8:
 
-  - L = $100: cost 84.17, 77.17, 73.57, 71.82, 71.03, 70.74, 70.71, 70.81, 70.98; minutes 16, 15, 14, 13, 13, 13, 13, 13, 13.
-  - L = $400: cost 158.18, 143.77, 136.02, 132.03, 130.05, 129.15, 128.81, 128.75, 128.84; minutes 48, 44, 42, 42, 41, 41, 41, 41, 41.
-  - L = $1,600: cost 246.48, 219.32, 203.52, 194.96, 190.52, 188.31, 187.30, 186.88, 186.79; minutes 84, 76, 72, 70, 69, 69, 69, 68, 68.
+  - L = $100: cost 84.17, 77.19, 73.62, 71.89, 71.11, 70.85, 70.84, 70.96, 71.15; minutes 16, 15, 14, 13, 13, 13, 13, 13, 13.
+  - L = $400: cost 158.18, 143.79, 136.06, 132.09, 130.14, 129.26, 128.94, 128.90, 129.01; minutes 48, 44, 42, 42, 41, 41, 41, 41, 41.
+  - L = $1,600: cost 246.48, 219.34, 203.57, 195.02, 190.61, 188.42, 187.43, 187.04, 186.96; minutes 84, 76, 72, 70, 69, 69, 69, 68, 68.
 
 - **Alt text intent.** In the same model, adding machine review rounds lowers
   the best human review time and the total cost at first, then both flatten
@@ -402,7 +409,7 @@ git -C <garden> archive 6485a3b8d83b250470a2447bbc947ae1a1e7fd24 legacy/v1/workt
 tools/equilibrium/fetch-github.sh "$TMPDIR/gh" 2887 2901 3231 3232 3241 3255 3256 \
   3257 3258 3262 3263 3264 3265 3268 3273 3274 3275 3276 3277
 node tools/equilibrium/analyze.mjs --git <garden> \
-  --rev 6485a3b8d83b250470a2447bbc947ae1a1e7fd24 --github "$TMPDIR/gh" \
+  --revision 6485a3b8d83b250470a2447bbc947ae1a1e7fd24 --github "$TMPDIR/gh" \
   > data/equilibrium/aggregates.json
 node tools/equilibrium/scenario.mjs data/equilibrium/aggregates.json \
   > data/equilibrium/scenario.json

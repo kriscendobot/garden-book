@@ -45,6 +45,7 @@ test("renderBook places openers after provenance and section figures in their se
     artwork: {
       illuminations: { "opener.svg": svg("opener"), "detail.svg": svg("detail") },
     },
+    equilibriumCharts: [],
     illuminations: [
       {
         file: "opener.svg",
@@ -79,6 +80,7 @@ test("renderBook refuses placements that would move or vanish", () => {
       chapterSources,
       introSource: "{{FRIEZE}}",
       artwork: { illuminations: { "x.svg": svg("x") } },
+      equilibriumCharts: [],
       illuminations: [
         { file: "x.svg", ratio: "2:1", blocks: 0, caption: "x", ...placement },
       ],
@@ -101,6 +103,7 @@ test("renderBook refuses placements that would move or vanish", () => {
         chapterSources,
         introSource: "{{FRIEZE}}",
         artwork: { illuminations: {} },
+        equilibriumCharts: [],
         illuminations: [
           { file: "y.svg", anchor: "ch1-11-first", ratio: "2:1", blocks: 0, caption: "y" },
         ],

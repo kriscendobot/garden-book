@@ -34,6 +34,13 @@ drawn for, an optional later heading inside that section (`at`), how many body
 blocks to pass before the figure (margin notes don't count), and its caption.
 A placement whose heading is gone, which would leave its section, or which
 names missing art fails the build instead of moving silently.
+`equilibrium-charts.mjs` does the same for the nine review-economics charts
+(`art/equilibrium-e*.svg`) in section 8.8: each entry names the chart, the
+subsection the spec places it under (which must stay inside 8.8), the body
+blocks to pass (margin notes and charts already placed don't count), its
+caption, and the exact values a reader can open in a `details` disclosure
+directly after it. `tools/equilibrium/integration-check.mjs` checks those
+nine placements in a built edition in the browser.
 `tools/browser-check.mjs` loads a built edition in headless Chromium at phone
 and desktop widths in both color schemes and reports overflow, clipped or
 overlapping figures, and caption contrast (Playwright is not a dependency;
@@ -43,6 +50,15 @@ becomes every visitor's bootstrap (see `skills/minion-town-clip-publishing`
 on `kriscendobot/garden`); it refuses any `GARDEN_BOOK_POWERS` that is not
 `garden-book-<name>`, so `sites`, `@agent`, and the other reserved names are
 never overwritten.
+
+Chapter 8's review-economics section (8.8) is computed, not hand-written:
+`tools/equilibrium/analyze.mjs` reads one fixed `journal2` commit plus GitHub
+metadata saved by `tools/equilibrium/fetch-github.sh` and writes
+`data/equilibrium/aggregates.json`; `tools/equilibrium/scenario.mjs` derives
+the illustrative curves in `data/equilibrium/scenario.json`. The chart brief,
+including every classification rule and the exact commands, is
+`art/equilibrium-data-spec.md`. Only aggregates are committed, never journal
+or review text.
 
 `build.mjs` reads `intro.html` (the title page; update its edition note) from
 the build directory. It prefixes heading ids per chapter, rewrites relative

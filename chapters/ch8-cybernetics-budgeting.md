@@ -33,7 +33,8 @@ today's code.
 - [8.5 Per-job budgets: wall clock and tokens](#85-per-job-budgets-wall-clock-and-tokens)
 - [8.6 Per-orchestration budgets: a bounded pie](#86-per-orchestration-budgets-a-bounded-pie)
 - [8.7 What's evolving now: the accountant](#87-whats-evolving-now-the-accountant)
-- [8.8 Quick reference](#88-quick-reference)
+- [8.8 Review economics: an equilibrium](#88-review-economics-an-equilibrium)
+- [8.9 Quick reference](#89-quick-reference)
 
 ## 8.1 Why "cybernetics"
 
@@ -595,7 +596,323 @@ instead of through unscheduled watchdog notices. How that is actually built belo
 to the design, and a later edition of this chapter should describe it once it
 lands.
 
-## 8.8 Quick reference
+## 8.8 Review economics: an equilibrium
+
+Everything above meters one kind of spending: inference. The garden's most
+expensive input does not appear in any pool. It is the maintainer's attention,
+spent reading a pull request, writing a review, and deciding whether to merge.
+This section tries to put that spending beside the machine spending, using
+the garden's own records, and argues that review pays twice: once in
+confidence about what merges, and again as data that can improve later
+work. It tests the second claim rather than assuming it.
+
+Read the numbers here as **tentative, order-of-magnitude observations from one
+fleet's operating history**. They are not a controlled study. The three kinds
+of work compared below differ in subject, author, and era as well as in how
+closely they were reviewed, so no figure in this section shows that more review
+*caused* a better result.
+
+### Where the numbers come from
+
+All figures come from one fixed commit of the journal, `journal2` at
+`6485a3b8d8`, committed 2026-10-04 06:16 UTC, plus GitHub pull-request
+metadata fetched seven minutes later. The sources:
+
+- **Reputation events** (`reputation/events/*.md`): 8,623 completed
+  engagements recorded between 2026-07-14 and 2026-10-04, each with its
+  wall-clock duration, model provider, and cost fields.
+- **The usage ledger** (`usage/*.jsonl`): 11,418 lines in 6,632 files, one
+  line per attempt, with elapsed model time, outcome (finished, requeued, or
+  failed), token counts, and, for Claude, `total_cost_usd`. The ledger's
+  dated lines begin in the week of 2026-07-27.
+- **Panel-run records** (`panel-runs/`): 869 runs of the review panel on
+  `endo-but-for-bots`, recorded from 2026-09-23 onward.
+- **The review-miss store** (`review-misses/`): 534 maintainer review comments
+  that the prosecutor role classified after the fact (§ Does review teach?).
+- **GitHub**: all 761 pull requests the bot opened on `endo-but-for-bots`,
+  with their human reviews, and the 19 upstream `endojs/endo` pull requests
+  that the boatman ferried in May.
+
+The analysis script, the GitHub fetch script, and the committed aggregates
+live in this book's repository under `tools/equilibrium/` and
+`data/equilibrium/`. The aggregates hold counts, sums, and quantiles only;
+no journal prose or review text is copied into the book. The chart
+specification that accompanies this section, `art/equilibrium-data-spec.md`,
+records every rule below so that another worker can rerun the figures.
+
+Three of the fields that look most useful turn out not to mean what their
+names suggest, and each forced a choice:
+
+- **`target` is `main2` on every one of the 8,623 events.** The completion
+  machinery writes `main2` by default, so the field cannot tell garden work
+  from project work. The analysis classifies each job instead by its name and
+  by the first GitHub repository its completion report links to, and leaves a
+  job unclassified (1,277 events, 15%) rather than guess.
+- **`accepted` records completion, not merging.** It is `true` on all 8,090
+  events from a normal run and `false` only on the 533 written by the
+  fallback path. Whether a pull request merged comes from GitHub, never from
+  this field.
+- **`human_dollars` is zero on every event.** The reducer that would fill it
+  reads per-PR review files that were never written. Human review cost below
+  is therefore computed from GitHub review counts and lengths, outside the
+  ledger.
+
+### Three levels of scrutiny
+
+The garden works under three quite different review regimes:
+
+| Regime | How work lands | Review before landing | Records available |
+| --- | --- | --- | --- |
+| The garden itself (`main2`) | Pushed directly, no pull request | None formally; the liaison and the maintainer read some of it after the fact | 1,276 events, ledger lines |
+| `endo-but-for-bots` | Draft pull request, gauntlet, then a human merge | Clean pass, panel, fix loop, then maintainer review | 4,703 events, panel runs, GitHub reviews |
+| Upstream `endojs/endo` | Ferried by the boatman under the maintainer's identity | The upstream project's own reviewers, the highest bar | 19 ferried pull requests on GitHub; no cost records |
+
+The upstream row is thin by necessity. Ferries run from the maintainer's host,
+outside the job board (chapter 7, § 7.6), and the ones in the record predate
+the cost ledger, so for upstream work the garden can measure review and
+latency but not machine cost. Five board jobs that link first to
+`endojs/endo` are in the event data; they are not ferries and are left out
+of the comparison.
+
+### Two price tags on one pull request
+
+**Machine cost.** For Claude work, the ledger's `total_cost_usd` is what the
+tokens would have cost at API list price. The garden does not pay that price:
+it pays flat subscription fees, which § 8.2 meters as quota rather than
+dollars. Over the window, the ledger's list-price total is $14,139, while the
+two $200 Max subscriptions the maintainer has stated the fleet runs on come
+to $889 for the same span. The list price overstates the actual outlay
+about **16 times** (14.5× in August, 18.2× in September).
+
+An earlier study, over 2026-07-28 to 2026-08-02, found about 8.7×
+([`designs/token-cost-ledger.md`](../../designs/token-cost-ledger.md)). The
+two figures agree once their circumstances are accounted for. When that study
+ran, the ledger had metered only 357 of 4,128 completed jobs (8.6%), and the
+fleet ran well below its quota. A flat fee divided over more metered work gives a larger ratio, and
+the ratio is expected to keep rising as utilization rises. One sensitivity
+matters: § 8.2 lists a third Claude pool, `claude-oros`, from 2026-09-17,
+whose price is not in the sources used here. If it is a third $200 plan, the
+window ratio falls from 16× to about 14×, the window's allocated dollars
+rise by about 13%, and work done after mid-September is allocated between a
+fifth and a half more.
+
+The analysis therefore prices machine work by **subscription allocation**:
+each month's flat fee, prorated to the days the ledger covers, is shared
+among that month's Claude attempts in proportion to their list price. A
+derived number, not an invoice, it is still the nearest thing in the record
+to what the work actually cost. Two other prices are left out. The
+reputation events carry an `estimated_dollars` field, but on every Claude
+event it equals the final attempt's duration times the rate card's rate,
+while the card derived that rate over a roughly ten times wider wall-clock
+basis, so the field runs several times below the allocation. Codex work is
+priced on the rate card at a deliberately high ceiling that is not money,
+and is excluded from dollar totals.
+
+**Human cost.** No instrument measures maintainer minutes. The garden's own
+reducer defines an inferred price, five minutes per review round plus the
+review's written words at twenty words a minute, at $125 an hour
+(`rep_human_dollars` in `scripts/jobs/reputation.sh`). The earlier study used
+a flat $30 per round. Both are applied below, and neither should be taken as
+a measurement.
+
+For the 107 merged bot pull requests on `endo-but-for-bots` whose jobs could
+be joined to the ledger:
+
+| Per merged pull request | Median | Middle half | Kind |
+| --- | --- | --- | --- |
+| Machine engagements (attempts) | 12 | 6 to 26 | observed |
+| Human review rounds | 2 | 1 to 3 | observed |
+| Human ÷ machine, per pull request (formula) | 36× | 15× to 79× | derived |
+| Human ÷ machine, per pull request ($30 a round) | 88× | 36× to 197× | derived |
+
+The earlier study reported human review at about 50 to 190 times the median
+machine cost. The figures here land in the same range, a little lower,
+because joining jobs through the ledger now captures far more of each pull
+request's machine work: the study's join reached 29% of jobs, and it priced
+machine time with the rate card's wall-clock proxy rather than by allocating
+the subscription across the ledger. Against the list price, which is what
+a pay-per-token operator would see, the human side is still larger, by a
+median of 2.4 times.
+
+Across all 296 merged bot pull requests (May to October), the median is
+2 human review rounds, 92% received at least one, and the longest took 29.
+The earlier study, with 190 pull requests and a narrower reviewer set,
+reported a median of 1. The difference is the larger, later sample and the
+inclusion of every non-bot reviewer.
+
+The two price tags differ by more than an order of magnitude, and they also
+measure different resources. Machine work is bounded by quota, and on a flat
+plan an extra attempt is close to free until the quota runs out. Human review
+is bounded by one person's day. Saving machine dollars can be the wrong
+economy if it adds even part of a review round.
+
+### Latency and throughput
+
+Cost is only part of what review spends. It also takes time:
+
+The spread is wide: a quarter of merged bot pull requests waited more than
+four days for their first human review, and a tenth more than nineteen. Weekly
+throughput rose from about 400 finished attempts a week at the end of July to
+1,440 in the last week of September. The week of 2026-08-31 stands out for
+the opposite reason: 1,562 requeues against 1,150 completions, which was the
+weekly-quota outage, not a change in review.
+
+Across regimes, a single garden job and a single `endo-but-for-bots` job cost
+about the same: a median of $0.09 allocated per job in both. The difference
+lies in how many jobs a change takes and how often they repeat. On
+`endo-but-for-bots`, 37% of attempts ended in a requeue, against 21% for
+garden jobs, and a merged pull request took a median of ten attempts. The
+garden regime has no review round to count. The nearest available proxy for
+what escapes is follow-up repair: jobs whose names mark them as self-heal or
+fix work were 16% to 27% of garden jobs in each month from July to
+September. That figure does
+not separate defects that review would have caught from failures no reviewer
+could have foreseen.
+
+### The gauntlet's rounds
+
+The panel has been recording its runs since 2026-09-23. Of 869 runs on
+`endo-but-for-bots`:
+
+- 697 returned a verdict: 675 must-fix lists and 22 passes.
+- 172 returned none, most from infrastructure errors (111), a juror seat
+  failing (40), or an interruption (15). Machine review that buys no verdict
+  is still spent.
+- 174 pull requests received at least one verdict. Their median was four
+  verdicts. Only 18 ended on a pass.
+
+The gauntlet rarely converges to a pass: among the 173 pull requests whose
+gauntlet stages appear in the events, 73 used all six panel rounds that the
+fix loop allows by default (`post-gauntlet.sh --max-iterations`). By design,
+a loop that reaches its cap leaves the pull request improved for a human
+decision, so the human review after it is the real merge gate. Whether must-fix lists shrink from round to
+round cannot be read from these records: the recorder keeps at most 20
+must-fix items a round, and 346 of the 675 must-fix runs hit that cap. Among
+116 pull requests with two or more verdicts, the last count was below the
+first in 42, equal in 35, and above in 39. With the counts censored, that
+spread says nothing either way about convergence.
+
+Merged pull requests that went through a recorded panel run took a mean of
+2.2 human review rounds, against 2.5 for those that did not, and both medians
+were 2. The panel records cover only the last eleven days and a different mix
+of work, so this does not show the panel saving review rounds. It is also no
+evidence that the panel fails to.
+
+### Does review teach?
+
+The second half of the argument is that review leaves behind data the garden
+can learn from. The garden has one instrument built for exactly this. When
+the maintainer comments on a pull request, a prosecutor job classifies the
+comment: either a **miss**, something an existing juror seat, gate, or
+standing instruction should have caught, or **new direction**, a judgment
+nothing in the garden could have made in advance (skill
+[review-retrospective](../../skills/review-retrospective/SKILL.md)). Misses
+are grouped into clusters, and a cluster that recurs often enough gets an
+improvement job that changes a seat, gate, or brief.
+
+Of 534 classified review comments, **112 (21%) were misses** and **422 (79%)
+were new direction**. Nineteen of the misses were rated major. That split is
+the most important number in this section. Most of what a maintainer writes
+in review is not a defect a better machine could find. It is the maintainer
+deciding what the code should be.
+
+Eighteen of the 52 clusters record the garden commit that improved them.
+Taking the improvement commit's date as the dividing line, their dated
+members split 41 before and 8 after, and 5 of the 18 clusters recurred
+after the fix. One cluster, abbreviated identifier names, recurred three
+times after a deterministic gate was added for it on 2026-07-11: eleven days,
+eighteen days, and ten weeks later.
+
+That looks like learning, but it is weak evidence:
+
+- A cluster is only dispatched for improvement once it has grown to three
+  misses across at least two pull requests, so members pile up before the
+  fix by construction.
+- The windows after the fixes are shorter than the windows before them.
+- Sixteen members carry no date and drop out.
+- There is no matched comparison of the same kind of work without the fix.
+
+Nor do human review rounds per merged pull request show a trend by merge
+month: a mean of 1.8 in May, 4.5 in June, 2.0 in July, 2.6 in August, and
+2.2 in September.
+
+So the second payoff is **suggestive, not measured**. To measure it, each
+engagement would need to record which version of the seats, gates, and briefs
+it ran under; each miss would need to be linked to the change that should
+prevent it, with an exposure count of later jobs in the same area; and human
+review time would need to be measured directly instead of inferred from
+word counts.
+
+### The equilibrium
+
+These observations suggest a way to think about how much review to buy. The
+model below is a **scenario**, not an estimate. The garden's records support
+its shape and some of its inputs, but not its most important parameter, so
+it explains the trade-off rather than locating an optimum.
+
+Treat each change as having an expected cost made of four parts: the machine
+work that produces it, machine review rounds, human review minutes, and the
+loss when a finding reaches the merged result unaddressed. Machine review
+can only remove the share of findings it is able to catch. Human review
+removes both kinds, but one minute of it costs as much as about eight
+machine review rounds. In symbols,
+
+```text
+C = M + c*k + w*h + L*R
+R = d*exp(-h/tauD)
+  + (1 - d)*exp(-k/kappa)*exp(-h/tauM)
+```
+
+with `k` machine review rounds, `h` human minutes, and `R` the expected
+share of findings left unaddressed. Four inputs are
+anchored in the records: `M` = $0.63 (the median allocated machine cost of a
+merged pull request), `c` = $0.26 a round (the median allocated cost of a
+panel stage job, over 611 jobs, plus that of a fix stage job, over 540; only
+Anthropic usage carries an allocation, so OpenAI's provisional prices never
+enter it), `w` = $2.08 a minute (the reducer's $125 an hour), and `d` = 0.79
+(the new-direction share of 534 classified review comments). That last
+figure is measured after machine review: the comments were written on pull
+requests the gauntlet had already worked over, so mechanical findings had
+already been removed, and the new-direction share before machine review is
+lower. Four inputs are assumptions: the loss `L` from an unaddressed finding
+(shown at $100, $400, and $1,600), and how fast each kind of review works
+(`kappa` = 1.5 rounds, `tauM` = 45 minutes for a person to re-check
+mechanical findings, `tauD` = 20 minutes for a person to judge direction).
+
+Under these assumptions, with the gauntlet's median three panel rounds:
+
+| Loss per finding | Best human minutes | Cost at the best point | Cost with no human review |
+| --- | --- | --- | --- |
+| $100 | 13 | $72 | $83 |
+| $400 | 42 | $132 | $329 |
+| $1,600 | 70 | $195 | $1,311 |
+
+The minimum is the **marginal crossing**: the point where one more minute of
+review removes exactly a minute's worth of expected loss. Before it, review
+is cheap relative to what it prevents. After it, each minute costs more than
+it saves. The location of the crossing depends mostly on `L`, which nothing
+in the garden measures. In that sense the honest conclusion is the
+*existence* of the crossing, not its place.
+
+Machine review moves the crossing, but only so far. In the same scenario at
+$1,600, going from zero to six machine rounds lowers the best human time
+from 84 to 69 minutes and the expected cost from $246 to $187, for about
+$1.58 of machine work. Beyond six rounds, the curve is flat: the catchable
+share is used up, and what remains is the new-direction share that only a
+person can decide. Where the curve flattens follows from the assumed
+`kappa`, not from the records. The gauntlet's six-round cap is a configured
+default, so its falling at the same place is a coincidence of the chosen
+value, not evidence for it.
+
+Two conclusions survive the uncertainty. Machine review is cheap enough
+that its marginal round is almost always worth buying until it stops
+finding things. And a large share of human review is not substitutable at
+any machine price, because most of it is direction, not defect detection.
+The equilibrium the garden should aim for spends machine work freely on the
+catchable share and spends the maintainer's minutes on direction, and
+measures both well enough to know where the crossing lies.
+
+## 8.9 Quick reference
 
 | Question | Where to look |
 | --- | --- |

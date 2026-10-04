@@ -147,6 +147,7 @@ test("renderBook hoists source notes and annotates provenance", () => {
     introSource: "{{FRIEZE}}{{INCLUDED}}",
     artwork,
     illuminations: [],
+    equilibriumCharts: [],
   });
 
   assert.match(html, /Written by gardener; grounded on main2\./);

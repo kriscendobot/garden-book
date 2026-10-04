@@ -40,6 +40,7 @@ test("renderBook assigns chapter anchors and resolves catalog links", () => {
     introSource: "{{FRIEZE}}{{INCLUDED}}",
     artwork,
     illuminations: [],
+    equilibriumCharts: [],
   });
 
   assert.equal(result.chapterCount, 2);
@@ -75,6 +76,7 @@ test("renderBook keys catalog anchors on each entry's own heading", () => {
     introSource: "{{FRIEZE}}{{INCLUDED}}",
     artwork,
     illuminations: [],
+    equilibriumCharts: [],
   });
 
   assert.equal(result.roleCount, 3);
@@ -109,6 +111,7 @@ test("assembleBook uses tree capabilities and writes the complete clip", async (
     artworkTree: makeReadableTree({}),
     outputTree,
     illuminations: [],
+    equilibriumCharts: [],
   });
 
   assert.equal(result.chapterCount, 1);

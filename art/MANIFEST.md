@@ -50,6 +50,33 @@ The 25 thematic illustrations below implement the complete set in `chapter-illus
 
 For decorative placement, omit the SVG's `role`, `aria-labelledby`, `<title>`, and `<desc>` and mark the containing element `aria-hidden="true"`. Keep them when an illustration carries meaning.
 
+## Review-economics charts (section 8.8)
+
+The nine charts below draw `equilibrium-data-spec.md` (charts E1 to E9) from the committed `data/equilibrium/aggregates.json` and `data/equilibrium/scenario.json`. `generate-equilibrium-charts.mjs` rewrites exactly these SVGs, byte for byte, from that data; `test/equilibrium-charts.test.mjs` checks reproduction, the spec's numbers and labels, the spec tables against the data, the plotted scenario geometry, and inline safety. The chart ID is the deterministic key: it matches the spec heading (`### E1.`), the SVG's `data-chart` attribute, and the generator's `charts` entry, which also carries a draft caption (kind, sample size, cutoff) for integration. `build/equilibrium-charts.mjs` places the charts in section 8.8, each with its caption and the spec's exact values in a disclosure directly after it; `test/equilibrium-placement.test.mjs` checks the placements and values, and `equilibrium-integration-evidence.md` records the browser check of the built book.
+
+| Chart | File | Spec placement anchor | Kind | Data |
+| --- | --- | --- | --- | --- |
+| E1 | `equilibrium-e1-pr-cost.svg` | `ch8-two-price-tags-on-one-pull-request` | Derived and observed | `ebfb.mergedJoined` |
+| E2 | `equilibrium-e2-list-vs-paid.svg` | `ch8-two-price-tags-on-one-pull-request` | Observed list price; derived fee and ratio | `reconciliation.byMonth`, window totals; study point quoted from the spec |
+| E3 | `equilibrium-e3-weekly-throughput.svg` | `ch8-latency-and-throughput` | Observed | `weeklySeries` |
+| E4 | `equilibrium-e4-review-latency.svg` | `ch8-latency-and-throughput` | Observed | `gauntletStages`, `ebfb.merged`, `upstream.hoursToMergeFerryEra` |
+| E5 | `equilibrium-e5-scrutiny-levels.svg` | `ch8-three-levels-of-scrutiny` | Derived and observed | `regimes`, `ebfb.merged`, `upstream`, `gardenRepairShareByMonth` |
+| E6 | `equilibrium-e6-gauntlet-ends.svg` | `ch8-the-gauntlets-rounds` | Observed | `ebfb.gauntletStagesPerPullRequest`, `panel` |
+| E7 | `equilibrium-e7-review-learning.svg` | `ch8-does-review-teach` | Observed; derived before/after split | `learning` |
+| E8 | `equilibrium-e8-marginal-crossing.svg` | `ch8-the-equilibrium` | Scenario | `scenario.humanAxis`, `scenario.anchors` |
+| E9 | `equilibrium-e9-machine-rounds.svg` | `ch8-the-equilibrium` | Scenario | `scenario.split`, `scenario.anchors` |
+
+Technical conventions, for the styling stage:
+
+- Every chart is 353 user units wide, the phone text column, so 12-unit labels render at 12 px or more at that width and grow on wider columns. Heights vary with content.
+- Text uses `fill="currentColor"` and inherits the body ink. Data-mark outlines carry the class `eq-outline`, arrowheads `eq-outline-fill`, and gridlines `eq-grid`; their light-scheme colors are presentation attributes, and `equilibrium-charts.css-snippet` switches them to warm sand for the dark scheme. Copy it into the same-origin stylesheet. The SVGs have no `style` attribute or element.
+- Kinds are drawn as the spec asks: observed marks solid, derived marks hatched (paper stripes over the fill) or open, scenario lines dashed with a visible "SCENARIO" banner. Scenario curves are told apart by dash pattern and marker shape (circle $100, square $400, diamond $1,600), and every chart has direct labels or a shape key, so no meaning rests on color alone.
+- E8's $1,600 curve is clipped where it enters the $400 ceiling, with an upward arrow and its $1,311.26 value at 0 minutes. Scenario paths carry `data-series` and `data-values` attributes holding the committed values they plot.
+- E5 draws the spec's four comparable measures as four panels; the fifth measure, the repair-named job proxy (garden only), is a labeled note beneath them.
+- IDs are `<file-stem>-title`, `-description`, and `-hatch-<color>`, unique across these charts and the illuminated set.
+
+`tools/equilibrium/chart-check.mjs [screenshot-directory]` inlines the nine charts in a preview page with the book stylesheet and the snippet, renders it in headless Chromium at 390×844 in the light and dark schemes, and fails on horizontal overflow, text outside its SVG, overlapping labels, or a label under 12 px. Its recorded results are in `equilibrium-charts-evidence.md`.
+
 ## Palette
 
 The base colors below are the complete SVG palette. Transparency is applied with SVG `opacity` or `stop-opacity`, so integration can tune contrast without introducing new hues.

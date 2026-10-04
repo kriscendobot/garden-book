@@ -50,12 +50,28 @@ role/skill links to the in-book chapter 5/6 entries, and sends other repo
 paths to `main2` on GitHub (`kriscendobot/garden`, where the roles/skills
 this book documents actually live).
 
-Edition 2026-10-04, illuminated (job `book-illumination-integrate-20261004`):
-the 25 plates in `art/illumination-*.svg` are inlined at the places
-`build/illuminations.mjs` names, each as a `figure` with a caption, and the
-title-page garden scene and the chapter 2 garden-bed figure are retired. Not yet
-published; the supervisor publishes it from merged `main` with
-`node build/build.mjs chapters out` and `build/publish.mjs`.
+Current edition, 2026-10-04, illuminated (jobs
+`book-illumination-integrate-20261004` and
+`book-illumination-supervisor-after-integrate-20261004`): the 25 plates in
+`art/illumination-*.svg` are inlined at the places `build/illuminations.mjs`
+names, each as a `figure` with a caption, and the title-page garden scene and
+the chapter 2 garden-bed figure are retired:
+https://dnl43y7ksqqrkfzkzsiyzhfoqks7tnxpedzi7gfymzviqo7uvkda.ocap.site/
+
+- Art: PR #9 (https://github.com/kriscendobot/garden-book/pull/9), merged as
+  `32cf2348503fa8f9e13c7c7be9ebb3ff5db3702f`.
+- Integration: PR #11 (https://github.com/kriscendobot/garden-book/pull/11),
+  head `b716cab73d6dbeaf4caf0631ba75ae23888c1e2c`, merged as
+  `636a80f05ae1a185afcebf84e15c0c54cf4a21cf`; published from that commit.
+- Build: `npm ci && npm test && node build/build.mjs chapters out` (30/30
+  tests). Output sha256: `index.html`
+  `2f59a229a2323f24a2e4fe9e26c140ffa8b1766622f23db6694cc3bfa4c65c25`,
+  `styles.css`
+  `5a2598c7bb06bd7ec88b24a21776aa5e038842c91ac9ce80a62c9886a66273a7`; the
+  served clip returns the same bytes.
+- Browser: `tools/browser-check.mjs` against the live URL at 390×844 and
+  1440×900 in light and dark: no horizontal overflow, no clipped or
+  overlapping figures, caption contrast at least 5.68:1, body at least 12.9:1.
 
 Prior editions:
 

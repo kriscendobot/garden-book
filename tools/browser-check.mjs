@@ -6,6 +6,7 @@
 // few figures for a person to look at.
 //
 //   node tools/browser-check.mjs out/index.html [screenshot-directory]
+//   node tools/browser-check.mjs https://<published-clip>/ [screenshot-directory]
 //
 // Playwright is not a dependency of the book. The script imports
 // playwright-core from PLAYWRIGHT_CORE (a path to the package) or from normal
@@ -174,7 +175,9 @@ const browser = await chromium.launch({
   executablePath: findChromium(),
   args: ["--no-sandbox"],
 });
-const url = pathToFileURL(resolve(htmlArgument)).href;
+const url = /^https?:\/\//.test(htmlArgument)
+  ? htmlArgument
+  : pathToFileURL(resolve(htmlArgument)).href;
 const results = [];
 try {
   for (const configuration of configurations) {

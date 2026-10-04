@@ -29,11 +29,34 @@
   --gutter:2.5rem;
   --margin:14rem;       /* sidenote column */
   --wide:calc(var(--text) + var(--gutter) + var(--margin));
+
+  /* Illuminated-manuscript treatment. The chapter and section illustrations
+     are one set drawn in these tokens, so the manuscript palette is anchored
+     to the book's own schemes: a parchment panel a little warmer than the
+     reading paper, leaf-green pen work, burnished gilding, and clay
+     rubrication, with a few muted botanical washes. The dark scheme swaps the
+     tokens rather than filtering the finished art, so the line work stays a
+     deliberate ink on vellum instead of a dimmed daytime picture. */
+  --ms-ink:#45412f;       /* pen outline: 8.3:1 on the parchment panel */
+  --ms-leaf:#3b6a34;      /* stems and vines, the book's link green */
+  --ms-leaf-soft:#789a65;
+  --ms-leaf-light:#a6c187;
+  --ms-gild:#b2822c;      /* burnished gold for gilded accents */
+  --ms-rubric:#9a4f2c;    /* clay/vermilion, the book's warm accent */
+  --ms-rose:#c17f7f;
+  --ms-violet:#9a8ebe;
+  --ms-stone:#a0825f;     /* masonry, benches, soil edges */
+  --ms-ground:#f1e7cf;    /* vellum panel fill */
+  --ms-ground-2:#e6d6b4;  /* a deeper vellum, for shadowed faces */
+  --ms-line-faint:#45412f52;
   color-scheme:light dark;
 }
 @media (prefers-color-scheme:dark){:root{
   --paper:#1a1c18; --ink:#e4dfd1; --soil:#a39c8b; --rule:#3a3d35; --bed:#21241f;
   --leaf:#9cc38c; --leaf-faint:#9cc38c55; --clay:#d99470; --code-ink:#d8ccb4;
+  --ms-ink:#d7d0ba; --ms-leaf:#9cc38c; --ms-leaf-soft:#7fa06c; --ms-leaf-light:#b6d49a;
+  --ms-gild:#d8b24e; --ms-rubric:#df9f78; --ms-rose:#d8a6a6; --ms-violet:#b9accc;
+  --ms-stone:#b2946f; --ms-ground:#262a21; --ms-ground-2:#30342a; --ms-line-faint:#d7d0ba4d;
 }}
 
 *{box-sizing:border-box}
@@ -86,8 +109,12 @@ strong{font-weight:600}
 /* Title page. */
 .titlepage{position:relative;isolation:isolate;padding:5.5rem 0 2.5rem}
 .titlepage>*:not(.title-art){position:relative;z-index:1}
-.title-art{position:absolute;z-index:0;top:1.25rem;left:-1rem;width:var(--wide);height:auto;
-  max-width:none;opacity:.38;pointer-events:none}
+/* The first-edition garden scene, redrawn as a title-page border ornament: a
+   vine-and-trellis frame with a low bed along the foot, enclosing the title
+   block rather than washing behind it. Its centre is open, so the title and
+   subtitle sit on clean paper. */
+.title-art{position:absolute;z-index:0;top:1.5rem;left:-1.75rem;width:min(var(--wide),100%);height:auto;
+  max-width:none;opacity:.9;pointer-events:none}
 .kicker{font:.74rem/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--soil);margin-bottom:1.4rem}
 .titlepage h1{font-weight:400;font-size:3.4rem;line-height:1.04;letter-spacing:-.01em;margin:0 0 .9rem}
 .subtitle{font-style:italic;font-size:1.32rem;line-height:1.4;color:var(--soil);margin-bottom:2.8rem}
@@ -150,6 +177,45 @@ li>p.runin>strong:first-child{font:inherit;font-weight:600;letter-spacing:0;text
 .chapter-figure{width:min(15rem,72vw);margin:1.4rem auto 2rem;color:var(--soil)}
 .chapter-figure svg{display:block;width:100%;height:auto}
 .chapter-figure figcaption{font:italic .78rem/1.4 var(--serif);text-align:center;margin-top:.2rem}
+
+/* ---- Illuminated illustrations ----------------------------------------- */
+/* The chapter openers and section figures of the manuscript set. A chapter
+   opener sits after the heading and provenance, before the first paragraph; a
+   section figure follows its named heading past the first conceptual turn.
+   Broad scenes may reach into the sidenote margin on wide screens; portrait
+   and square plates stay in the reading column. */
+.illus{margin:1.6rem 0 1.9rem}
+.illus svg{display:block;width:100%;height:auto;border-radius:2px}
+.illus figcaption{font:italic .82rem/1.46 var(--serif);color:var(--soil);margin:.55rem 0 0;max-width:var(--text)}
+.illus--wide{width:100%}
+.illus--panel{width:min(24rem,100%);margin-left:auto;margin-right:auto}
+.illus--panel figcaption{text-align:center;margin-left:auto;margin-right:auto}
+@media (min-width:76em){
+  .illus--wide{width:var(--wide)}
+  .illus--wide.illus--bleed{clear:right}
+}
+
+/* The manuscript paint set. Every illustration and the title ornament draw
+   their colour from these classes alone, so the whole set recolours with the
+   scheme through one token swap. Classes carry only paint; structure
+   (stroke-width, caps, fill:none) stays on the SVG elements. */
+.ms-ink{stroke:var(--ms-ink)}
+.ms-stem{stroke:var(--ms-leaf)}
+.ms-gild-s{stroke:var(--ms-gild)}
+.ms-rubric-s{stroke:var(--ms-rubric)}
+.ms-stone-s{stroke:var(--ms-stone)}
+.ms-faint{stroke:var(--ms-line-faint)}
+.ms-leaf{fill:var(--ms-leaf-soft)}
+.ms-leaf2{fill:var(--ms-leaf-light)}
+.ms-gild{fill:var(--ms-gild)}
+.ms-rubric{fill:var(--ms-rubric)}
+.ms-rose{fill:var(--ms-rose)}
+.ms-violet{fill:var(--ms-violet)}
+.ms-stone{fill:var(--ms-stone)}
+.ms-ground{fill:var(--ms-ground)}
+.ms-ground2{fill:var(--ms-ground-2)}
+.ms-ink-fill{fill:var(--ms-ink)}
+.ms-paper{fill:var(--paper)}
 
 blockquote{margin:1.4rem 0 1.4rem 1.6rem;padding:0;font-style:italic}
 blockquote strong{font-style:normal}
@@ -222,7 +288,7 @@ footer{margin-top:6rem;padding-top:1rem;border-top:1px solid var(--rule);font:.8
   .nav-jump a{text-decoration:none}
   main{margin-left:0;padding:0 1.15rem 4rem}
   .titlepage{padding-top:2.6rem}
-  .title-art{top:1rem;left:0;width:100%;opacity:.2}
+  .title-art{top:1rem;left:-.5rem;width:calc(100% + 1rem);opacity:.8}
   .titlepage h1{font-size:2.4rem}
   .subtitle{font-size:1.15rem;margin-bottom:2rem}
   ol.frieze{gap:0}
@@ -251,7 +317,7 @@ footer{margin-top:6rem;padding-top:1rem;border-top:1px solid var(--rule);font:.8
     radial-gradient(ellipse at 28% 92%,#e6cf7a0c 0 1.5rem,transparent 9rem),
     radial-gradient(ellipse at 72% 76%,#d994700c 0 1.25rem,transparent 8.5rem),
     repeating-linear-gradient(8deg,transparent 0 18px,#e8d8b906 19px,transparent 20px 38px)}
-  .title-art,.chapter-figure svg{filter:saturate(.72) brightness(.78)}
-  .title-art{opacity:.28}
+  .chapter-figure svg{filter:saturate(.72) brightness(.78)}
+  .title-art{opacity:.82}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

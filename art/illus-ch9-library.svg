@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 450">
+  <rect class="ms-ground" x="4" y="4" width="352" height="442" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="336" height="418" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-stem" d="M300 30c20 40-6 70 0 110s-20 70-6 120"/><path class="ms-leaf" d="M300 90c14-6 22-18 22-34-14 2-22 16-22 34Z" stroke="none"/></g>
+  <!-- terraces descending from broad topics to source sections -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-stone-s" d="M60 90h230v34H60ZM60 150h180v30H60ZM60 206h140v28H60ZM60 258h110v26H60Z"/>
+    <path class="ms-ink" d="M80 90V60h190v30" fill="none"/>
+    <!-- book spines and labelled tabs on the shelves -->
+    <path class="ms-rubric-s" d="M80 104v12M100 104v12M120 104v12M80 162v10M100 162v10M80 216v10"/>
+    <path class="ms-gild-s" d="M250 96h22v10h-22Z"/>
+  </g>
+  <!-- a reader draws one small basket down by pulley, not the whole structure -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <circle class="ms-gild" cx="300" cy="300" r="8" stroke="none"/><path class="ms-gild-s" d="M300 308v70"/>
+    <path class="ms-stone-s" d="M284 378h32l-6 26h-20Z"/>
+    <circle class="ms-ink" cx="120" cy="366" r="14"/><path class="ms-ink" d="M120 380v34M120 414l-16 20M120 414l16 20M120 392h40"/>
+  </g>
+</svg>

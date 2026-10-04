@@ -155,7 +155,10 @@ test("renderBook hoists source notes and annotates provenance", () => {
 
   assert.match(html, /Written by gardener; grounded on main2\./);
   assert.match(html, /href="https:\/\/github.com\/" rel="noopener"/);
-  assert.match(html, /<figure class="chapter-figure garden-bed">/);
+  // The interim garden-bed figure no longer stands in for the architecture
+  // chapter; the chapter-2 opener illustration takes its place once the
+  // illustration set is supplied (see test/illustrations.test.mjs).
+  assert.doesNotMatch(html, /<figure class="chapter-figure garden-bed">/);
   assert.match(
     html,
     /<\/h4>\n<div class="marginnote source" role="note">Source: <a href="https:\/\/github.com\/kriscendobot\/garden\/blob\/main2\/skills\/panel\/SKILL.md"/,

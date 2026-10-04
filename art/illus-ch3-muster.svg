@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 350">
+  <rect class="ms-ground" x="4" y="4" width="1042" height="342" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="1026" height="318" rx="5" fill="none" stroke-width="2"/>
+  <!-- one arched vine over three linked passes -->
+  <path class="ms-stem" d="M90 120C300 40 750 40 960 120" fill="none" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"/>
+  <path class="ms-stone-s" d="M60 300h930" fill="none" stroke-width="3"/>
+  <!-- pass 1: a tangle pressed into bundles (pruning) -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M120 260c-20-30 10-60 40-40 30-24 60 6 44 40M150 180c-30 10-14 50 20 40 20 30 56 10 50-30"/>
+    <path class="ms-rubric-s" d="M150 150l20 20M170 150l-20 20"/>
+  </g>
+  <!-- pass 2: sorted into a few baskets -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-stone-s" d="M430 300v-40h60v40ZM510 300v-40h60v40ZM590 300v-40h60v40Z"/>
+    <path class="ms-leaf" d="M448 260c0-10 6-16 14-16 0 10-6 16-14 16Z" stroke="none"/><circle class="ms-gild" cx="540" cy="250" r="6" stroke="none"/><circle class="ms-rubric" cx="620" cy="250" r="6" stroke="none"/>
+  </g>
+  <!-- pass 3: presented one basket at a time to a seated gardener (pointing hand) -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-rubric-s" d="M720 230h60M772 222l10 8-10 8"/>
+    <circle class="ms-ink" cx="880" cy="200" r="14"/><path class="ms-ink" d="M880 214v50M856 300l24-36 24 36"/>
+    <path class="ms-gild-s" d="M820 236v-30h50v30Z"/>
+  </g>
+</svg>

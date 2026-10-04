@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <rect class="ms-ground" x="4" y="4" width="792" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="768" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-stem" d="M400 24c-60 18-120 18-180 0M400 24c60 18 120 18 180 0"/></g>
+  <!-- three leaves of one triptych, vines crossing the gutters to a central clasp -->
+  <g fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ground2" d="M70 110h210v220H70ZM300 96h200v248H300ZM520 110h210v220H520Z" stroke="none"/>
+    <path class="ms-ink" d="M70 110h210v220H70ZM300 96h200v248H300ZM520 110h210v220H520Z"/>
+    <!-- leaf 1: dated events -->
+    <path class="ms-rubric-s" d="M92 150h166M92 180h166M92 210h120M92 240h150M92 270h100" stroke-width="1.6"/>
+    <!-- leaf 3: sealed messages on branching stems -->
+    <path class="ms-stem" d="M560 320c20-40 60-44 70-90 8-36 44-40 60-70"/>
+    <path class="ms-stem" d="M600 236c-18-6-28-20-30-38M660 180c16-8 24-24 22-44"/>
+    <circle class="ms-rubric" cx="632" cy="138" r="7" stroke="none"/><circle class="ms-rubric" cx="690" cy="110" r="6" stroke="none"/><circle class="ms-rubric" cx="590" cy="200" r="6" stroke="none"/>
+  </g>
+  <!-- leaf 2: three trays, seed/sprout/bloom marks for pending, active, done -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M322 140h156M322 210h156M322 280h156M322 140v150M478 140v150"/>
+    <circle class="ms-gild" cx="352" cy="175" r="6" stroke="none"/>
+    <path class="ms-stem" d="M352 245v-18M352 234c-8 0-12-6-12-12 8 0 12 4 12 12Z"/>
+    <path class="ms-leaf2" d="M352 310c0-12 8-20 20-20 0 12-8 20-20 20ZM352 310c0-12-8-20-20-20 0 12 8 20 20 20Z" stroke="none"/>
+  </g>
+  <!-- the central clasp: the accepted push that fastens all three -->
+  <g transform="translate(400 348)"><path class="ms-gild" d="M-18-14h36v20a18 10 0 0 1-36 0Z" stroke="none"/><circle class="ms-rubric" cy="-4" r="5" stroke="none"/></g>
+</svg>

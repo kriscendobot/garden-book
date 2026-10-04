@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <rect class="ms-ground" x="4" y="4" width="592" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="576" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-stem" d="M40 40c18 8 18 28 2 40M560 40c-18 8-18 28-2 40"/></g>
+  <!-- four stepped terraces with calibrated lines, increasingly demanding plants -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-stone-s" d="M60 330h180M160 330V270h180M260 270V210h180M360 210V150h180"/>
+    <path class="ms-leaf" d="M110 330v-30M110 300c-12-2-18-8-20-18 12 0 18 6 20 18Z" stroke-width="2"/>
+    <path class="ms-leaf2" d="M230 270v-40M230 240c-14-2-22-10-24-22 14 0 22 8 24 22Z" stroke-width="2"/>
+    <path class="ms-stem" d="M330 210v-50M330 180c-16-2-26-12-28-26 16 0 26 10 28 26Z" stroke-width="2"/>
+    <path class="ms-stem" d="M430 150v-60M430 120c-18-2-30-14-32-30 18 0 30 12 32 30Z" stroke-width="2"/>
+  </g>
+  <!-- several guild ladders; more than one can reach the same terrace -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-ink" d="M80 330l40-120M100 330l40-120M84 290h32M92 258h32M100 226h32"/><path class="ms-gild-s" d="M300 270l40-120M318 270l40-120M308 238h36M316 206h36"/></g>
+  <!-- a safety rail blocks a role-marked pot from descending below its floor -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-rubric-s" d="M250 212h80" stroke-width="3"/><rect class="ms-rubric-s" x="276" y="180" width="26" height="24" rx="2"/><path class="ms-rubric-s" d="M283 180v-8a6 6 0 0 1 12 0v8"/></g>
+  <!-- a switchback path shows a permitted fallback -->
+  <path class="ms-faint" d="M520 160l-40 30 40 30-40 30 40 30" fill="none" stroke-width="2.4" stroke-dasharray="5 6"/>
+</svg>

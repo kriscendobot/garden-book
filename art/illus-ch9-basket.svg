@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <rect class="ms-ground" x="4" y="4" width="792" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="768" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-stem" d="M40 40c24 8 26 30 10 48M760 40c24 8 26 30 10 48"/></g>
+  <!-- branching stems double as the archive hierarchy; the border simplifies toward the reader -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-stem" d="M300 330V150c0-40 40-60 90-60h0c50 0 90 20 90 60"/>
+    <path class="ms-stem" d="M390 150v-50M480 150c0-30 40-44 70-70M300 220c-40 0-70-16-100-50M300 270c-40 0-80 16-120 60"/>
+  </g>
+  <!-- a large untouched archive stays behind -->
+  <g fill="none" stroke-width="2" stroke-linecap="round" opacity=".8"><path class="ms-faint" d="M540 90h60v40h-60ZM560 60h60v40h-60ZM600 120h60v40h-60Z"/></g>
+  <!-- rubricated signboards let the reader stop or descend at each fork -->
+  <g fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-rubric-s" d="M396 96h22v14h-22ZM556 70h22v14h-22ZM196 162h22v14h-22Z"/></g>
+  <!-- the reader with a finite woven basket holding a few complete cuttings -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <circle class="ms-ink" cx="150" cy="286" r="14"/><path class="ms-ink" d="M150 300v40M150 340l-18 28M150 340l18 28M150 312h30"/>
+    <path class="ms-stone-s" d="M180 312h40l-6 30h-28Z"/>
+    <path class="ms-leaf" d="M192 318v18M206 318v18" stroke-width="2"/>
+  </g>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360">
+  <rect class="ms-ground" x="4" y="4" width="472" height="352" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="456" height="328" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-stem" d="M40 40c18 8 18 28 2 40M440 40c-18 8-18 28-2 40"/></g>
+  <!-- three paths (clover plan) reaching one central bed of bound folios -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M210 150h60v70h-60ZM240 150v70" />
+    <path class="ms-rubric-s" d="M222 166h12M246 166h12M222 182h12M246 182h12" stroke-width="1.4"/>
+  </g>
+  <!-- archival path from source markers -->
+  <path class="ms-stone-s" d="M240 150c-10-50-60-80-140-90" fill="none" stroke-width="2.4" stroke-dasharray="6 5"/>
+  <g stroke="none"><rect class="ms-stone" x="92" y="54" width="12" height="12"/><rect class="ms-stone" x="140" y="74" width="12" height="12"/></g>
+  <!-- thematic path through named plots -->
+  <path class="ms-stem" d="M210 186c-60 0-120 20-150 70" fill="none" stroke-width="2.4"/>
+  <g fill="none" stroke-width="2"><rect class="ms-stem" x="70" y="250" width="26" height="20"/><rect class="ms-stem" x="110" y="240" width="26" height="20"/></g>
+  <!-- quick stepping-stone path of keywords -->
+  <g stroke="none"><circle class="ms-gild" cx="300" cy="260" r="8"/><circle class="ms-gild" cx="340" cy="288" r="8"/><circle class="ms-gild" cx="384" cy="306" r="8"/></g>
+  <path class="ms-faint" d="M270 220c20 20 60 60 120 86" fill="none" stroke-width="2" stroke-dasharray="2 8"/>
+  <!-- pruning tags: stale, superseded, contradictory growth left in view -->
+  <g fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-rubric-s" d="M300 120l10 10M360 150v14M400 120h14"/></g>
+</svg>

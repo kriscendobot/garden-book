@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <rect class="ms-ground" x="4" y="4" width="592" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="576" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-stem" d="M300 40C150 70 120 110 120 150M300 40c150 30 180 70 180 110"/></g>
+  <!-- six historiated niches in a semicircle, each a different tool emblem -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M86 230a40 40 0 0 1 80 0v34H86ZM176 180a40 40 0 0 1 80 0v34h-80ZM260 162a40 40 0 0 1 80 0v34h-80ZM344 180a40 40 0 0 1 80 0v34h-80ZM434 230a40 40 0 0 1 80 0v34h-80Z"/>
+    <path class="ms-ink" d="M160 300a40 40 0 0 1 80 0v20h-80Z" opacity="0"/>
+  </g>
+  <!-- the six emblems: build, tend, judge, research, operate, repair -->
+  <g stroke-width="2" stroke-linecap="round" fill="none">
+    <path class="ms-rubric-s" d="M118 244v-22l10-6"/>
+    <path class="ms-leaf" d="M216 212c-9-1-15-7-16-16 9 0 15 6 16 16Z" stroke="none"/>
+    <path class="ms-gild-s" d="M288 196h24M300 192v8"/>
+    <path class="ms-rubric-s" d="M372 198a10 10 0 1 0 2 0M380 206l8 8"/>
+    <path class="ms-gild-s" d="M460 244l14-14 6 6-14 14"/>
+    <path class="ms-rubric-s" d="M560 244v-20M552 232h16" opacity="0"/>
+  </g>
+  <!-- one central gardener taking a single emblem and one slim book -->
+  <g fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle class="ms-ink" cx="300" cy="286" r="16"/><path class="ms-ink" d="M300 302v54M300 356l-22 22M300 356l22 22M300 318h30"/>
+    <path class="ms-gild" d="M330 310h26v22h-26Z" stroke="none"/><path class="ms-gild-s" d="M330 310h26v22h-26ZM343 310v22"/>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <rect class="ms-ground" x="4" y="4" width="632" height="352" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="616" height="328" rx="5" fill="none" stroke-width="2"/>
+  <!-- cloud, rain, and root ornaments terminating at the edge -->
+  <g aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-faint" d="M120 48c-20 0-24 24-4 26 0 14 24 14 28 0 20 4 28-20 6-26-2-14-26-12-30 0ZM130 86v14M160 88v12M190 86v14"/></g>
+  <!-- a floating terrace lowered from the cloud by winch -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-stone-s" d="M300 60h120M360 60V30"/>
+    <path class="ms-ink" d="M330 96V70M470 96V70"/>
+    <path class="ms-ink" d="M300 96h200v70H300Z"/>
+    <!-- fitted with beds and a conservatory -->
+    <path class="ms-stem" d="M330 150v-28M352 150v-34"/>
+    <path class="ms-ink" d="M420 150v-34l24-16 24 16v34Z"/>
+  </g>
+  <!-- three empty key niches: prebuilt, but absent of secrets -->
+  <g fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-rubric-s" d="M316 132v-14a4 4 0 0 1 8 0v14M336 132v-14a4 4 0 0 1 8 0v14M356 132v-14a4 4 0 0 1 8 0v14"/></g>
+  <!-- a person on the ground holds the keys, supplied only after it lands -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <circle class="ms-ink" cx="150" cy="250" r="12"/><path class="ms-ink" d="M150 262v40M150 300l-18 30M150 300l18 30M150 274h26"/>
+    <circle class="ms-gild" cx="188" cy="270" r="6" stroke="none"/><path class="ms-gild-s" d="M194 270h14M202 270v8" stroke-width="1.6"/>
+    <path class="ms-stone-s" d="M60 330h520"/>
+  </g>
+</svg>

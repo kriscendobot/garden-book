@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <rect class="ms-ground" x="4" y="4" width="792" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="768" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-stem" d="M40 40c20 10 20 34 4 48"/></g>
+  <!-- a ruled planting plan like a decorated calendar page -->
+  <path class="ms-ink" d="M150 70h520v260H150Z" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- serial furrows (one after another) with roots following the sequence -->
+  <path class="ms-stem" d="M180 120h460M180 170h460" fill="none" stroke-width="2.2" stroke-linecap="round"/>
+  <g stroke="none"><circle class="ms-gild" cx="210" cy="120" r="6"/><circle class="ms-gild" cx="300" cy="120" r="6"/><circle class="ms-gild" cx="390" cy="120" r="6"/><circle class="ms-leaf" cx="210" cy="170" r="6"/><circle class="ms-leaf" cx="300" cy="170" r="6"/></g>
+  <!-- one pair of parallel furrows -->
+  <path class="ms-stem" d="M180 220h300M180 250h300" fill="none" stroke-width="2.2" stroke-linecap="round"/>
+  <path class="ms-faint" d="M170 235h320" fill="none" stroke-width="10" opacity=".25"/>
+  <!-- stop and continue symbols at a damaged plot -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect class="ms-rubric-s" x="540" y="206" width="26" height="26" rx="3"/><path class="ms-rubric-s" d="M546 212l14 14M560 212l-14 14"/><path class="ms-stem" d="M600 219h30M624 213l8 6-8 6"/></g>
+  <!-- a measured water reservoir: the bounded shared budget -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path class="ms-ink" d="M560 300h90v26h-90Z"/><path class="ms-violet" d="M560 314h90v12h-90Z" stroke="none" opacity=".7"/><path class="ms-rubric-s" d="M650 304v22M646 310h8M646 318h8" stroke-width="1.4"/></g>
+</svg>

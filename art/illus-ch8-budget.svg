@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360">
+  <rect class="ms-ground" x="4" y="4" width="472" height="352" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="456" height="328" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-stem" d="M40 40c18 8 18 28 2 40M440 40c-18 8-18 28-2 40"/></g>
+  <!-- a round garden like a calendar wheel, divided into planned beds -->
+  <circle class="ms-ink" cx="200" cy="190" r="120" fill="none" stroke-width="2.6"/>
+  <g class="ms-ink" fill="none" stroke-width="1.8"><path d="M200 70v240M80 190h240M115 105l170 170M285 105L115 275"/></g>
+  <!-- beds filled in sequence (early) vs closed gates (late, empty bowl) -->
+  <g stroke="none"><path class="ms-leaf" d="M200 190L240 94a120 120 0 0 1 60 36Z"/><path class="ms-leaf2" d="M200 190l100 -60a120 120 0 0 1 20 60Z"/></g>
+  <g fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-rubric-s" d="M236 268l20 20M256 268l-20 20M150 286l18 12"/></g>
+  <!-- one finite seed bowl, now empty; the measuring scoop -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-gild-s" d="M360 150a40 24 0 0 0 80 0Z"/><path class="ms-stone-s" d="M400 182v40"/>
+    <path class="ms-rubric-s" d="M352 250a16 10 0 0 0 32 0ZM368 240v-16"/>
+  </g>
+</svg>

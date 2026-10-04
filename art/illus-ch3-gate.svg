@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360">
+  <rect class="ms-ground" x="4" y="4" width="472" height="352" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="456" height="328" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2.4" stroke-linecap="round"><path class="ms-stem" d="M240 34V12M210 60c-40 10-54 40-48 86M270 60c40 10 54 40 48 86"/><path class="ms-leaf" d="M176 110c-16 2-30-6-38-22 16-6 32 4 38 22Z" stroke="none"/><path class="ms-leaf2" d="M304 110c16 2 30-6 38-22-16-6-32 4-38 22Z" stroke="none"/></g>
+  <!-- the gate as an architectural initial; steward stays at the threshold -->
+  <g fill="none" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M196 300V150a44 44 0 0 1 88 0v150"/>
+    <path class="ms-ink" d="M240 300V176"/>
+    <path class="ms-stone-s" d="M160 300h160"/>
+    <!-- reader outside, steward inside at the gate -->
+    <circle class="ms-ink" cx="150" cy="226" r="12"/><path class="ms-ink" d="M150 238v40"/>
+    <circle class="ms-gild-s" cx="300" cy="226" r="12"/><path class="ms-gild-s" d="M300 238v40"/>
+  </g>
+  <!-- speech scrolls become seed packets carried out; a reply ribbon returns to a box -->
+  <path class="ms-rubric-s" d="M316 206c40-6 70-6 120 10" fill="none" stroke-width="2" stroke-dasharray="3 7"/>
+  <rect class="ms-gild" x="424" y="206" width="16" height="12" rx="2" stroke="none"/>
+  <path class="ms-stem" d="M316 250c40 6 80 2 120-16" fill="none" stroke-width="2"/>
+  <rect class="ms-ground2" x="420" y="238" width="24" height="18" rx="2"/><rect class="ms-ink" x="420" y="238" width="24" height="18" rx="2" fill="none" stroke-width="2"/>
+</svg>

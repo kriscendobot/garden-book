@@ -130,12 +130,7 @@ test("node trees read, list, and write through a real directory", async (t) => {
   assert.equal(await readText(output, "index.html"), "<p>✓</p>");
 });
 
-const artwork = {
-  titleGarden:
-    '<svg xmlns="http://www.w3.org/2000/svg"><title id="title">Garden</title></svg>',
-  gardenBed:
-    '<svg xmlns="http://www.w3.org/2000/svg"><title id="title">Bed</title></svg>',
-};
+const artwork = { illuminations: {} };
 
 test("renderBook hoists source notes and annotates provenance", () => {
   const { html } = renderBook({
@@ -149,13 +144,14 @@ test("renderBook hoists source notes and annotates provenance", () => {
         text: "# Chapter 6: Skills\n\n## The `panel` skill\n\n### Entry\n\nBody text.\n\nSource: [`skills/panel/SKILL.md`](#panel)\n\n## The `panel` skill again\n",
       },
     ],
-    introSource: "{{TITLE_ART}}{{FRIEZE}}{{INCLUDED}}",
+    introSource: "{{FRIEZE}}{{INCLUDED}}",
     artwork,
+    illuminations: [],
   });
 
   assert.match(html, /Written by gardener; grounded on main2\./);
   assert.match(html, /href="https:\/\/github.com\/" rel="noopener"/);
-  assert.match(html, /<figure class="chapter-figure garden-bed">/);
+  assert.doesNotMatch(html, /<figure/);
   assert.match(
     html,
     /<\/h4>\n<div class="marginnote source" role="note">Source: <a href="https:\/\/github.com\/kriscendobot\/garden\/blob\/main2\/skills\/panel\/SKILL.md"/,

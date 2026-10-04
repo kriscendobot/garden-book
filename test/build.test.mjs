@@ -23,12 +23,7 @@ const makeReadableTree = (files) => ({
   },
 });
 
-const artwork = {
-  titleGarden:
-    '<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title"><title id="title">Garden</title><path d="M0 0"/></svg>',
-  gardenBed:
-    '<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title"><title id="title">Bed</title><path d="M1 1"/></svg>',
-};
+const artwork = { illuminations: {} };
 
 test("renderBook assigns chapter anchors and resolves catalog links", () => {
   const result = renderBook({
@@ -42,8 +37,9 @@ test("renderBook assigns chapter anchors and resolves catalog links", () => {
         text: "# Chapter 5: Roles\n\n## The `builder` role\n",
       },
     ],
-    introSource: "{{TITLE_ART}}{{FRIEZE}}{{INCLUDED}}",
+    introSource: "{{FRIEZE}}{{INCLUDED}}",
     artwork,
+    illuminations: [],
   });
 
   assert.equal(result.chapterCount, 2);
@@ -76,8 +72,9 @@ test("renderBook keys catalog anchors on each entry's own heading", () => {
         text: "# Chapter 6: Skills\n\n### `panel`\n",
       },
     ],
-    introSource: "{{TITLE_ART}}{{FRIEZE}}{{INCLUDED}}",
+    introSource: "{{FRIEZE}}{{INCLUDED}}",
     artwork,
+    illuminations: [],
   });
 
   assert.equal(result.roleCount, 3);
@@ -106,14 +103,12 @@ test("assembleBook uses tree capabilities and writes the complete clip", async (
       "ch1-introduction.md": "# Chapter 1: Introduction\n",
     }),
     buildTree: makeReadableTree({
-      "intro.html": "{{TITLE_ART}}{{FRIEZE}}{{INCLUDED}}",
+      "intro.html": "{{FRIEZE}}{{INCLUDED}}",
       "styles.css": "body { color: green; }\n",
     }),
-    artworkTree: makeReadableTree({
-      "title-garden.svg": artwork.titleGarden,
-      "figure-garden-bed.svg": artwork.gardenBed,
-    }),
+    artworkTree: makeReadableTree({}),
     outputTree,
+    illuminations: [],
   });
 
   assert.equal(result.chapterCount, 1);

@@ -84,10 +84,7 @@ li>p{margin:.25rem 0}
 strong{font-weight:600}
 
 /* Title page. */
-.titlepage{position:relative;isolation:isolate;padding:5.5rem 0 2.5rem}
-.titlepage>*:not(.title-art){position:relative;z-index:1}
-.title-art{position:absolute;z-index:0;top:1.25rem;left:-1rem;width:var(--wide);height:auto;
-  max-width:none;opacity:.38;pointer-events:none}
+.titlepage{padding:5.5rem 0 2.5rem}
 .kicker{font:.74rem/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--soil);margin-bottom:1.4rem}
 .titlepage h1{font-weight:400;font-size:3.4rem;line-height:1.04;letter-spacing:-.01em;margin:0 0 .9rem}
 .subtitle{font-style:italic;font-size:1.32rem;line-height:1.4;color:var(--soil);margin-bottom:2.8rem}
@@ -144,12 +141,17 @@ p.runin>strong:first-child{font:600 .74em/1 var(--sans);letter-spacing:.09em;tex
 li>p.runin>strong:first-child{font:inherit;font-weight:600;letter-spacing:0;text-transform:none;color:inherit;margin:0}
 .part-leaves h4{border-top:1px solid var(--rule);padding-top:1.5rem;margin-top:2.8rem}
 
-/* One semantic figure earns a place in the architecture chapter: the varied
-   plants share one bed, as workers share the board and bus. It occupies the
-   sidenote column where one exists and stays compact in the reading column. */
-.chapter-figure{width:min(15rem,72vw);margin:1.4rem auto 2rem;color:var(--soil)}
-.chapter-figure svg{display:block;width:100%;height:auto}
-.chapter-figure figcaption{font:italic .78rem/1.4 var(--serif);text-align:center;margin-top:.2rem}
+/* Illuminations: one opener under each chapter title and a few section
+   figures at pauses in the argument. Each is a framed plate on its own paper,
+   so it reads the same on the light and dark page. Wide plates take the full
+   reading measure; squarer ones are held narrower so none outgrows a screen. */
+.illumination{margin:2rem auto 2.4rem;max-width:100%}
+.illumination svg{display:block;width:100%;height:auto}
+.illumination figcaption{font:italic .88rem/1.45 var(--serif);color:var(--soil);margin:.55rem .3rem 0}
+.illumination.opener{margin-top:0}
+.illumination.ratio-4-3,.illumination.ratio-16-9{width:30rem}
+.illumination.ratio-1-1{width:24rem}
+.illumination.ratio-4-5{width:19rem}
 
 blockquote{margin:1.4rem 0 1.4rem 1.6rem;padding:0;font-style:italic}
 blockquote strong{font-style:normal}
@@ -200,8 +202,10 @@ footer{margin-top:6rem;padding-top:1rem;border-top:1px solid var(--rule);font:.8
   .marginnote.source{margin-top:-2.1rem}
   .chapter table{width:max-content;max-width:var(--wide);clear:right}
   .chapter pre{max-width:var(--wide)}
-  .chapter-figure{float:right;clear:right;width:var(--margin);
+  /* The tall library opener hangs in the margin beside the chapter's opening. */
+  .illumination.ratio-4-5{float:right;clear:right;width:var(--margin);
     margin:.4rem calc(-1 * (var(--margin) + var(--gutter))) 1.4rem 0}
+  .illumination.ratio-4-5 figcaption{font-size:.8rem;margin:.45rem 0 0}
 }
 
 /* Medium: the sidebar narrows. */
@@ -222,7 +226,6 @@ footer{margin-top:6rem;padding-top:1rem;border-top:1px solid var(--rule);font:.8
   .nav-jump a{text-decoration:none}
   main{margin-left:0;padding:0 1.15rem 4rem}
   .titlepage{padding-top:2.6rem}
-  .title-art{top:1rem;left:0;width:100%;opacity:.2}
   .titlepage h1{font-size:2.4rem}
   .subtitle{font-size:1.15rem;margin-bottom:2rem}
   ol.frieze{gap:0}
@@ -251,7 +254,6 @@ footer{margin-top:6rem;padding-top:1rem;border-top:1px solid var(--rule);font:.8
     radial-gradient(ellipse at 28% 92%,#e6cf7a0c 0 1.5rem,transparent 9rem),
     radial-gradient(ellipse at 72% 76%,#d994700c 0 1.25rem,transparent 8.5rem),
     repeating-linear-gradient(8deg,transparent 0 18px,#e8d8b906 19px,transparent 20px 38px)}
-  .title-art,.chapter-figure svg{filter:saturate(.72) brightness(.78)}
-  .title-art{opacity:.28}
+  .illumination svg{filter:saturate(.8) brightness(.84)}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

@@ -1,3 +1,4 @@
+import { illuminations as defaultIlluminations } from "./illuminations.mjs";
 import { renderBook } from "./render-book.mjs";
 import { readText, writeText } from "./tree-io.mjs";
 
@@ -8,6 +9,7 @@ export const assembleBook = async ({
   buildTree,
   artworkTree,
   outputTree,
+  illuminations = defaultIlluminations,
 }) => {
   const chapterFileNames = (await chaptersTree.list()).filter((fileName) =>
     chapterFilePattern.test(fileName),
@@ -18,16 +20,23 @@ export const assembleBook = async ({
       text: await readText(chaptersTree, fileName),
     })),
   );
-  const [introSource, styles, titleGarden, gardenBed] = await Promise.all([
+  const [introSource, styles, ...illuminationSources] = await Promise.all([
     readText(buildTree, "intro.html"),
     readText(buildTree, "styles.css"),
-    readText(artworkTree, "title-garden.svg"),
-    readText(artworkTree, "figure-garden-bed.svg"),
+    ...illuminations.map(({ file }) => readText(artworkTree, file)),
   ]);
   const result = renderBook({
     chapterSources,
     introSource,
-    artwork: { titleGarden, gardenBed },
+    artwork: {
+      illuminations: Object.fromEntries(
+        illuminations.map(({ file }, index) => [
+          file,
+          illuminationSources[index],
+        ]),
+      ),
+    },
+    illuminations,
   });
   await Promise.all([
     writeText(outputTree, "index.html", result.html),

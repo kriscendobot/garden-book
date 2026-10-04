@@ -6,7 +6,7 @@ These assets extend the book's warm-paper presentation with a restrained garden 
 
 | File | Suggested use | Notes |
 | --- | --- | --- |
-| `title-garden.svg` | Title-page background | A wide, quiet garden scene with the center-left kept open for title copy; best placed behind or immediately after the title block at the full wide measure. |
+| `title-garden.svg` | Retired from the book | A wide, quiet garden scene with the center-left kept open for title copy. The illuminated edition no longer uses it: the full-field backdrop was removed, and a title-page corner cropped from its vine, trellis, and bed read as a clipped generic garden rather than a frame, so it was dropped (garden-book PR for job `book-illumination-integrate-20261004`). |
 | `divider-roots.svg` | Chapter or Part I divider | Seeds and roots below a soft soil line; appropriate for origins, history, and architecture. |
 | `divider-sprout.svg` | Chapter or Part II divider | A single sprout crossing a broken line; appropriate for setup, first use, and transition points. |
 | `divider-bloom.svg` | Chapter or later-part divider | A vine with dusty-pink and lavender blooms; appropriate for catalogs, workflows, and concluding sections. |
@@ -14,11 +14,11 @@ These assets extend the book's warm-paper presentation with a restrained garden 
 | `figure-trellis.svg` | Standalone figure or wide margin art | A climbing vine finding structure; useful near explanations of roles, constraints, supervision, or learned procedure. |
 | `figure-seed-packet.svg` | Standalone figure or margin art | A packet and scattered seeds; useful near job posting, instance creation, or the idea of sowing work. |
 | `figure-potted-plant.svg` | Standalone figure or margin art | A balanced plant in a terracotta pot; useful near bounded autonomy, containment, or a self-contained garden instance. |
-| `figure-garden-bed.svg` | Standalone wide figure | An ordered raised bed with varied young plants; useful near fleet coordination, work queues, or shared infrastructure. |
+| `figure-garden-bed.svg` | Standalone wide figure | An ordered raised bed with varied young plants; useful near fleet coordination, work queues, or shared infrastructure. The book no longer uses it: the chapter 2 opener (the shared-garden cutaway) replaced it. |
 
 ## Illuminated chapter and section set
 
-The 25 thematic illustrations below implement the complete set in `chapter-illustrations-brief.md`. Their filenames and target anchors are the deterministic placement keys for later integration. The source generator, `generate-illuminations.mjs`, contains the shared ornament primitives, palette, metadata, and individual scene compositions; running it rewrites exactly these SVGs and does not modify the book generator or rendered HTML.
+The 25 thematic illustrations below implement the complete set in `chapter-illustrations-brief.md`. Their filenames and target anchors are the deterministic placement keys; `build/illuminations.mjs` records where in each target section the book places the image, and its caption. The source generator, `generate-illuminations.mjs`, contains the shared ornament primitives, palette, metadata, and individual scene compositions; running it rewrites exactly these SVGs and does not modify the book generator or rendered HTML.
 
 | File | Target anchor | Role and theme | Suggested placement / ratio | Accessibility intent |
 | --- | --- | --- | --- | --- |

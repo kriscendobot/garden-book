@@ -28,7 +28,16 @@ every part is listed after them); `GLYPHS` holds each part's inline SVG
 growth stage (presentation attributes only, since the CSP forbids inline
 style). Margin notes are `.marginnote` elements: chapter provenance, each
 catalog entry's `Source:` line (hoisted beside its heading and linked to
-`main2`), and the chapter's own `Contents` list. `publish.mjs` publishes with
+`main2`), and the chapter's own `Contents` list. `illuminations.mjs` places
+the plates from `art/`: each entry names an image, the heading anchor it was
+drawn for, an optional later heading inside that section (`at`), how many body
+blocks to pass before the figure (margin notes don't count), and its caption.
+A placement whose heading is gone, which would leave its section, or which
+names missing art fails the build instead of moving silently.
+`tools/browser-check.mjs` loads a built edition in headless Chromium at phone
+and desktop widths in both color schemes and reports overflow, clipped or
+overlapping figures, and caption contrast (Playwright is not a dependency;
+point `PLAYWRIGHT_CORE` at an installed `playwright-core`). `publish.mjs` publishes with
 an inert empty-text pet name as `powers`, never `sites`, because `powers`
 becomes every visitor's bootstrap (see `skills/minion-town-clip-publishing`
 on `kriscendobot/garden`); it refuses any `GARDEN_BOOK_POWERS` that is not
@@ -41,11 +50,17 @@ role/skill links to the in-book chapter 5/6 entries, and sends other repo
 paths to `main2` on GitHub (`kriscendobot/garden`, where the roles/skills
 this book documents actually live).
 
-Edition 2026-10-03, portable JavaScript build (PR #6, published from merged
-`main` with `node build/build.mjs chapters out` and `build/publish.mjs`):
-https://g2d5d5z6x25qmf43fhv5tm4zmv4ozbxgk5gtke3mkrydrojehaea.ocap.site/
+Edition 2026-10-04, illuminated (job `book-illumination-integrate-20261004`):
+the 25 plates in `art/illumination-*.svg` are inlined at the places
+`build/illuminations.mjs` names, each as a `figure` with a caption, and the
+title-page garden scene and the chapter 2 garden-bed figure are retired. Not yet
+published; the supervisor publishes it from merged `main` with
+`node build/build.mjs chapters out` and `build/publish.mjs`.
 
 Prior editions:
+
+- 2026-10-03, illustrated, redesigned, and retitled (portable JavaScript build, PR #6):
+  https://g2d5d5z6x25qmf43fhv5tm4zmv4ozbxgk5gtke3mkrydrojehaea.ocap.site/
 
 - 2026-10-03, illustrated (job `book-illustrations-integrate-after-pr4`,
 PR #5: the `art/` title garden scene inlined behind the title page, the

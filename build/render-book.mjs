@@ -1,6 +1,8 @@
 import MarkdownIt from "markdown-it";
 import markdownItAnchor from "markdown-it-anchor";
 
+import { illuminations as defaultIlluminations } from "./illuminations.mjs";
+
 const GARDEN_SOURCE = "https://github.com/kriscendobot/garden/blob/main2/";
 const BOOK_CHAPTER_SOURCE =
   "https://github.com/kriscendobot/garden-book/blob/main/chapters/";
@@ -74,27 +76,100 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#x27;");
 
-const inlineSvg = (source, className, decorative = false) => {
-  let svg = source
-    .trim()
-    .replace(/<svg\s+xmlns="[^"]+"/, `<svg class="${className}"`);
-  if (decorative) {
-    let removals = 0;
-    svg = svg.replace(/\s+(?:role|aria-labelledby)="[^"]+"/g, (match) => {
-      removals += 1;
-      return removals <= 2 ? "" : match;
-    });
-    svg = svg.replace(/\s*<(?:title|desc)\b[^>]*>.*?<\/(?:title|desc)>/gs, "");
-    svg = svg.replace(
-      `<svg class="${className}"`,
-      `<svg class="${className}" aria-hidden="true" focusable="false"`,
-    );
-  }
-  return svg;
-};
+const inlineSvg = (source, className) =>
+  source.trim().replace(/<svg\s+xmlns="[^"]+"/, `<svg class="${className}"`);
 
 const glyph = (key, className = "glyph") =>
   `<svg class="${className}" aria-hidden="true" focusable="false"><use href="#g-${key}"/></svg>`;
+
+const BLOCK_TAGS = new Set([
+  "p",
+  "ul",
+  "ol",
+  "pre",
+  "table",
+  "blockquote",
+  "div",
+  "nav",
+  "figure",
+  "hr",
+]);
+
+// The end of the element that opens at start, counting nested elements of the
+// same name.
+const elementEnd = (html, start, tag) => {
+  if (tag === "hr") {
+    return html.indexOf(">", start) + 1;
+  }
+  const pattern = new RegExp(`<(/?)${tag}(?=[\\s>])[^>]*>`, "g");
+  pattern.lastIndex = start;
+  let depth = 0;
+  for (let match; (match = pattern.exec(html)); ) {
+    depth += match[1] ? -1 : 1;
+    if (depth === 0) {
+      return pattern.lastIndex;
+    }
+  }
+  throw new SyntaxError(`Unclosed <${tag}> at ${start}`);
+};
+
+// Inserts a figure after the given number of body blocks that follow the
+// heading with the given id, passing over margin notes without counting them.
+// The figure never moves past the next heading: a count that runs out first is
+// an error.
+export const insertAfterBlocks = (html, id, blocks, insertion) => {
+  const heading = new RegExp(`<h([2-6]) id="${id}"[^>]*>`).exec(html);
+  if (!heading) {
+    throw new RangeError(`No heading with id ${id}`);
+  }
+  let position =
+    html.indexOf(`</h${heading[1]}>`, heading.index) + `</h${heading[1]}>`.length;
+  let counted = 0;
+  for (;;) {
+    while (html[position] === "\n") {
+      position += 1;
+    }
+    const open = /^<([a-z][a-z0-9]*)\b([^>]*)>/.exec(html.slice(position));
+    if (!open || !BLOCK_TAGS.has(open[1])) {
+      if (counted < blocks) {
+        throw new RangeError(
+          `#${id} has ${counted} blocks before the next heading, not ${blocks}`,
+        );
+      }
+      break;
+    }
+    const marginNote = /\bclass="marginnote\b/.test(open[2]);
+    if (!marginNote && counted === blocks) {
+      break;
+    }
+    position = elementEnd(html, position, open[1]);
+    if (!marginNote) {
+      counted += 1;
+    }
+  }
+  return `${html.slice(0, position)}${insertion}\n${html.slice(position)}`;
+};
+
+// The heading "at" must fall inside the section that "anchor" opens, so a
+// placement cannot drift into a neighboring section.
+const assertWithinSection = (html, anchor, at) => {
+  const heading = new RegExp(`<h([2-6]) id="${anchor}"`).exec(html);
+  const target = html.indexOf(`id="${at}"`);
+  const next = new RegExp(`<h[2-${heading[1]}] `, "g");
+  next.lastIndex = heading.index + 1;
+  const end = next.exec(html)?.index ?? html.length;
+  if (target < heading.index || target > end) {
+    throw new RangeError(`#${at} is not inside the section #${anchor}`);
+  }
+};
+
+const illuminationFigure = (placement, source, opener) => {
+  const shape = placement.ratio.replace(":", "-");
+  return `<figure class="illumination ${opener ? "opener" : "section-figure"} ratio-${shape}">${inlineSvg(
+    source,
+    "illumination-art",
+  )}<figcaption>${escapeHtml(placement.caption)}</figcaption></figure>`;
+};
 
 const partOf = (number) =>
   PARTS.find((part) => part[3][0] <= number && number <= part[3][1]);
@@ -203,7 +278,12 @@ const hoistSourceNotes = (_match, heading, rest) => {
   return `${heading}${notes.map((note) => `${note.replace(/\n$/, "")}\n`).join("")}${rest}`;
 };
 
-export const renderBook = ({ chapterSources, introSource, artwork }) => {
+export const renderBook = ({
+  chapterSources,
+  introSource,
+  artwork,
+  illuminations = defaultIlluminations,
+}) => {
   const chapters = chapterSources
     .map(({ fileName, text }) => {
       const [metadata, body] = splitFrontmatter(text);
@@ -250,11 +330,7 @@ export const renderBook = ({ chapterSources, introSource, artwork }) => {
   }
 
   const resolveHref = makeHrefResolver({ roleAnchors, skillAnchors });
-  const titleArt = inlineSvg(artwork.titleGarden, "title-art", true);
-  const gardenBedFigure = `<figure class="chapter-figure garden-bed">${inlineSvg(
-    artwork.gardenBed,
-    "garden-bed-art",
-  )}<figcaption>Different kinds of work, coordinated through one shared plot.</figcaption></figure>`;
+  const placed = new Set();
   const tableOfContents = [];
   const sections = [];
 
@@ -333,11 +409,7 @@ export const renderBook = ({ chapterSources, introSource, artwork }) => {
         : "";
       bodyHtml = partMark + bodyHtml;
     }
-    let opening = `</h2>\n${provenanceHtml}`;
-    if (chapter.number === 2 && chapter.part === 1) {
-      opening += `\n${gardenBedFigure}`;
-    }
-    bodyHtml = bodyHtml.replace("</h2>", opening);
+    bodyHtml = bodyHtml.replace("</h2>", `</h2>\n${provenanceHtml}`);
     bodyHtml = bodyHtml.replace(
       /<p>Source: <a href="#[^"]*">(?:<code>)?([^<]+?)(?:<\/code>)?<\/a><\/p>/g,
       (_match, source) =>
@@ -379,6 +451,29 @@ export const renderBook = ({ chapterSources, introSource, artwork }) => {
       /<p><strong>([^<\n]{1,48}[.:])<\/strong>/g,
       '<p class="runin"><strong>$1</strong>',
     );
+    for (const placement of illuminations) {
+      if (!bodyHtml.includes(`id="${placement.anchor}"`)) {
+        continue;
+      }
+      if (placed.has(placement.file)) {
+        throw new RangeError(`${placement.file} is placed twice`);
+      }
+      const at = placement.at ?? placement.anchor;
+      if (at !== placement.anchor) {
+        assertWithinSection(bodyHtml, placement.anchor, at);
+      }
+      const source = artwork.illuminations?.[placement.file];
+      if (source === undefined) {
+        throw new RangeError(`No artwork for ${placement.file}`);
+      }
+      bodyHtml = insertAfterBlocks(
+        bodyHtml,
+        at,
+        placement.blocks,
+        illuminationFigure(placement, source, at === chapterId),
+      );
+      placed.add(placement.file);
+    }
     sections.push(
       `<section class="chapter part-${part ? part[4] : "none"}" aria-labelledby="${chapterId}">\n${bodyHtml}\n<p class="back"><a href="#toc">&uarr; Contents</a></p>\n</section>`,
     );
@@ -459,11 +554,17 @@ export const renderBook = ({ chapterSources, introSource, artwork }) => {
   mainContents.push("</ol>");
   frieze.push("</ol>");
 
+  const unplaced = illuminations.filter(({ file }) => !placed.has(file));
+  if (unplaced.length > 0) {
+    throw new RangeError(
+      `No heading for ${unplaced.map(({ file, anchor }) => `${file} (#${anchor})`).join(", ")}`,
+    );
+  }
+
   const included = chapters.map((chapter) => chapter.fileName).join(", ");
   const intro = introSource
     .replace("{{INCLUDED}}", escapeHtml(included))
-    .replace("{{FRIEZE}}", frieze.join(""))
-    .replace("{{TITLE_ART}}", titleArt);
+    .replace("{{FRIEZE}}", frieze.join(""));
   const page = `<!DOCTYPE html>
 <html lang="en">
 <head>

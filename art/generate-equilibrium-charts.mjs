@@ -9,9 +9,9 @@
 //   node art/generate-equilibrium-charts.mjs
 //
 // rewrites exactly the `equilibrium-e*.svg` files in this directory.
-// Geometry, axes, encodings, labels, and accessibility are complete here;
-// borders, texture, and ornament belong to the later styling stage. Scheme
-// rules (outline and gridline colors in the dark scheme) live in
+// Geometry, axes, encodings, labels, accessibility, and the restrained
+// illuminated-manuscript treatment are complete here. Scheme rules (outline
+// and gridline colors in the dark scheme) live in
 // `equilibrium-charts.css-snippet`, applied to the classes `eq-outline`,
 // `eq-outline-fill`, and `eq-grid`, because the book's CSP forbids inline
 // style.
@@ -52,6 +52,8 @@ export const loadData = async () => {
 const study = Object.freeze({ flat: 66.67, ratio: '≈8.7×', label: '7/28–8/2' });
 
 const W = 353;
+const HEADER = 24;
+const FOOTER = 16;
 const FONT = "'Gill Sans', 'Gill Sans MT', Seravek, Candara, 'Noto Sans', 'Segoe UI', system-ui, sans-serif";
 
 // Number formatting at the spec's display precision.
@@ -68,7 +70,7 @@ const esc = value =>
   String(value).replace(/&/gu, '&amp;').replace(/</gu, '&lt;').replace(/>/gu, '&gt;').replace(/"/gu, '&quot;');
 
 const text = (x, y, content, { size = 12, anchor = 'start', weight, italic } = {}) =>
-  `<text x="${fmt(x)}" y="${fmt(y)}" font-size="${size}"${anchor === 'start' ? '' : ` text-anchor="${anchor}"`}${weight ? ` font-weight="${weight}"` : ''}${italic ? ' font-style="italic"' : ''} fill="currentColor">${esc(content)}</text>`;
+  `<text x="${fmt(x)}" y="${fmt(y)}" font-size="${size}"${anchor === 'start' ? '' : ` text-anchor="${anchor}"`}${weight ? ` font-weight="${weight}"` : ''}${italic ? ' font-style="italic"' : ''}${size === 13 && weight ? ' letter-spacing="0.18"' : ''} fill="currentColor">${esc(content)}</text>`;
 
 // Greedy word wrap by an estimated advance of 0.6 em per character; the
 // browser check measures the result.
@@ -96,10 +98,10 @@ const paragraph = (x, y, content, width, { size = 12, leading = 16, ...options }
   };
 };
 
-const outline = (width = 1.5) => `class="eq-outline" stroke="${palette.ink}" stroke-width="${width}"`;
+const outline = (width = 1.5) => `class="eq-outline" stroke="${palette.ink}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"`;
 const outlineFill = `class="eq-outline-fill" fill="${palette.ink}"`;
 const grid = `class="eq-grid" stroke="${palette.hairline}" stroke-width="1"`;
-const axis = 'stroke="currentColor" stroke-width="1"';
+const axis = 'stroke="currentColor" stroke-width="1.15" stroke-linecap="round"';
 
 const line = (x1, y1, x2, y2, attributes) =>
   `<path d="M${fmt(x1)} ${fmt(y1)}L${fmt(x2)} ${fmt(y2)}" fill="none" ${attributes}/>`;
@@ -108,7 +110,23 @@ const rect = (x, y, width, height, fill, extra = '') =>
   `<rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(Math.max(width, 0))}" height="${fmt(height)}" fill="${fill}" ${outline()}${extra}/>`;
 
 const hatch = (prefix, name, fill) =>
-  `<pattern id="${prefix}-hatch-${name}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="${fill}"/><path d="M1.5 0V6" stroke="${palette.paper}" stroke-width="2" opacity="0.7"/></pattern>`;
+  `<pattern id="${prefix}-hatch-${name}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="${fill}"/><path d="M1.2-1V7" stroke="${palette.paper}" stroke-width="1.8" opacity="0.72"/><path d="M4.2-1V7" stroke="${palette.sand}" stroke-width="0.8" opacity="0.9"/></pattern>`;
+
+// A narrow top-and-bottom illumination keeps ornament outside every plotting
+// area. The clipped corner vines echo the chapter plates without competing
+// with phone-width labels; their shapes never carry chart meaning.
+const illuminatedFrame = height => {
+  const bottom = height - 2;
+  const lowerVine = height - 13;
+  return `<g aria-hidden="true">
+    <path d="M2 21V7Q2 2 7 2H48M351 21V7Q351 2 346 2H305M2 ${height - 21}V${height - 7}Q2 ${bottom} 7 ${bottom}H48M351 ${height - 21}V${height - 7}Q351 ${bottom} 346 ${bottom}H305" fill="none" ${outline(1.2)}/>
+    <path d="M35 8H318M35 ${height - 8}H318" fill="none" stroke="${palette.gold}" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M5 19Q13 5 35 8M348 19Q340 5 318 8M5 ${height - 19}Q13 ${lowerVine} 35 ${height - 8}M348 ${height - 19}Q340 ${lowerVine} 318 ${height - 8}" fill="none" stroke="${palette.moss}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M18 10C14 4 9 5 8 11C12 14 16 13 18 10ZM335 10C339 4 344 5 345 11C341 14 337 13 335 10ZM18 ${height - 10}C14 ${height - 4} 9 ${height - 5} 8 ${height - 11}C12 ${height - 14} 16 ${height - 13} 18 ${height - 10}ZM335 ${height - 10}C339 ${height - 4} 344 ${height - 5} 345 ${height - 11}C341 ${height - 14} 337 ${height - 13} 335 ${height - 10}Z" fill="${palette.sage}" ${outline(0.9)}/>
+    <path d="M176.5 3L181 8L176.5 13L172 8Z" fill="${palette.gold}" ${outline(0.9)}/>
+    <circle cx="176.5" cy="${height - 8}" r="3.8" fill="${palette.gold}" ${outline(0.9)}/>
+  </g>`;
+};
 
 const marker = (shape, x, y, size, fill) => {
   const r = size / 2;
@@ -133,7 +151,7 @@ const swatch = (x, y, fill, label) =>
 
 // The word "scenario" on the plot, required by the spec for E8 and E9.
 const scenarioBanner = (x, y) =>
-  `<rect x="${fmt(x)}" y="${fmt(y)}" width="178" height="20" rx="3" fill="none" ${outline(1.5)} stroke-dasharray="5 3"/>${text(x + 8, y + 14.5, 'SCENARIO · illustrative model', { weight: 600 })}`;
+  `<rect x="${fmt(x)}" y="${fmt(y)}" width="178" height="20" rx="7" fill="${palette.sand}" opacity="0.34" ${outline(1.5)} stroke-dasharray="5 3"/>${text(x + 8, y + 14.5, 'SCENARIO · illustrative model', { weight: 600 })}`;
 
 const logScale = (min, max, start, end) => value =>
   start + ((Math.log10(value) - Math.log10(min)) / (Math.log10(max) - Math.log10(min))) * (end - start);
@@ -918,10 +936,12 @@ export const charts = [
 export const renderChart = (chart, data) => {
   const prefix = chart.file.replace(/\.svg$/u, '');
   const { height, defs, body } = chart.render(data, prefix);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${height}" role="img" aria-labelledby="${prefix}-title ${prefix}-description" class="eq-chart" data-chart="${chart.id}" font-family="${FONT}">
+  const framedHeight = height + HEADER + FOOTER;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${framedHeight}" role="img" aria-labelledby="${prefix}-title ${prefix}-description" class="eq-chart" data-chart="${chart.id}" font-family="${FONT}" font-variant-numeric="tabular-nums">
   <title id="${prefix}-title">${esc(chart.title)}</title>
   <desc id="${prefix}-description">${esc(chart.description)}</desc>
-  ${defs ? `<defs>${defs}</defs>\n  ` : ''}${body}
+  ${defs ? `<defs>${defs}</defs>\n  ` : ''}${illuminatedFrame(framedHeight)}
+  <g transform="translate(0 ${HEADER})">${body}</g>
 </svg>
 `;
 };

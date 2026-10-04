@@ -4,7 +4,7 @@
 //
 //   node tools/equilibrium/analyze.mjs \
 //     --git <garden clone with origin/journal2 and main2 fetched> \
-//     --rev <journal2 commit> --github <dir from fetch-github.sh> \
+//     --revision <journal2 commit> --github <dir from fetch-github.sh> \
 //     > data/equilibrium/aggregates.json
 //
 // It reads the journal at one fixed commit (via `git archive`, never a working
@@ -14,10 +14,32 @@
 // decides what a record means lives in this file, so a reader can disagree
 // with a rule by changing it and re-running.
 
+
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, readdirSync, existsSync, statSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, existsSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import {
+  allocationFactor,
+  BOT_LOGIN,
+  classify,
+  describe,
+  ebfbPullRequest,
+  flatRoundDollars,
+  frontmatter,
+  gauntletStage,
+  hoursBetween,
+  isAnthropic,
+  isHuman,
+  isoWeek,
+  month,
+  quantile,
+  reviewFormulaDollars,
+  round,
+  sum,
+  tally,
+  words,
+} from "./rules.mjs";
 
 const argv = process.argv.slice(2);
 const option = (name, fallback) => {
@@ -25,10 +47,10 @@ const option = (name, fallback) => {
   return index >= 0 ? argv[index + 1] : fallback;
 };
 const gitDirectory = option("git");
-const revision = option("rev");
+const revisionArgument = option("revision");
 const githubDirectory = option("github");
-if (!gitDirectory || !revision || !githubDirectory) {
-  console.error("usage: analyze.mjs --git <dir> --rev <journal2 sha> --github <dir>");
+if (!gitDirectory || !revisionArgument || !githubDirectory) {
+  console.error("usage: analyze.mjs --git <dir> --revision <journal2 commit> --github <dir>");
   process.exit(2);
 }
 
@@ -38,9 +60,15 @@ const git = (...args) =>
     maxBuffer: 1 << 30,
   });
 
+// Resolve the revision once, so a moving name (origin/journal2) cannot give
+// the archive, the cutoff, and the recorded provenance different commits.
+const revision = git("rev-parse", "--verify", `${revisionArgument}^{commit}`).trim();
+
 // ---------------------------------------------------------------- snapshot
 
+// The snapshot holds journal prose; it is removed however the run ends.
 const snapshot = mkdtempSync(join(tmpdir(), "equilibrium-"));
+process.on("exit", () => rmSync(snapshot, { recursive: true, force: true }));
 const paths = ["reputation/events", "usage", "jobs/tada", "panel-runs", "review-misses", "legacy/v1/worktrees"];
 execFileSync("sh", ["-c", `git -C "$0" archive "$1" ${paths.join(" ")} | tar -x -C "$2"`, gitDirectory, revision, snapshot]);
 const cutoff = git("show", "-s", "--format=%cI", revision).trim();
@@ -49,7 +77,7 @@ const listFiles = (directory) => {
   const out = [];
   const walk = (d) => {
     if (!existsSync(d)) return;
-    for (const name of readdirSync(d)) {
+    for (const name of readdirSync(d).sort()) {
       const p = join(d, name);
       if (statSync(p).isDirectory()) walk(p);
       else out.push(p);
@@ -59,119 +87,18 @@ const listFiles = (directory) => {
   return out;
 };
 
-// Flat `key: value` frontmatter only; nested YAML (lists) is read separately.
-const frontmatter = (text) => {
-  const match = /^---\n([\s\S]*?)\n---/.exec(text);
-  const fields = {};
-  if (!match) return fields;
-  for (const line of match[1].split("\n")) {
-    const m = /^([A-Za-z_][\w-]*):\s?(.*)$/.exec(line);
-    if (m) fields[m[1]] = m[2].trim();
-  }
-  return fields;
-};
-
-// ---------------------------------------------------------------- statistics
-
-const numbers = (values) => values.filter((v) => typeof v === "number" && Number.isFinite(v));
-const quantile = (values, q) => {
-  const sorted = numbers(values).sort((a, b) => a - b);
-  if (sorted.length === 0) return null;
-  const position = (sorted.length - 1) * q;
-  const low = Math.floor(position);
-  const high = Math.ceil(position);
-  return sorted[low] + (sorted[high] - sorted[low]) * (position - low);
-};
-const sum = (values) => numbers(values).reduce((a, b) => a + b, 0);
-const round = (value, digits = 3) =>
-  value === null || value === undefined ? null : Number(value.toFixed(digits));
-const describe = (values, digits = 3) => {
-  const v = numbers(values);
-  return {
-    n: v.length,
-    mean: v.length ? round(sum(v) / v.length, digits) : null,
-    p25: round(quantile(v, 0.25), digits),
-    median: round(quantile(v, 0.5), digits),
-    p75: round(quantile(v, 0.75), digits),
-    p90: round(quantile(v, 0.9), digits),
-    max: v.length ? round(Math.max(...v), digits) : null,
-    total: round(sum(v), digits),
-  };
-};
-const tally = (values) => {
-  const counts = {};
-  for (const value of values) counts[value] = (counts[value] ?? 0) + 1;
-  return Object.fromEntries(Object.entries(counts).sort((a, b) => b[1] - a[1]));
-};
-const month = (iso) => (iso ? iso.slice(0, 7) : "unknown");
-const isoWeek = (iso) => {
-  const date = new Date(iso);
-  const day = (date.getUTCDay() + 6) % 7;
-  date.setUTCDate(date.getUTCDate() - day);
-  return date.toISOString().slice(0, 10);
-};
-const hoursBetween = (a, b) => (a && b ? (Date.parse(b) - Date.parse(a)) / 3.6e6 : null);
-
 // ---------------------------------------------------------------- completion reports
+//
+// Keyed by basename; a re-posted base keeps the report that sorts last by path.
 
 const reports = new Map();
 for (const file of listFiles("jobs/tada")) {
   if (file.endsWith(".md")) reports.set(file.split("/").pop().slice(0, -3), readFileSync(file, "utf8"));
 }
+// The regime and pull-request rules (rules.mjs) applied to one base and its report.
+const regimeOf = (base) => classify(base, reports.get(base));
+const pullRequestOf = (base) => ebfbPullRequest(base, reports.get(base));
 
-// ---------------------------------------------------------------- regime rules
-//
-// The three scrutiny regimes the chapter compares:
-//   garden   work landed on the garden's own main2 with no pull request;
-//   ebfb     work on endojs/endo-but-for-bots, which carries the gauntlet;
-//   upstream ferried work on endojs/endo itself (measured from GitHub only,
-//            because ferries run off the board and record no cost events).
-// Everything else is "other" (minion.town, finbot, the book, ...) or
-// "unclassified". Precedence: base name, then the first GitHub repository
-// URL in the completion report, then the first of a fixed set of repository
-// words in the report. A record that matches none is left unclassified; it
-// is never guessed into a regime.
-
-const ebfbBase = /^(endojs-endo-but-for-bots-|kriscendobot-endo-but-for-bots-|ebfb-)/;
-const repoUrl = /github\.com\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+?)(?:\.git)?\/(?:pull|issues|commit|tree|blob|compare|actions)\b/;
-const repoRegime = (repo) => {
-  if (/^(endojs|kriscendobot)\/endo-but-for-bots$/.test(repo)) return "ebfb";
-  if (/^(kriscendobot|kriskowal)\/garden$/.test(repo)) return "garden";
-  if (repo === "endojs/endo") return "upstream";
-  return "other";
-};
-const wordRegimes = [
-  ["endo-but-for-bots", "ebfb"],
-  ["minion.town", "other"],
-  ["finbot", "other"],
-  ["garden-book", "other"],
-  ["agoric-sdk", "other"],
-  ["main2", "garden"],
-];
-const classify = (base) => {
-  if (ebfbBase.test(base)) return "ebfb";
-  const report = reports.get(base);
-  if (report === undefined) return "unclassified";
-  const url = repoUrl.exec(report);
-  if (url) return repoRegime(url[1]);
-  let best = null;
-  for (const [word, regime] of wordRegimes) {
-    const at = report.indexOf(word);
-    if (at >= 0 && (best === null || at < best[0])) best = [at, regime];
-  }
-  return best ? best[1] : "unclassified";
-};
-const ebfbPullRequest = (base) => {
-  const fromBase = /endo-but-for-bots-pr(\d+)/.exec(base);
-  if (fromBase) return Number(fromBase[1]);
-  const report = reports.get(base);
-  const fromReport = report && /endo-but-for-bots\/pull\/(\d+)/.exec(report);
-  return fromReport ? Number(fromReport[1]) : null;
-};
-const gauntletStage = (base) => {
-  const m = /-gauntlet-(panel|fix|clean|undraft|viability)(?:-(\d+))?$/.exec(base);
-  return m ? { stage: m[1], index: m[2] ? Number(m[2]) : null } : null;
-};
 
 // ---------------------------------------------------------------- reputation events
 
@@ -182,7 +109,7 @@ for (const file of listFiles("reputation/events")) {
   const value = (key) => (f[key] === undefined || f[key] === "" || f[key] === "censored" ? null : Number(f[key]));
   events.push({
     base,
-    regime: classify(base),
+    regime: regimeOf(base),
     provider: f.provider,
     target: f.target,
     accepted: f.accepted,
@@ -194,11 +121,11 @@ for (const file of listFiles("reputation/events")) {
     estimated: value("estimated_dollars"),
     costSource: f.cost_source ?? "absent",
     recordedAt: f.recorded_at,
-    pr: null,
+    pullRequest: null,
     stage: gauntletStage(base),
   });
 }
-for (const e of events) if (e.regime === "ebfb") e.pr = ebfbPullRequest(e.base);
+for (const e of events) if (e.regime === "ebfb") e.pullRequest = pullRequestOf(e.base);
 
 // The rate card's true-cost basis prices Anthropic at an amortized share of a
 // flat subscription. OpenAI arms are priced at a deliberately high provisional
@@ -207,22 +134,24 @@ const trueBasis = (e) => (e.provider === "openai" ? null : e.estimated);
 
 // ---------------------------------------------------------------- usage ledger
 
+// A line that does not parse (an interrupted append) is dropped, counted in
+// provenance.usageLinesUnparsed, and named on stderr.
 const usage = new Map();
+let usageLinesUnparsed = 0;
 for (const file of listFiles("usage")) {
   if (!file.endsWith(".jsonl")) continue;
   const base = file.split("/").pop().slice(0, -6);
-  const lines = readFileSync(file, "utf8").split("\n").filter(Boolean).flatMap((line) => {
+  const lines = readFileSync(file, "utf8").split("\n").filter(Boolean).flatMap((line, index) => {
     try {
       return [JSON.parse(line)];
     } catch {
+      usageLinesUnparsed += 1;
+      console.error(`analyze.mjs: skipping unparseable line ${index + 1} of usage/${base}.jsonl`);
       return [];
     }
   });
   usage.set(base, lines);
 }
-// A usage line is Anthropic when it says so, or when it predates the provider
-// field and names a Claude model. Only Anthropic lines carry total_cost_usd.
-const isAnthropic = (line) => line.provider === "anthropic" || (!line.provider && /^claude/.test(line.model ?? ""));
 
 // Subscription allocation. total_cost_usd is what the tokens would cost at API
 // list price on a flat plan that never charges it. The true Anthropic cost is
@@ -254,11 +183,11 @@ const allocation = {};
     const covered = Math.min(monthEnd, Date.parse(end)) - Math.max(monthStart, Date.parse(start));
     const flat = (SUBSCRIPTION_DOLLARS_PER_MONTH * Math.max(0, covered)) / (monthEnd - monthStart);
     allocation[m].flatDollars = flat;
-    allocation[m].factor = flat / allocation[m].notional;
+    allocation[m].factor = allocationFactor(flat, allocation[m].notional);
   }
 }
 const allocated = (line) =>
-  line.ts && typeof line.total_cost_usd === "number" && isAnthropic(line) && allocation[month(line.ts)]
+  line.ts && typeof line.total_cost_usd === "number" && isAnthropic(line) && allocation[month(line.ts)]?.factor != null
     ? line.total_cost_usd * allocation[month(line.ts)].factor
     : null;
 
@@ -267,7 +196,7 @@ for (const [base, lines] of usage) {
   for (const line of lines) {
     usageRows.push({
       base,
-      regime: classify(base),
+      regime: regimeOf(base),
       ts: line.ts,
       outcome: line.outcome,
       elapsed: typeof line.elapsed_s === "number" ? line.elapsed_s : null,
@@ -337,7 +266,7 @@ const reconciliation = {
           pricedAnthropicLines: allocation[m].lines,
           notional: round(allocation[m].notional, 2),
           flatDollars: round(allocation[m].flatDollars, 2),
-          overstatement: round(1 / allocation[m].factor, 1),
+          overstatement: allocation[m].factor ? round(1 / allocation[m].factor, 1) : null,
         },
       ]),
   ),
@@ -385,6 +314,19 @@ const weeklySeries = Object.keys(weekly)
 // ---------------------------------------------------------------- gauntlet stages
 
 const stageEvents = events.filter((e) => e.stage && e.regime === "ebfb");
+// What one stage costs: the subscription-allocated dollars of each ebfb stage
+// job's Anthropic usage lines, summed per base. Only Anthropic lines carry an
+// allocation, so OpenAI's provisional ceiling prices never enter it; a base
+// with no priced Anthropic line is left out rather than counted as $0.
+const stageAllocated = new Map();
+for (const [base, lines] of usage) {
+  const stage = gauntletStage(base);
+  if (!stage || regimeOf(base) !== "ebfb") continue;
+  const priced = lines.map(allocated).filter((v) => v !== null);
+  if (priced.length === 0) continue;
+  if (!stageAllocated.has(stage.stage)) stageAllocated.set(stage.stage, []);
+  stageAllocated.get(stage.stage).push(sum(priced));
+}
 const stageSummary = {};
 for (const stage of ["clean", "panel", "fix", "undraft", "viability"]) {
   const ev = stageEvents.filter((e) => e.stage.stage === stage);
@@ -392,16 +334,16 @@ for (const stage of ["clean", "panel", "fix", "undraft", "viability"]) {
     events: ev.length,
     durationSeconds: describe(ev.map((e) => e.duration), 0),
     trueBasisDollars: describe(ev.map(trueBasis), 4),
-    notionalDollars: describe(ev.map((e) => (e.costSource === "ledger" ? e.agentic : null)), 3),
+    allocatedDollarsPerBase: describe(stageAllocated.get(stage) ?? [], 4),
   };
 }
-const stagesByPr = new Map();
+const stagesByPullRequest = new Map();
 for (const e of stageEvents) {
-  if (e.pr === null) continue;
-  const s = stagesByPr.get(e.pr) ?? { panel: 0, fix: 0 };
+  if (e.pullRequest === null) continue;
+  const s = stagesByPullRequest.get(e.pullRequest) ?? { panel: 0, fix: 0 };
   if (e.stage.stage === "panel") s.panel = Math.max(s.panel, e.stage.index ?? 1);
   if (e.stage.stage === "fix") s.fix = Math.max(s.fix, e.stage.index ?? 1);
-  stagesByPr.set(e.pr, s);
+  stagesByPullRequest.set(e.pullRequest, s);
 }
 
 // ---------------------------------------------------------------- panel runs
@@ -422,7 +364,7 @@ for (const file of listFiles("panel-runs")) {
   const relative = file.slice(snapshot.length + 1);
   panelRuns.push({
     repo: f.repo,
-    pr: Number(f.pr),
+    pullRequest: Number(f.pr),
     kind: f.panel_kind || "code",
     rounds: Number(f.rounds) || 0,
     disposition: f.disposition,
@@ -431,12 +373,12 @@ for (const file of listFiles("panel-runs")) {
   });
 }
 const ebfbRuns = panelRuns.filter((r) => /endo-but-for-bots$/.test(r.repo ?? ""));
-const runsByPr = new Map();
+const runsByPullRequest = new Map();
 for (const r of ebfbRuns) {
-  if (!runsByPr.has(r.pr)) runsByPr.set(r.pr, []);
-  runsByPr.get(r.pr).push(r);
+  if (!runsByPullRequest.has(r.pullRequest)) runsByPullRequest.set(r.pullRequest, []);
+  runsByPullRequest.get(r.pullRequest).push(r);
 }
-for (const runs of runsByPr.values()) runs.sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
+for (const runs of runsByPullRequest.values()) runs.sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
 // A run "decides" when the panel returned a verdict: a pass or a must-fix list.
 // Errors, seat errors, interruptions, and the round cap bought no verdict.
 // panel-run-record.sh lists at most 20 must-fix items per round and sums the
@@ -445,11 +387,11 @@ const passed = (r) => r.disposition === "passed" || r.disposition === "passed-no
 const decided = (r) => passed(r) || r.disposition === "must-fix";
 const MUST_FIX_CAP = 20;
 const convergence = [];
-for (const [pr, runs] of runsByPr) {
+for (const [pullRequest, runs] of runsByPullRequest) {
   const d = runs.filter(decided);
   if (d.length === 0) continue;
   convergence.push({
-    pr,
+    pullRequest,
     decidedRuns: d.length,
     firstMustFix: d[0].mustFix,
     lastMustFix: d[d.length - 1].mustFix,
@@ -473,7 +415,7 @@ const multi = convergence.filter((c) => c.decidedRuns >= 2);
 const panel = {
   runsAllRepos: panelRuns.length,
   ebfbRuns: ebfbRuns.length,
-  ebfbPullRequestsWithRuns: runsByPr.size,
+  ebfbPullRequestsWithRuns: runsByPullRequest.size,
   dispositions: tally(ebfbRuns.map((r) => r.disposition)),
   runsWithVerdict: ebfbRuns.filter(decided).length,
   runsWithoutVerdict: ebfbRuns.filter((r) => !decided(r)).length,
@@ -482,12 +424,12 @@ const panel = {
   firstRecordedRun: ebfbRuns.map((r) => r.date).filter(Boolean).sort()[0],
   kinds: tally(ebfbRuns.map((r) => r.kind)),
   roundsPerRun: describe(ebfbRuns.map((r) => r.rounds), 2),
-  decidedRunsPerPr: describe(convergence.map((c) => c.decidedRuns), 2),
-  prsEndingPass: convergence.filter((c) => c.endedPass).length,
-  prsWithAnyPass: convergence.filter((c) => c.anyPass).length,
-  prsWithDecidedRun: convergence.length,
+  decidedRunsPerPullRequest: describe(convergence.map((c) => c.decidedRuns), 2),
+  pullRequestsEndingPass: convergence.filter((c) => c.endedPass).length,
+  pullRequestsWithAnyPass: convergence.filter((c) => c.anyPass).length,
+  pullRequestsWithDecidedRun: convergence.length,
   multiRun: {
-    prs: multi.length,
+    pullRequests: multi.length,
     firstMustFix: describe(multi.map((c) => c.firstMustFix), 1),
     lastMustFix: describe(multi.map((c) => c.lastMustFix), 1),
     lastBelowFirst: multi.filter((c) => c.lastMustFix < c.firstMustFix).length,
@@ -510,43 +452,34 @@ const panel = {
 
 const readJson = (name) => JSON.parse(readFileSync(join(githubDirectory, name), "utf8"));
 const github = readJson("meta.json");
-const botLogin = "kriscendobot";
-// A reviewer is a person unless the login is the bot itself, ends in bot/b0t,
-// or is GitHub's Copilot reviewer. This is review-rounds.sh's rule plus the
-// two fleet bots whose names do not end in "bot".
-const isHuman = (login) =>
-  Boolean(login) && login !== botLogin && !/(bot|b0t|\[bot\])$/i.test(login) && !/^copilot/i.test(login);
-const words = (text) => (text ?? "").split(/\s+/).filter(Boolean).length;
-const reviewFormulaDollars = (rounds, wordCount) => ((5 * rounds + wordCount / 20) / 60) * 125;
-const flatRoundDollars = (rounds) => rounds * 30;
 
-const ebfbPrs = readJson("ebfb-prs.json").filter((p) => p.author?.login === botLogin);
-const machineByPr = new Map();
+const ebfbPullRequests = readJson("ebfb-prs.json").filter((p) => p.author?.login === BOT_LOGIN);
+const machineByPullRequest = new Map();
 for (const e of events) {
-  if (e.regime !== "ebfb" || e.pr === null) continue;
-  const m = machineByPr.get(e.pr) ?? { events: 0, trueBasis: 0, trueBasisPriced: 0, seconds: 0, notional: 0, allocated: 0, engagements: 0, modelSeconds: 0 };
+  if (e.regime !== "ebfb" || e.pullRequest === null) continue;
+  const m = machineByPullRequest.get(e.pullRequest) ?? { events: 0, trueBasis: 0, trueBasisPriced: 0, seconds: 0, notional: 0, allocated: 0, engagements: 0, modelSeconds: 0 };
   m.events += 1;
   m.seconds += e.duration ?? 0;
   if (trueBasis(e) !== null) {
     m.trueBasis += trueBasis(e);
     m.trueBasisPriced += 1;
   }
-  machineByPr.set(e.pr, m);
+  machineByPullRequest.set(e.pullRequest, m);
 }
 for (const [base, lines] of usage) {
-  if (classify(base) !== "ebfb") continue;
-  const pr = ebfbPullRequest(base);
-  if (pr === null || !machineByPr.has(pr)) continue;
-  const m = machineByPr.get(pr);
+  if (regimeOf(base) !== "ebfb") continue;
+  const pullRequest = pullRequestOf(base);
+  if (pullRequest === null || !machineByPullRequest.has(pullRequest)) continue;
+  const m = machineByPullRequest.get(pullRequest);
   m.notional += sum(lines.map((l) => l.total_cost_usd));
   m.allocated += sum(lines.map(allocated));
   m.engagements += lines.filter((l) => ["tada", "requeue", "fail"].includes(l.outcome)).length;
   m.modelSeconds += sum(lines.filter((l) => typeof l.total_cost_usd === "number").map((l) => l.elapsed_s));
 }
-const prRows = ebfbPrs.map((p) => {
+const pullRequestRows = ebfbPullRequests.map((p) => {
   const human = (p.reviews ?? []).filter((r) => isHuman(r.author?.login));
   const firstHuman = human.map((r) => r.submittedAt).filter(Boolean).sort()[0] ?? null;
-  const machine = machineByPr.get(p.number) ?? null;
+  const machine = machineByPullRequest.get(p.number) ?? null;
   return {
     number: p.number,
     state: p.state,
@@ -558,10 +491,10 @@ const prRows = ebfbPrs.map((p) => {
     hoursToFirstHumanReview: hoursBetween(p.createdAt, firstHuman),
     hoursToMerge: hoursBetween(p.createdAt, p.mergedAt),
     machine,
-    stages: stagesByPr.get(p.number) ?? null,
+    stages: stagesByPullRequest.get(p.number) ?? null,
   };
 });
-const merged = prRows.filter((r) => r.state === "MERGED");
+const merged = pullRequestRows.filter((r) => r.state === "MERGED");
 const mergedJoined = merged.filter((r) => r.machine && r.machine.allocated > 0);
 const ratio = (h, m) => (m > 0 ? h / m : null);
 const byMergeMonth = {};
@@ -569,11 +502,11 @@ for (const r of merged) {
   byMergeMonth[r.mergedMonth] ??= [];
   byMergeMonth[r.mergedMonth].push(r);
 }
-const withStages = prRows.filter((r) => r.stages);
+const withStages = pullRequestRows.filter((r) => r.stages);
 const ebfb = {
-  botPullRequests: prRows.length,
-  states: tally(prRows.map((r) => r.state)),
-  openDrafts: prRows.filter((r) => r.state === "OPEN" && r.draft).length,
+  botPullRequests: pullRequestRows.length,
+  states: tally(pullRequestRows.map((r) => r.state)),
+  openDrafts: pullRequestRows.filter((r) => r.state === "OPEN" && r.draft).length,
   merged: {
     n: merged.length,
     humanRounds: describe(merged.map((r) => r.humanRounds), 2),
@@ -594,29 +527,29 @@ const ebfb = {
     machineEventSeconds: describe(mergedJoined.map((r) => r.machine.seconds), 0),
     machineEvents: describe(mergedJoined.map((r) => r.machine.events), 1),
     formulaHumanDollars: describe(mergedJoined.map((r) => reviewFormulaDollars(r.humanRounds, r.humanWords)), 2),
-    perPrRatioFormulaOverAllocated: describe(
+    perPullRequestRatioFormulaOverAllocated: describe(
       mergedJoined.map((r) => ratio(reviewFormulaDollars(r.humanRounds, r.humanWords), r.machine.allocated)),
       1,
     ),
-    perPrRatioFlatOverAllocated: describe(
+    perPullRequestRatioFlatOverAllocated: describe(
       mergedJoined.map((r) => ratio(flatRoundDollars(r.humanRounds), r.machine.allocated)),
       1,
     ),
     humanRounds: describe(mergedJoined.map((r) => r.humanRounds), 2),
-    perPrRatioFormulaOverNotional: describe(
+    perPullRequestRatioFormulaOverNotional: describe(
       mergedJoined.map((r) => ratio(reviewFormulaDollars(r.humanRounds, r.humanWords), r.machine.notional)),
       1,
     ),
   },
   allJoined: {
-    prs: prRows.filter((r) => r.machine).length,
-    machineAllocatedTotal: round(sum(prRows.map((r) => r.machine?.allocated ?? null)), 2),
+    pullRequests: pullRequestRows.filter((r) => r.machine).length,
+    machineAllocatedTotal: round(sum(pullRequestRows.map((r) => r.machine?.allocated ?? null)), 2),
     machineAllocatedMergedTotal: round(sum(merged.map((r) => r.machine?.allocated ?? null)), 2),
-    machineNotionalTotal: round(sum(prRows.map((r) => r.machine?.notional ?? null)), 2),
-    mergedAmongJoined: prRows.filter((r) => r.machine && r.state === "MERGED").length,
+    machineNotionalTotal: round(sum(pullRequestRows.map((r) => r.machine?.notional ?? null)), 2),
+    mergedAmongJoined: pullRequestRows.filter((r) => r.machine && r.state === "MERGED").length,
   },
-  gauntletStagesPerPr: {
-    prs: withStages.length,
+  gauntletStagesPerPullRequest: {
+    pullRequests: withStages.length,
     panelStages: describe(withStages.map((r) => r.stages.panel), 2),
     fixStages: describe(withStages.map((r) => r.stages.fix), 2),
     panelStageCounts: tally(withStages.map((r) => r.stages.panel)),
@@ -628,8 +561,8 @@ const ebfb = {
       .map((m) => [m, describe(byMergeMonth[m].map((r) => r.humanRounds), 2)]),
   ),
   humanRoundsMergedWithVsWithoutPanel: {
-    withPanel: describe(merged.filter((r) => runsByPr.has(r.number)).map((r) => r.humanRounds), 2),
-    withoutPanel: describe(merged.filter((r) => !runsByPr.has(r.number)).map((r) => r.humanRounds), 2),
+    withPanel: describe(merged.filter((r) => runsByPullRequest.has(r.number)).map((r) => r.humanRounds), 2),
+    withoutPanel: describe(merged.filter((r) => !runsByPullRequest.has(r.number)).map((r) => r.humanRounds), 2),
   },
 };
 
@@ -637,25 +570,25 @@ const ebfb = {
 
 // Ferry targets come from the v1 dispatch records (frontmatter `prs:` entries
 // with `role: target` on endojs/endo); fetch-github.sh fetched each one.
-const upstreamPrs = readJson("upstream-ferried.json");
+const upstreamPullRequests = readJson("upstream-ferried.json");
 const ferryStart = "2026-05-01";
 const upstream = {
-  ferriedPullRequests: upstreamPrs.length,
-  states: tally(upstreamPrs.map((p) => p.state)),
-  openedBeforeFerryEra: upstreamPrs.filter((p) => p.createdAt < ferryStart).length,
+  ferriedPullRequests: upstreamPullRequests.length,
+  states: tally(upstreamPullRequests.map((p) => p.state)),
+  openedBeforeFerryEra: upstreamPullRequests.filter((p) => p.createdAt < ferryStart).length,
   hoursToMergeFerryEra: describe(
-    upstreamPrs.filter((p) => p.mergedAt && p.createdAt >= ferryStart).map((p) => hoursBetween(p.createdAt, p.mergedAt)),
+    upstreamPullRequests.filter((p) => p.mergedAt && p.createdAt >= ferryStart).map((p) => hoursBetween(p.createdAt, p.mergedAt)),
     1,
   ),
   humanRounds: describe(
-    upstreamPrs.map((p) => (p.reviews ?? []).filter((r) => isHuman(r.author?.login)).length),
+    upstreamPullRequests.map((p) => (p.reviews ?? []).filter((r) => isHuman(r.author?.login)).length),
     2,
   ),
   humanWords: describe(
-    upstreamPrs.map((p) => sum((p.reviews ?? []).filter((r) => isHuman(r.author?.login)).map((r) => words(r.body)))),
+    upstreamPullRequests.map((p) => sum((p.reviews ?? []).filter((r) => isHuman(r.author?.login)).map((r) => words(r.body)))),
     0,
   ),
-  commits: describe(upstreamPrs.map((p) => p.commits?.length ?? p.commits), 1),
+  commits: describe(upstreamPullRequests.map((p) => p.commits?.length ?? p.commits), 1),
 };
 
 // ---------------------------------------------------------------- learning loop
@@ -668,6 +601,7 @@ for (const file of missFiles) {
   misses.set(file.split("/").pop().slice(0, -3), f);
 }
 const clusters = [];
+let improvedByUnresolved = 0;
 for (const file of listFiles("review-misses/clusters")) {
   const text = readFileSync(file, "utf8");
   const f = frontmatter(text);
@@ -676,9 +610,10 @@ for (const file of listFiles("review-misses/clusters")) {
   const sha = /\b([0-9a-f]{10,40})\b/.exec(f.improved_by ?? "");
   if (sha) {
     try {
-      improvedAt = git("show", "-s", "--format=%cI", sha[1]).trim();
+      improvedAt = git("show", "-s", "--format=%cI", `${sha[1]}^{commit}`).trim();
     } catch {
-      improvedAt = null;
+      // Counted in learning.improvedByUnresolved, never silently "not improved".
+      improvedByUnresolved += 1;
     }
   }
   const memberDates = members.map((m) => misses.get(m)?.review_at ?? null);
@@ -704,6 +639,7 @@ const learning = {
   clusters: clusters.length,
   clusterStatus: tally(clusters.map((c) => c.status)),
   improvedClusters: improved.length,
+  improvedByUnresolved,
   improvedMembersBefore: sum(improved.map((c) => c.before)),
   improvedMembersAfter: sum(improved.map((c) => c.after)),
   improvedMembersUndated: sum(improved.map((c) => c.undated)),
@@ -745,6 +681,7 @@ console.log(
         reputationEvents: events.length,
         usageFiles: usage.size,
         usageLines: usageRows.length,
+        usageLinesUnparsed,
         completionReports: reports.size,
         eventsWithReport: events.filter((e) => reports.has(e.base)).length,
         panelRunRecords: panelRuns.length,

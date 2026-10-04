@@ -18,10 +18,12 @@ gh pr list -R endojs/endo-but-for-bots --state all --limit 3000 \
   printf '['
   sep=''
   for n in "$@"; do
+    # Captured first: plain sh has no pipefail, so a failed gh piped straight
+    # into jq would leave valid-looking empty output.
+    view=$(gh pr view "$n" -R endojs/endo \
+      --json number,state,createdAt,mergedAt,closedAt,additions,deletions,changedFiles,reviews,commits)
     printf '%s' "$sep"
-    gh pr view "$n" -R endojs/endo \
-      --json number,state,createdAt,mergedAt,closedAt,additions,deletions,changedFiles,reviews,commits \
-      | jq -c '.commits |= length'
+    printf '%s' "$view" | jq -c '.commits |= length'
     sep=','
   done
   printf ']\n'

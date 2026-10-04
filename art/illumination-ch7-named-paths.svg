@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="illumination-ch7-named-paths-title illumination-ch7-named-paths-description">
   <title id="illumination-ch7-named-paths-title">Work follows named paths</title>
-  <desc id="illumination-ch7-named-paths-description">An itinerary map offers a review loop, a branching sequence, a route waiting at a gate, and a river crossing for different kinds of work.</desc>
+  <desc id="illumination-ch7-named-paths-description">An itinerary map uses post-mounted signboards to mark a review loop, branching sequence, route waiting at a gate, and river crossing for different kinds of work.</desc>
   <rect x="10" y="10" width="940" height="580" rx="20" fill="#FBF8F0" stroke="#6A6253" stroke-width="5"/>
   <rect x="24" y="24" width="912" height="552" rx="14" fill="none" stroke="#E6CF7A" stroke-width="3"/>
   <path d="M28 92Q70 28 132 35M932 92Q890 28 828 35M28 508Q70 572 132 565M932 508Q890 572 828 565" fill="none" stroke="#627A57" stroke-width="5" stroke-linecap="round"/>
@@ -19,7 +19,7 @@
   </g>
       <path d="M700 95C650 170 745 240 690 320S720 470 835 490" fill="none" stroke="#B9ACCC" stroke-width="75" opacity="0.6"/>
       <path d="M650 300H770" stroke="#A98569" stroke-width="15"/><path d="M665 300l25-38M710 300l25-38M755 300l25-38" stroke="#6A6253" stroke-width="5"/>
-      <g fill="#E8D8B9" stroke="#6A6253" stroke-width="4"><path d="M250 120v85h18v-85zM224 120h70l-35-37z"/><path d="M470 320v90h18v-90zM440 320h80l-40-38z"/><path d="M805 365v90h18v-90zM775 365h80l-40-38z"/></g>
+      <g fill="#E8D8B9" stroke="#6A6253" stroke-width="4" stroke-linejoin="round"><path d="M250 112h92v48h-92l-15-24zM280 160v58h15v-58z"/><path d="M430 318h98l15 24-15 24h-98zM468 366v62h15v-62z"/><path d="M770 370h92v48h-92l-15-24zM800 418v58h15v-58z"/></g>
       
   <g transform="translate(180 285) scale(0.4)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>

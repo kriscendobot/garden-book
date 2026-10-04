@@ -338,14 +338,14 @@ export const illustrations = [
     role: 'Chapter opener',
     ratio: '16:10',
     title: 'Work follows named paths',
-    description: 'An itinerary map offers a review loop, a branching sequence, a route waiting at a gate, and a river crossing for different kinds of work.',
+    description: 'An itinerary map uses post-mounted signboards to mark a review loop, branching sequence, route waiting at a gate, and river crossing for different kinds of work.',
     scene: () => `
       <path d="M85 420C180 345 140 200 260 175C390 150 360 410 245 390C130 370 165 220 285 228" fill="none" stroke="${palette.terracotta}" stroke-width="14" stroke-linecap="round"/>
       <path d="M340 450C410 355 470 345 485 250M485 250L415 165M485 250L565 150" fill="none" stroke="${palette.gold}" stroke-width="14" stroke-linecap="round"/>
       <path d="M585 455V290" stroke="${palette.moss}" stroke-width="14" stroke-linecap="round"/>${gate(540, 175, 90, 115, false)}
       <path d="M700 95C650 170 745 240 690 320S720 470 835 490" fill="none" stroke="${palette.lavender}" stroke-width="75" opacity="0.6"/>
       <path d="M650 300H770" stroke="${palette.brown}" stroke-width="15"/><path d="M665 300l25-38M710 300l25-38M755 300l25-38" stroke="${palette.ink}" stroke-width="5"/>
-      <g fill="${palette.sand}" stroke="${palette.ink}" stroke-width="4"><path d="M250 120v85h18v-85zM224 120h70l-35-37z"/><path d="M470 320v90h18v-90zM440 320h80l-40-38z"/><path d="M805 365v90h18v-90zM775 365h80l-40-38z"/></g>
+      <g fill="${palette.sand}" stroke="${palette.ink}" stroke-width="4" stroke-linejoin="round"><path d="M250 112h92v48h-92l-15-24zM280 160v58h15v-58z"/><path d="M430 318h98l15 24-15 24h-98zM468 366v62h15v-62z"/><path d="M770 370h92v48h-92l-15-24zM800 418v58h15v-58z"/></g>
       ${person(180, 285, 0.4)}${person(455, 220, 0.4, palette.pink)}${person(690, 360, 0.4, palette.sage)}`,
   },
   {
@@ -406,7 +406,7 @@ export const illustrations = [
     role: 'Chapter opener',
     ratio: '3:2',
     title: 'The garden as a set of feedback loops',
-    description: 'Sensors read reservoirs, controllers compare setpoints, gates adjust water, and soil moisture returns through roots as new measurements.',
+    description: 'A fleet-scale reservoir loop regulates a broad bed while a smaller gauge, drip line, and return root close a second loop around one seedling.',
     scene: () => `
       <path d="M90 140H280V375H90Z" fill="${palette.lavender}" fill-opacity="0.45" stroke="${palette.ink}" stroke-width="6"/><path d="M105 235H265M105 300H265" stroke="${palette.paper}" stroke-width="7"/>
       <g fill="${palette.gold}" stroke="${palette.ink}" stroke-width="5"><circle cx="355" cy="185" r="62"/><circle cx="355" cy="185" r="10" fill="${palette.paper}"/><path d="M355 185l32-30"/></g>
@@ -415,7 +415,10 @@ export const illustrations = [
       ${bed(610, 335, 190, 75, palette.brown)}${flower(675, 305, 0.55, palette.pink)}${flower(745, 280, 0.55, palette.gold)}
       <path d="M715 415C690 500 520 520 420 430S240 455 190 385" fill="none" stroke="${palette.moss}" stroke-width="10" stroke-dasharray="16 10"/>
       ${gear(520, 205, 38, palette.terracotta)}<path d="M415 185H475M560 230L595 310" stroke="${palette.terracotta}" stroke-width="7"/>${arrowHead(475, 185)}${arrowHead(595, 310, 'down')}
-      <g fill="${palette.ink}"><circle cx="185" cy="180" r="7"/><circle cx="215" cy="180" r="7"/><circle cx="245" cy="180" r="7"/></g>`,
+      <g fill="${palette.ink}"><circle cx="185" cy="180" r="7"/><circle cx="215" cy="180" r="7"/><circle cx="245" cy="180" r="7"/></g>
+      <g stroke="${palette.ink}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="725" cy="155" r="27" fill="${palette.gold}"/><path d="M725 155l13-12"/><path d="M752 155H795V198" fill="none" stroke="${palette.lavender}" stroke-width="8"/><path d="M784 195l11 16 11-16" fill="${palette.lavender}"/></g>
+      ${bed(690, 220, 125, 42, palette.sage).trimStart()}<path d="M752 223v-29M752 205c-15-2-21-12-21-23 12 0 20 7 21 23zm0 5c13-3 19-11 19-21-11 0-18 7-19 21z" fill="${palette.fresh}" stroke="${palette.ink}" stroke-width="3"/>
+      <path d="M765 270C840 270 842 130 760 130" fill="none" stroke="${palette.moss}" stroke-width="7" stroke-dasharray="11 8"/>${arrowHead(760, 130, 'left', palette.moss)}`,
   },
   {
     number: 20,
@@ -461,7 +464,7 @@ export const illustrations = [
     description: 'Layered topic and source terraces let a reader lower one small relevant basket instead of harvesting the entire hanging library.',
     scene: () => `
       <path d="M120 120H680L630 270H170ZM180 305H620L580 440H220ZM240 475H560L530 600H270Z" fill="${palette.sand}" stroke="${palette.ink}" stroke-width="7"/>
-      <g fill="${palette.terracotta}" stroke="${palette.ink}" stroke-width="3">${Array.from({ length: 15 }, (_, index) => { const row = Math.floor(index / 5); return `<rect x="${205 + (index % 5) * 82 + row * 30}" y="${170 + row * 170}" width="42" height="70" rx="3"/>`; }).join('')}</g>
+      <g fill="${palette.terracotta}" stroke="${palette.ink}" stroke-width="3">${Array.from({ length: 15 }, (_, index) => { const row = Math.floor(index / 5); const column = index % 5; const start = [205, 235, 280][row]; const step = [82, 82, 52][row]; return `<rect x="${start + column * step}" y="${170 + row * 170}" width="42" height="70" rx="3"/>`; }).join('')}</g>
       <g fill="none" stroke="${palette.moss}" stroke-width="7"><path d="M155 245C80 310 160 390 95 460S150 610 95 700"/><path d="M645 245C720 310 640 390 705 460S650 610 705 700"/></g>${leaf(120, 350, -60, palette.sage, 0.7)}${leaf(680, 350, 240, palette.fresh, 0.7)}${leaf(120, 560, -40, palette.fresh, 0.7)}${leaf(680, 560, 220, palette.sage, 0.7)}
       <path d="M400 95V640" stroke="${palette.brown}" stroke-width="6" stroke-dasharray="12 9"/><circle cx="400" cy="120" r="22" fill="${palette.gold}" stroke="${palette.ink}" stroke-width="5"/>
       <path d="M345 625H455L435 710H365Z" fill="${palette.gold}" stroke="${palette.ink}" stroke-width="6"/>${book(372, 640, 56, 45, palette.paper)}
@@ -474,14 +477,17 @@ export const illustrations = [
     role: 'Section illustration',
     ratio: '4:3',
     title: 'Three indexes around the content itself',
-    description: 'Source, topic, and keyword paths converge on section-sized folios, while pruning tags preserve stale, superseded, and contradictory material for maintenance.',
+    description: 'An archival chest, a row of planted topic plots, and keyword stepping-stones follow three distinct routes to section-sized folios, where tied pruning tags mark material for maintenance.',
     scene: () => `
-      <path d="M400 300C290 245 210 170 125 105M400 300C500 210 590 140 685 110M400 300C345 400 305 455 245 520" fill="none" stroke="${palette.moss}" stroke-width="28" stroke-linecap="round"/>
-      <path d="M400 300C290 245 210 170 125 105M400 300C500 210 590 140 685 110M400 300C345 400 305 455 245 520" fill="none" stroke="${palette.gold}" stroke-width="5" stroke-dasharray="16 10"/>
+      <path d="M320 265C260 230 220 190 178 152" fill="none" stroke="${palette.brown}" stroke-width="12" stroke-linecap="round"/>
+      <path d="M480 265C535 220 585 190 625 155" fill="none" stroke="${palette.moss}" stroke-width="14" stroke-linecap="round"/>
+      <path d="M356 378C330 420 300 450 268 478" fill="none" stroke="${palette.gold}" stroke-width="5" stroke-dasharray="12 10"/>
       ${book(305, 235, 190, 150, palette.paper)}
-      <g fill="${palette.sand}" stroke="${palette.ink}" stroke-width="5"><path d="M70 80H190V165H70Z"/><circle cx="700" cy="115" r="70"/><path d="M155 475H330V550H155Z"/></g>
-      <g fill="${palette.terracotta}" stroke="${palette.ink}" stroke-width="3"><path d="M195 190h55v35h-55z"/><path d="M565 180h55v35h-55z"/><path d="M270 395h55v35h-55z"/></g>
-      <path d="M207 208h31M577 198h31M282 413h31" stroke="${palette.paper}" stroke-width="5"/>
+      <g stroke="${palette.ink}" stroke-width="5" stroke-linejoin="round"><path d="M75 95H205V180H75Z" fill="${palette.sand}"/><path d="M65 95h150l-20-28H85z" fill="${palette.brown}"/><path d="M127 120h26v24h-26z" fill="${palette.gold}"/></g>
+      <g stroke="${palette.ink}" stroke-width="4" stroke-linejoin="round">${bed(555, 120, 62, 28, palette.sage)}${bed(630, 108, 62, 28, palette.fresh)}${bed(705, 96, 48, 28, palette.sage)}<path d="M585 111v-24m0 13c-12-2-17-10-17-18 10 0 16 6 17 18zm73-3v-26m0 14c13-2 18-10 18-19-10 1-17 7-18 19zM729 87v-22" fill="${palette.fresh}"/></g>
+      <g fill="${palette.gold}" stroke="${palette.ink}" stroke-width="4"><ellipse cx="245" cy="505" rx="32" ry="15"/><ellipse cx="302" cy="455" rx="28" ry="14"/><ellipse cx="340" cy="413" rx="24" ry="12"/></g>
+      <g fill="${palette.terracotta}" stroke="${palette.ink}" stroke-width="3" stroke-linejoin="round"><path d="M295 225h48l10 20-10 20h-48z"/><path d="M457 220h48v40h-48l-10-20z"/><path d="M373 379h54l8 18-8 18h-54z"/></g>
+      <path d="M318 225v-22M481 220v-22M400 379v-23" stroke="${palette.brown}" stroke-width="4"/><circle cx="318" cy="201" r="5" fill="${palette.brown}"/><circle cx="481" cy="196" r="5" fill="${palette.brown}"/><circle cx="400" cy="354" r="5" fill="${palette.brown}"/>
       ${flower(105, 250, 0.45, palette.pink)}${flower(685, 285, 0.45, palette.lavender)}${flower(475, 500, 0.45, palette.gold)}`,
   },
   {
@@ -491,12 +497,12 @@ export const illustrations = [
     role: 'Section illustration',
     ratio: '2:1',
     title: 'The context window is a reading basket',
-    description: 'A reader follows concise signs through a branching archive, stops when an abstract is sufficient, and carries only a few complete cuttings in a finite basket.',
+    description: 'A reader stands by a finite basket and follows post-mounted signboards through a branching archive, choosing whether an abstract is sufficient or a deeper path is needed.',
     scene: () => `
       <path d="M90 260H350M350 260C440 250 430 150 520 135M350 260C440 280 430 365 520 375M520 135C625 130 650 95 750 90M520 375C625 385 650 420 750 425" fill="none" stroke="${palette.moss}" stroke-width="13" stroke-linecap="round"/>
-      <g fill="${palette.sand}" stroke="${palette.ink}" stroke-width="5"><path d="M300 195v115h18V195zM275 195h70l-35-35z"/><path d="M470 85v100h18V85zM445 85h70l-35-35z"/><path d="M470 330v100h18V330zM445 330h70l-35-35z"/></g>
+      <g fill="${palette.sand}" stroke="${palette.ink}" stroke-width="5" stroke-linejoin="round"><path d="M285 198h95l15 25-15 25h-95zM320 248v72h17v-72z"/><path d="M445 92h95l15 24-15 24h-95zM480 140v66h17v-66z"/><path d="M445 335h95l15 24-15 24h-95zM480 383v66h17v-66z"/></g>
       <g fill="${palette.brown}" opacity="0.55">${Array.from({ length: 12 }, (_, index) => `<rect x="${620 + (index % 4) * 75}" y="${135 + Math.floor(index / 4) * 65}" width="50" height="45" rx="4"/>`).join('')}</g>
-      ${person(205, 310, 0.68, palette.terracotta, false)}<path d="M115 305Q170 280 225 305L210 370H130Z" fill="${palette.gold}" stroke="${palette.ink}" stroke-width="5"/>${leaf(155, 315, -45, palette.fresh, 0.55)}${leaf(195, 328, -135, palette.sage, 0.55)}
+      <path d="M115 305Q170 280 225 305L210 370H130Z" fill="${palette.gold}" stroke="${palette.ink}" stroke-width="5"/>${leaf(155, 315, -45, palette.fresh, 0.55)}${leaf(195, 328, -135, palette.sage, 0.55)}${person(250, 315, 0.68, palette.terracotta, false)}
       <path d="M375 235l36 25-36 25z" fill="${palette.terracotta}" stroke="${palette.ink}" stroke-width="4"/><path d="M425 130h40M425 380h40" stroke="${palette.gold}" stroke-width="8"/>`,
   },
   {
@@ -506,15 +512,15 @@ export const illustrations = [
     role: 'Chapter opener',
     ratio: '3:2',
     title: 'Inference tiers as matching ladders, not a hierarchy of workers',
-    description: 'Demanding plants occupy four tiered terraces reached by multiple provider-bound ladders, with role floors and a permitted fallback path shown separately.',
+    description: 'Four increasingly demanding plants occupy ascending terraces, while three provider-bound ladders each begin at an attached guild emblem; role floors and fallback remain separate routes.',
     scene: () => `
       <path d="M95 465H270V375H430V285H590V195H805V465Z" fill="${palette.sand}" stroke="${palette.ink}" stroke-width="7"/>
-      <g>${packet(180, 420, 0.55, palette.fresh)}${packet(350, 330, 0.55, palette.sage)}${packet(510, 240, 0.55, palette.gold)}${packet(695, 150, 0.55, palette.pink)}</g>
-      <g fill="none" stroke="${palette.brown}" stroke-width="8"><path d="M145 500L330 315M235 500L505 230M430 500L690 145"/></g>
-      <g stroke="${palette.ink}" stroke-width="4">${Array.from({ length: 7 }, (_, index) => `<path d="M${165 + index * 22} ${480 - index * 22}l42 42"/>`).join('')}${Array.from({ length: 9 }, (_, index) => `<path d="M${270 + index * 25} ${475 - index * 25}l45 45"/>`).join('')}</g>
+      <g stroke="${palette.ink}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M185 446v-45m0 20c-19-2-27-14-27-28 16 1 26 10 27 28z" fill="${palette.fresh}"/><path d="M350 356v-52m0 23c-21-3-30-16-30-31 18 1 28 11 30 31zm0 8c20-3 28-14 28-29-17 1-27 11-28 29z" fill="${palette.sage}"/><path d="M510 266v-60m0 28c-22-4-31-18-31-34 18 1 29 12 31 34zm0 8c22-4 31-17 31-33-18 1-29 12-31 33z" fill="${palette.moss}"/>${flower(510, 197, 0.38, palette.gold)}<path d="M690 177v-68m0 31l-35-25m35 10l32-27m-32 49l-38 20m38-8l39 16" fill="none" stroke="${palette.moss}" stroke-width="7"/>${flower(655, 112, 0.34, palette.pink)}${flower(723, 95, 0.34, palette.gold)}${flower(650, 168, 0.32, palette.lavender)}${flower(730, 177, 0.32, palette.pink)}</g>
+      <g fill="none" stroke="${palette.brown}" stroke-width="8"><path d="M135 500L310 325M330 500L500 240M535 500L690 155"/></g>
+      <g stroke="${palette.ink}" stroke-width="4">${Array.from({ length: 7 }, (_, index) => `<path d="M${155 + index * 22} ${480 - index * 22}l42 42"/>`).join('')}${Array.from({ length: 8 }, (_, index) => `<path d="M${350 + index * 21} ${480 - index * 32}l43 24"/>`).join('')}${Array.from({ length: 9 }, (_, index) => `<path d="M${555 + index * 17} ${478 - index * 38}l42 19"/>`).join('')}</g>
       <path d="M610 455C735 420 640 325 760 285" fill="none" stroke="${palette.terracotta}" stroke-width="11" stroke-dasharray="17 10"/>${arrowHead(760, 285, 'up')}
       <path d="M300 348H585" stroke="${palette.gold}" stroke-width="11"/><path d="M300 325v48M585 325v48" stroke="${palette.ink}" stroke-width="7"/>
-      <g fill="${palette.lavender}" stroke="${palette.ink}" stroke-width="4"><circle cx="120" cy="510" r="24"/><path d="M680 500l30-28 30 28-30 28z"/><rect x="800" y="475" width="50" height="50" rx="7"/></g>`,
+      <g fill="${palette.lavender}" stroke="${palette.ink}" stroke-width="4"><circle cx="135" cy="500" r="24"/><path d="M330 476l24 24-24 24-24-24z"/><rect x="511" y="476" width="48" height="48" rx="7"/></g>`,
   },
 ];
 

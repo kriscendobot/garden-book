@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-labelledby="illumination-ch8-feedback-loops-title illumination-ch8-feedback-loops-description">
   <title id="illumination-ch8-feedback-loops-title">The garden as a set of feedback loops</title>
-  <desc id="illumination-ch8-feedback-loops-description">Sensors read reservoirs, controllers compare setpoints, gates adjust water, and soil moisture returns through roots as new measurements.</desc>
+  <desc id="illumination-ch8-feedback-loops-description">A fleet-scale reservoir loop regulates a broad bed while a smaller gauge, drip line, and return root close a second loop around one seedling.</desc>
   <rect x="10" y="10" width="880" height="580" rx="20" fill="#FBF8F0" stroke="#6A6253" stroke-width="5"/>
   <rect x="24" y="24" width="852" height="552" rx="14" fill="none" stroke="#E6CF7A" stroke-width="3"/>
   <path d="M28 92Q70 28 132 35M872 92Q830 28 768 35M28 508Q70 572 132 565M872 508Q830 572 768 565" fill="none" stroke="#627A57" stroke-width="5" stroke-linecap="round"/>
@@ -27,4 +27,10 @@
       <path d="M715 415C690 500 520 520 420 430S240 455 190 385" fill="none" stroke="#627A57" stroke-width="10" stroke-dasharray="16 10"/>
       <g transform="translate(520 205)" stroke="#6A6253" stroke-width="4"><rect x="-5" y="-48" width="10" height="18" rx="2" fill="#C98267" transform="rotate(0)"/><rect x="-5" y="-48" width="10" height="18" rx="2" fill="#C98267" transform="rotate(45)"/><rect x="-5" y="-48" width="10" height="18" rx="2" fill="#C98267" transform="rotate(90)"/><rect x="-5" y="-48" width="10" height="18" rx="2" fill="#C98267" transform="rotate(135)"/><rect x="-5" y="-48" width="10" height="18" rx="2" fill="#C98267" transform="rotate(180)"/><rect x="-5" y="-48" width="10" height="18" rx="2" fill="#C98267" transform="rotate(225)"/><rect x="-5" y="-48" width="10" height="18" rx="2" fill="#C98267" transform="rotate(270)"/><rect x="-5" y="-48" width="10" height="18" rx="2" fill="#C98267" transform="rotate(315)"/><circle r="38" fill="#C98267"/><circle r="13.571428571428573" fill="#FBF8F0"/></g><path d="M415 185H475M560 230L595 310" stroke="#C98267" stroke-width="7"/><path d="M-18-13L9 0L-18 13Z" fill="#C98267" stroke="#6A6253" stroke-width="3" transform="translate(475 185) rotate(0)"/><path d="M-18-13L9 0L-18 13Z" fill="#C98267" stroke="#6A6253" stroke-width="3" transform="translate(595 310) rotate(90)"/>
       <g fill="#6A6253"><circle cx="185" cy="180" r="7"/><circle cx="215" cy="180" r="7"/><circle cx="245" cy="180" r="7"/></g>
+      <g stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="725" cy="155" r="27" fill="#E6CF7A"/><path d="M725 155l13-12"/><path d="M752 155H795V198" fill="none" stroke="#B9ACCC" stroke-width="8"/><path d="M784 195l11 16 11-16" fill="#B9ACCC"/></g>
+      <g stroke="#6A6253" stroke-width="4" stroke-linejoin="round">
+    <path d="M690 220l125 -14l0 42l-125 14Z" fill="#9CAF88"/>
+    <path d="M690 220l125 -14" fill="none" stroke="#E8D8B9"/>
+  </g><path d="M752 223v-29M752 205c-15-2-21-12-21-23 12 0 20 7 21 23zm0 5c13-3 19-11 19-21-11 0-18 7-19 21z" fill="#B8CF9B" stroke="#6A6253" stroke-width="3"/>
+      <path d="M765 270C840 270 842 130 760 130" fill="none" stroke="#627A57" stroke-width="7" stroke-dasharray="11 8"/><path d="M-18-13L9 0L-18 13Z" fill="#627A57" stroke="#6A6253" stroke-width="3" transform="translate(760 130) rotate(180)"/>
 </svg>

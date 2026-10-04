@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" role="img" aria-labelledby="illumination-ch9-reading-basket-title illumination-ch9-reading-basket-description">
   <title id="illumination-ch9-reading-basket-title">The context window is a reading basket</title>
-  <desc id="illumination-ch9-reading-basket-description">A reader follows concise signs through a branching archive, stops when an abstract is sufficient, and carries only a few complete cuttings in a finite basket.</desc>
+  <desc id="illumination-ch9-reading-basket-description">A reader stands by a finite basket and follows post-mounted signboards through a branching archive, choosing whether an abstract is sufficient or a deeper path is needed.</desc>
   <rect x="10" y="10" width="980" height="480" rx="20" fill="#FBF8F0" stroke="#6A6253" stroke-width="5"/>
   <rect x="24" y="24" width="952" height="452" rx="14" fill="none" stroke="#E6CF7A" stroke-width="3"/>
   <path d="M28 92Q70 28 132 35M972 92Q930 28 868 35M28 408Q70 472 132 465M972 408Q930 472 868 465" fill="none" stroke="#627A57" stroke-width="5" stroke-linecap="round"/>
@@ -10,16 +10,16 @@
   <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(82 455) rotate(18) scale(0.65)"/>
   <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(918 455) rotate(162) scale(0.65)"/>
       <path d="M90 260H350M350 260C440 250 430 150 520 135M350 260C440 280 430 365 520 375M520 135C625 130 650 95 750 90M520 375C625 385 650 420 750 425" fill="none" stroke="#627A57" stroke-width="13" stroke-linecap="round"/>
-      <g fill="#E8D8B9" stroke="#6A6253" stroke-width="5"><path d="M300 195v115h18V195zM275 195h70l-35-35z"/><path d="M470 85v100h18V85zM445 85h70l-35-35z"/><path d="M470 330v100h18V330zM445 330h70l-35-35z"/></g>
+      <g fill="#E8D8B9" stroke="#6A6253" stroke-width="5" stroke-linejoin="round"><path d="M285 198h95l15 25-15 25h-95zM320 248v72h17v-72z"/><path d="M445 92h95l15 24-15 24h-95zM480 140v66h17v-66z"/><path d="M445 335h95l15 24-15 24h-95zM480 383v66h17v-66z"/></g>
       <g fill="#A98569" opacity="0.55"><rect x="620" y="135" width="50" height="45" rx="4"/><rect x="695" y="135" width="50" height="45" rx="4"/><rect x="770" y="135" width="50" height="45" rx="4"/><rect x="845" y="135" width="50" height="45" rx="4"/><rect x="620" y="200" width="50" height="45" rx="4"/><rect x="695" y="200" width="50" height="45" rx="4"/><rect x="770" y="200" width="50" height="45" rx="4"/><rect x="845" y="200" width="50" height="45" rx="4"/><rect x="620" y="265" width="50" height="45" rx="4"/><rect x="695" y="265" width="50" height="45" rx="4"/><rect x="770" y="265" width="50" height="45" rx="4"/><rect x="845" y="265" width="50" height="45" rx="4"/></g>
-      
-  <g transform="translate(205 310) scale(0.68)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M115 305Q170 280 225 305L210 370H130Z" fill="#E6CF7A" stroke="#6A6253" stroke-width="5"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(155 315) rotate(-45) scale(0.55)"/>
+  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(195 328) rotate(-135) scale(0.55)"/>
+  <g transform="translate(250 315) scale(0.68)" stroke="#6A6253" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="0" cy="-34" r="11" fill="#E6CF7A"/>
     <path d="M-16-18L0-26L17-16L13 28H-13Z" fill="#C98267"/>
     <path d="M-10 28L-16 58M10 28L18 58" fill="none"/>
     
-  </g><path d="M115 305Q170 280 225 305L210 370H130Z" fill="#E6CF7A" stroke="#6A6253" stroke-width="5"/>
-  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#B8CF9B" transform="translate(155 315) rotate(-45) scale(0.55)"/>
-  <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="#9CAF88" transform="translate(195 328) rotate(-135) scale(0.55)"/>
+  </g>
       <path d="M375 235l36 25-36 25z" fill="#C98267" stroke="#6A6253" stroke-width="4"/><path d="M425 130h40M425 380h40" stroke="#E6CF7A" stroke-width="8"/>
 </svg>

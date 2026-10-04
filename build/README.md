@@ -66,7 +66,42 @@ role/skill links to the in-book chapter 5/6 entries, and sends other repo
 paths to `main2` on GitHub (`kriscendobot/garden`, where the roles/skills
 this book documents actually live).
 
-Current edition, 2026-10-04, illuminated (jobs
+Current edition, 2026-10-04, review economics (jobs
+`book-equilibrium-data-draft-20261004`,
+`book-equilibrium-visualize-20261004`,
+`book-equilibrium-stylize-20261004`, and
+`book-equilibrium-integrate-20261004`): chapter 8 now includes section 8.8,
+"The equilibrium price of review," with nine illuminated charts and accessible
+exact-value tables. The analysis is an explicitly tentative, observational
+snapshot of one fleet: 8,623 reputation events and 11,418 usage rows at fixed
+garden journal commit `6485a3b8a9617af8177bfac8432d90e42026797c`, plus frozen
+GitHub metadata for 869 fork panel runs, 534 review comments, 761 bot pull
+requests, and 19 upstream ferries:
+https://xddmohl7mf56oiaps45dm6vtoouoxhxkkpocwzuskmwg6mhzggea.ocap.site/
+
+- PR #12 (https://github.com/kriscendobot/garden-book/pull/12), head
+  `c7ff0a85a099ca69865f1b84e7a26e7c51711805`, merged as
+  `c7e579ffc7fcc7a6a2ad4d8f1318e70dadfb2405`; published from that merge.
+- Headline observations: median subscription-attributed machine cost is about
+  $0.63 per accepted engagement; the observed review anchor is $21.77, or 36x
+  that machine median (88x under the alternate $30-per-round assumption); the
+  flat subscription ledger is about 15.9x the list-price token estimate in the
+  matched window. The scenario model's illustrative minima move from 13 to 42
+  to 70 minutes of review as loss exposure rises from $100 to $400 to $1,600;
+  these are sensitivity results, not causal estimates or universal prices.
+- Build: `npm test && node build/build.mjs chapters out` (61/61 tests). Output
+  sha256: `index.html`
+  `fb0efbc84456ccd78279c1c061afb91143d8ffe162040394b5d0ae9eeb963d14`,
+  `styles.css`
+  `859ffed2b91ea2db5f0a963cbe22d5ffa48a8168423250fee4f251d4d27a49d0`;
+  the served clip returns the same bytes.
+- Browser: the full-book check against the live URL passes at 390x844 and
+  1440x900 in light and dark, with no horizontal overflow, clipped or
+  overlapping figures, caption contrast at least 5.68:1, and body contrast at
+  least 12.9:1. The equilibrium-specific integration check also passes all 36
+  chart/viewport/color-scheme cases, including keyboard-operated disclosures.
+
+Previous edition, 2026-10-04, illuminated (jobs
 `book-illumination-integrate-20261004` and
 `book-illumination-supervisor-after-integrate-20261004`): the 25 plates in
 `art/illumination-*.svg` are inlined at the places `build/illuminations.mjs`

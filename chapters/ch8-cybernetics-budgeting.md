@@ -16,13 +16,13 @@ speeds and with different authority.
 This chapter describes those loops as they exist on `main2` today, following
 the current operator map,
 [`context/operations/cybernetics.md`](../../context/operations/cybernetics.md),
-checked against the scripts. Two design documents give the rationale:
-[`designs/cybernetics-audit.md`](../../designs/cybernetics-audit.md), a
-systemic audit from 2026-09-01, and
-[`designs/cybernetics-economic-resilience.md`](../../designs/cybernetics-economic-resilience.md),
-the accepted follow-up. Both begin with a dated "implementation status"
-section; everything after that section is history, not a description of
-today's code.
+checked against the scripts. Much of the shape described here came out of a
+loop-by-loop review of the fleet's controls, and a reader who wants the full
+rationale can find it in
+[`designs/cybernetics-audit.md`](../../designs/cybernetics-audit.md) and
+[`designs/cybernetics-economic-resilience.md`](../../designs/cybernetics-economic-resilience.md).
+This chapter describes the result: the loops as they run, and the failures
+each one is built to catch.
 
 ## Contents
 
@@ -32,15 +32,15 @@ today's code.
 - [8.4 The foreman as pacing actuator](#84-the-foreman-as-pacing-actuator)
 - [8.5 Per-job budgets: wall clock and tokens](#85-per-job-budgets-wall-clock-and-tokens)
 - [8.6 Per-orchestration budgets: a bounded pie](#86-per-orchestration-budgets-a-bounded-pie)
-- [8.7 What's evolving now: the accountant](#87-whats-evolving-now-the-accountant)
+- [8.7 The accountant](#87-the-accountant)
 - [8.8 Review economics: an equilibrium](#88-review-economics-an-equilibrium)
 - [8.9 Quick reference](#89-quick-reference)
 
 ## 8.1 Why "cybernetics"
 
-The audit's unit of analysis is the **feedback loop**: a sensor, a setpoint, a
-controller, an actuator, and the world the actuator changes, which the sensor
-then reads again. For each loop the audit asks five questions:
+The garden's unit of analysis is the **feedback loop**: a sensor, a setpoint,
+a controller, an actuator, and the world the actuator changes, which the
+sensor then reads again. Each loop is judged by five questions:
 
 - What is measured, and how closely does it track the quantity being
   regulated?
@@ -61,31 +61,31 @@ feeds back into the fleet in four places, each with its own time constant:
 | **Per-job and per-campaign budgets** (reaper, `orchestrate.sh`) | a job's or campaign's own token ledger | hold, requeue, or stop promoting | per reap / per orchestration step |
 
 A single static cap would be simpler, but the garden's history shows why it
-fails. A cap that is too low wedges the fleet. The audit (§ 2.3) records
-a leader host sitting in permanent backoff for days against a 5M-token
+fails. A cap that is too low wedges the fleet: on the original instance, a
+leader host once sat in permanent backoff for days against a 5M-token
 placeholder cap whose own header read "PLACEHOLDER CAPS — NOT CALIBRATED". A
-cap that is missing or reads as empty lets spend run unbounded. On 2026-09-04 a
-host ran about nineteen hours on a temporary API key whose pool was marked
-`unmetered`; admission failed open, and roughly $1,090 was spent before anyone
+cap that is missing or reads as empty lets spend run unbounded: another host
+ran about nineteen hours on a temporary API key whose pool was marked
+`unmetered`, admission failed open, and roughly $1,090 was spent before anyone
 noticed. The layered loops exist so that every failure mode has a loop that
 catches it, and so that each loop's gain matches how far its sensor can be
 trusted.
 
-Three design rules from the audit recur through the rest of this chapter:
+Three design rules recur through the rest of this chapter:
 
-1. **"No signal" is not "zero spend."** The audit's § 2.2 found two meter paths
-   that printed a confident `0` when the sensor was blind (a missing log
-   directory, an empty `usage/` tree). The leveler of the time turned zero
-   spend into maximum workers, so a blind sensor scaled the fleet up. Today
+1. **"No signal" is not "zero spend."** Two meter paths once printed a
+   confident `0` when the sensor was blind (a missing log directory, an empty
+   `usage/` tree). The leveler of the time turned zero spend into maximum
+   workers, so a blind sensor scaled the fleet up. Today
    every loop separates `off` (no budget configured), `unknown` (sensor
    unreadable), `ok`, and `backoff`, and handles each explicitly.
 2. **An uncalibrated setpoint must not drive a full-authority actuator.** Pool
    caps carry provenance. A placeholder cap is refused, not obeyed.
 3. **Actuate gently.** The original leveler jumped from 4 workers to 1 in a
-   single 15-minute tick on a sensor up to 45 minutes stale (audit § 5.1). The
-   current leveler moves one slot per step and needs confirmations before it
-   raises. The pattern comes from the scaler's backend probe, which the audit
-   called "the fleet's only hysteresis."
+   single 15-minute tick on a sensor up to 45 minutes stale. The current
+   leveler moves one slot per step and needs confirmations before it raises.
+   The pattern comes from the scaler's backend probe, which at the time was
+   the only loop in the fleet with any hysteresis.
 
 ## 8.2 Subscription accounting
 
@@ -131,8 +131,9 @@ and is deliberately not wired. Each host publishes its contribution under
 `budget/live/<subscription>/<host>`. A pool's spend is the sum of its hosts'
 contributions within the subscription's reset window. Each subscription has its
 own reset window, with independent reset facts under `budget/reset-events/`.
-There is no longer a global "Friday 21:00" reset: the audit found that anchor
-hardcoded, and it was replaced.
+There is no single global reset time; an early version hardcoded one
+("Friday 21:00"), which did not match subscriptions that reset at other
+times.
 
 The same `budget/live` snapshot serves as a **heartbeat**: a host that stops
 publishing it is treated as offline, which worker derotation (§ 8.3) relies
@@ -168,7 +169,7 @@ of four verdicts:
 
 Each asymmetry here comes from a specific incident. An **unmetered or
 uncalibrated** pool fails closed because a ceiling nobody trusts bounds nothing;
-the code comment quotes the $1,090 incident. An **absent** pool row means
+the code comment cites the $1,090 overspend from § 8.1. An **absent** pool row means
 budgeting is deliberately off for that provider. A **blind sensor** fails open
 because wedging the fleet on a broken meter would turn a monitoring fault into
 an outage. The fail-closed halt is loud and explicit so that it never looks
@@ -252,8 +253,8 @@ still step down toward its floor. The leader's drain suspends leveling. Freeze
 and recovery notices are edge-latched, so the maintainer gets one message per
 transition, not one per tick. Remote hosts change only through the **benign
 sysop `set-workers` op**, never through a cross-host edit of `hosts/<host>`.
-This closes the audit's § 4.1 finding, "five writers, one count line, no
-arbitration."
+The rule exists because, before it, five different writers could each edit a
+host's count line, with nothing arbitrating between them.
 
 ### Derotation: a quiet host gives its share back
 
@@ -366,24 +367,23 @@ compares the count with `GARDEN_FOREMAN_ACTIVE_TARGET`:
     promotion and generation fleet-wide until a recorded reset.
   - An unreadable meter fails open with a WARN, like the claim gate.
 - If budget allows, it fills open slots **first by batch-promoting deferred plan
-  jobs**, which are pre-approved and cost no model call; promotion is
-  leaf-first by omega rank. Only if none are queued does it run `claude -p`
+  jobs**, which are pre-approved and cost no model call. Promotion is
+  leaf-first: a job that can be worked directly goes ahead of an umbrella job
+  that has already spawned children of its own. Only if none are queued does it run `claude -p`
   wearing the foreman role to generate **one** new milestone step, which
   `config/foreman-mandate` may steer.
 
 Every tick appends one line to `$GARDEN_STATE/foreman/decisions.log`. Before
 that log existed, a foreman quiesced at target 0 exited silently every tick for
-weeks and could be diagnosed only by live-debugging the unit (job
-`investigate-malingering-foreman`, 2026-09-16).
+weeks and could be diagnosed only by live-debugging the unit.
 
 ### The active target and why it is 10
 
 The target has moved with quota pressure, as the unit file's comment records.
-The script's own fallback is 5 ("keep ~5 jobs in flight," kriskowal
-2026-07-03). The unit pinned it to **0**, quiescing the pump, from 2026-07-14
-through quota pressure. It was raised to 2 on 2026-09-16, and to **10** on
-2026-09-27. The unit ships `Environment=GARDEN_FOREMAN_ACTIVE_TARGET=10`, and
-`CLAUDE.md` and `scaling.md` agree.
+The script's own fallback is 5. On the original instance the unit pinned it
+to **0**, switching the pump off, for about two months of quota pressure, then
+raised it to 2 and finally to **10**. The unit now ships
+`Environment=GARDEN_FOREMAN_ACTIVE_TARGET=10`.
 
 The reason for 10 matters more than the number. It covers the fleet's roughly
 eight physical worker slots plus a small buffer, and the raise was meant to
@@ -394,9 +394,8 @@ spend is braked by the backoff fraction and pool state, which respond to real
 budget. Concurrency is a capacity control; the backoff fraction is the spend
 control.
 
-A documentation note: `context/operations/cybernetics.md` and both designs'
-2026-09-27 status sections, written just before the raise, still say "the
-shipped active target is 2." The unit file is authoritative.
+(Some operator documents written just before the raise still say 2; the unit
+file is authoritative.)
 
 ### Brake, drain, and target: three different levers
 
@@ -498,9 +497,10 @@ reference for tiers, the models in each, role floors, and provider fallback
 Automatic producers stamp every job `tier: mentor`, and mentor is
 multi-provider, so a job runs on whichever pool has live capacity and the
 claim gate charges that pool. **Mentat**, the most expensive tier, is
-manual-only (`post-manual-job.sh`); its one automatic exception, the
-journal-authorized Ironhorse ratchet watcher, is still gated by a rolling arc
-token budget at foreman admission.
+manual-only (`post-manual-job.sh`). Its one automatic exception, a
+maintainer-authorized watcher that drives the Ironhorse engine port (chapter
+1, § 1.1) one pull request at a time, is still gated at foreman admission by
+a rolling token budget for that line of work.
 
 ## 8.6 Per-orchestration budgets: a bounded pie
 
@@ -546,10 +546,12 @@ The mechanism puts a clear boundary around delegated authority: the maintainer
 authorizes a quantity of spend toward a named piece of work, the scheduler draws
 it down in order, and running out never damages in-flight work.
 
-## 8.7 What's evolving now: the accountant
+## 8.7 The accountant
 
-On 2026-09-30 the maintainer directed that budgeting be **carved into its own
-role**:
+Budgeting has been **carved into its own role**, the accountant, so that a
+human sets the foreman's spending priorities on a fixed weekly cadence rather
+than in response to scattered alerts. The original instance's maintainer put
+the motivation this way:
 
 > we should probably carve an accountant role out of the liaison's and other
 > roles' skills and responsibilities regarding budgeting tokens. We are becoming
@@ -559,42 +561,50 @@ role**:
 > forward, such that the pie gets sliced and apportioned to various arcs the
 > foreman can draw from to make progress on prioritized work in the planned jobs.
 
-When this chapter was written, that work was a **queued design job**,
-`design-accountant-role-budget-apportionment`, in `jobs/todo/`. No design had
-landed in `designs/`, and no `roles/accountant/` existed. Nothing below is
-shipped behavior or a decided conclusion; it restates what the design job
-asked for:
+That request has since been designed and built. The design is
+`designs/accountant-arc-apportionment.md`, the role brief is
+`roles/accountant/AGENT.md`, and the commands are in
+`context/operations/accountant.md`. What follows describes the shipped
+shape; the design document remains the place to look for the reasoning.
 
-- A **survey first**, so the role consolidates existing budget duties instead of
-  duplicating them. The survey covers everything in this chapter (pools, the
-  meter, the foreman's knobs, the budget-hold gate and `budget-refresh.sh`,
-  `--budget-tokens`), plus the budget awareness now scattered through the
-  liaison's brief and its muster handling of budget watchdog notices.
-- **`roles/accountant/AGENT.md`**, scoped narrowly to token economics. The
-  design must name exactly which responsibilities leave the liaison and other
-  roles.
-- A **weekly engagement**: a scheduled inbox message (not a board job) showing
-  last week's spend and pacing against the prior allocation and the slate of
-  arcs competing for budget, and inviting the maintainer to reslice.
-- An **arc-apportionment model**: what an "arc" is as a budget unit, reconciled
-  with the existing arc concept (named priority threads tracked by press
-  schedules and tracker issues) if that concept is still live. It must also
-  cover how the foreman draws against per-arc slices, and what happens when a
-  slice runs out mid-week (hold, borrow, or stop), and it must compose with
-  `--budget-tokens` rather than duplicate it.
-- An explicit **non-goal**: the metering and admission layer
-  (`usage-meter.sh`, pools, mappings) stays as it is.
+- **The role is scoped narrowly to allocation.** The accountant is the sole
+  writer of three journal files: `config/apportionment` (the week as a whole:
+  total, planning ceiling, the ranked slate, the unallocated reserve, and who
+  authorized it), one `config/arc-budgets/<arc>` slice per arc, and
+  `config/foreman-mandate`, which is now generated from the slate instead of
+  hand-written. All three change together in one `set-apportionment.sh`
+  commit. The metering and admission layer (`usage-meter.sh`, pools,
+  mappings), worker leveling, drain, the foreman brake and the backoff
+  fraction all stay outside its reach. Its allocation can narrow what
+  admission allows, never widen it.
+- **A weekly engagement.** The `accountant-weekly` schedule posts a job each
+  week. The accountant first carries last week's slate forward, so the fleet
+  is never unbudgeted while it waits. It then builds a statement from
+  `accountant-statement.sh` (spend and pacing against the prior allocation),
+  proposes a new slate, and sends both to the maintainer. It applies only a
+  reply it can restate unambiguously, recording the maintainer as
+  `authorized_by`. With no reply, the carried-forward slate stands.
+- **Arcs as the budget unit.** An arc is a named priority thread, and the
+  slate's order is its rank. Producers stamp work with `arc:` (`post-job.sh`,
+  `post-plan.sh`, `post-orchestration.sh` and `post-gauntlet.sh` all take
+  `--arc`), and unarced work the foreman draws is charged to the unallocated
+  reserve. The older review-arc presses and trackers are retired; this is the
+  live arc concept.
+- **Exhausted slices hold.** A slice that runs out mid-week holds its arc's
+  work. The accountant never borrows across arcs or weeks and never cancels
+  in-flight work. When every slice is held while subscription quota would go
+  unspent, it sends the maintainer one re-slice nudge, at most daily.
+- **Orchestration budgets nest inside a slice.** A campaign's
+  `--budget-tokens` cap still gates its own children, and that spend counts
+  against the arc the campaign belongs to.
 
-In the terms of this chapter, the accountant would add an **allocation and
-priority layer** above the admission and pacing loops. Today the only
-setpoints a human sets weekly are pool caps (through calibration) and the
-backoff fraction. The foreman draws from one undifferentiated pool, and only an
-explicit orchestration gets a bounded budget of its own. The proposal would
-generalize the per-orchestration budget to the foreman's own spending, sliced
-by priority, with the human re-entering the loop on a fixed weekly cadence
-instead of through unscheduled watchdog notices. How that is actually built belongs
-to the design, and a later edition of this chapter should describe it once it
-lands.
+In the terms of this chapter, the accountant adds an **allocation and priority
+layer** above the admission and pacing loops. Before it, the only setpoints a
+human set weekly were pool caps (through calibration) and the backoff
+fraction, and the foreman drew from one undifferentiated pool. Now the
+foreman's own spending is sliced by priority, generalizing the
+per-orchestration budget, and the human re-enters the loop on a fixed weekly
+cadence instead of through unscheduled watchdog notices.
 
 ## 8.8 Review economics: an equilibrium
 

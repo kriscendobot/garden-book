@@ -225,8 +225,8 @@ free description.
 | **rebase #N** ★ | a job stamped `role: weaver` | Rebases the PR branch onto its base. |
 | **refresh #N** ★ | a job with no fixed role | Re-syncs the branch and regenerates derived artifacts; the claiming gardener picks the role from the body. |
 | **retcon #N** ★ | a fixer job under [retcon][retcon] | Resets the branch and restages its changes as per-package commits, with a separate `chore: Update yarn.lock` commit. The net diff is invariant: the final tree is byte-identical to the starting tree; only history changes. |
-| **americanize #N** ★ | an [americanizer][americanizer] job (`myrmidon` tier) | **Search-gated.** The triager first runs `orthographer-divergence-grep.sh`; the job is posted only if the grep finds a British spelling. The americanizer then runs a deterministic apply-then-re-grep loop until zero candidates remain. |
-| **deslop #N** ★ | a [deslopper][deslopper] job (`myrmidon` tier) | **Search-gated** the same way, on `thesaurus-cliche-grep.sh`. Rewrites flagged AI-cliché phrases ("load-bearing invariant", "seam where") into plain prose, looping to a fixpoint. The dual of americanize: the thesaurus jury seat detects, the deslopper fixes. |
+| **americanize #N** ★ | an [americanizer][americanizer] job (`myrmidon` tier) | **Search-gated.** The triager (the per-repository watcher that turns PR events into jobs) first runs `orthographer-divergence-grep.sh`; the job is posted only if the grep finds a British spelling. The americanizer then runs a deterministic apply-then-re-grep loop until zero candidates remain. |
+| **deslop #N** ★ | a [deslopper][deslopper] job (`myrmidon` tier) | **Search-gated** the same way, on `thesaurus-cliche-grep.sh`. Rewrites flagged AI-cliché phrases ("load-bearing invariant", "seam where") into plain prose, looping to a fixpoint. The dual of americanize: the thesaurus jury seat (one of the panel's reviewers, chapter 7, § 7.3) detects, the deslopper fixes. |
 | **weave #N** / **pin the merge base #N** ★ | a [weaver][weaver] job | Snapshots the base branch's current tip as a new frozen `<base>-<short-sha>` branch, rebases the PR head onto it, resolves conflicts, force-pushes the head, and moves the PR's `base` field. Both refs move together. See below on the alias. |
 | **shepherd #N** ★ | a [shepherd][shepherd] job | Drives CI back to green: classifies each failure, applies the fix itself when the root cause is in the PR's own diff, and documents and re-runs flakes. It never deletes or skips a failing test to get green. |
 | **merge #N** ★ (also *conduct*) | a [conductor][conductor] job | Conducts the merge onto the right branch. Requires an effective APPROVED review from a journal maintainer. A rebase or push does not stale an approval; a dismissal or a later CHANGES_REQUESTED does. |
@@ -290,9 +290,8 @@ pushed under the bot. Chapter 7, § 7.6 covers the procedure in full.
 
 [3.4 The plan queue](#34-the-plan-queue) covers what each gate means.
 
-**Multi-part work.** Under a standing maintainer pattern (2026-07-01), when
-you ask for something with several parts, the liaison does not post a loose
-pile of jobs and hope the follow-ups happen. It parks each part as an
+**Multi-part work.** When you ask for something with several parts, the
+liaison does not post a loose pile of jobs and hope the follow-ups happen. It parks each part as an
 **orchestrated** child (`post-plan.sh --orchestrated --orchestrated-by
 <orch>`), then records one **orchestration** (`post-orchestration.sh
 [--serial|--parallel] [--on-child-failure halt|continue] <orch>
@@ -335,12 +334,11 @@ reach and is the first place to look when something seems stuck (chapter 8,
 
 ### Negation and teaching
 
-`CLAUDE.md` says the negation patterns (*don't X*, *never X*), the compound
-idioms (*wrap up #N*, *retcon and ferry #N*), and the garden-meta phrases
-(*encode this*, *carve a role for X*) "all live on" the liaison brief. As of
-`main2` `2a5c1991779` the brief carries no sections for them; what exists is
-scattered through the README and the [control-surface gallery][gallery]. The
-following is what those sources support.
+The negation patterns (*don't X*, *never X*), the compound idioms (*wrap up
+#N*, *retcon and ferry #N*), and the garden-meta phrases (*encode this*,
+*carve a role for X*) have no single reference page. Their documentation is
+spread through the README and the [control-surface gallery][gallery], and
+what follows is what those sources support.
 
 - **"don't X" / "never X".** A negation is a standing instruction, and the
   garden answers it with a mechanism, not just a rule. The
@@ -373,26 +371,26 @@ vocabulary only: triage is a conversation, not a board entry.
 
 ### Why it exists
 
-The inbox fills faster than a person reads it. On 2026-08-16 it held 81
-unread messages, the oldest from 07-25. Reading them one at a time in arrival
+The inbox fills faster than a person reads it. On the original instance it
+once held 81 unread messages, the oldest three weeks old. Reading them one at a time in arrival
 order spends attention on messages that time has already answered, so a
 muster runs three passes, always in order; the liaison is told never to skip
 straight to the third.
 
 ### Before the passes: the TypeSafe pilot
 
-Every muster starts with `scripts/jobs/muster-pilot.sh`, the **TypeSafe
-muster pilot**, which supplies typed compaction, recurring-pattern, and
-muster-class labels for the messages. It became standing practice on
-2026-09-28, when the maintainer judged that the pilot "appears to be working
-out"; before that it was an opt-in offered each session
-([typesafe-jev-classification][typesafe-design] § Addendum). Three things to
-know about it:
+Every muster starts with `scripts/jobs/muster-pilot.sh`, the **muster
+pilot**. It sends the messages to TypeSafe, an external, paid service that
+returns small typed AI judgments (a label, a yes-or-no with a probability)
+that ordinary code can consume directly, and gets back advisory labels: which
+messages can be compacted, which belong to a recurring pattern, and which
+class each falls in ([typesafe-jev-classification][typesafe-design]
+§ Addendum). Three things to know about it:
 
 - Its labels are **advisory grouping hints**. The pilot never disposes of a
   message; the liaison still verifies current state before archiving or
   reposting anything.
-- If the key is missing, TypeSafe is unavailable, or the call fails, the
+- If the TypeSafe API key is missing, the service is unavailable, or the call fails, the
   liaison says so briefly and runs all three passes with ordinary inference.
   A failed pilot never blocks or shortens a muster.
 - "Skip the pilot this time" opts out for one session.
@@ -407,8 +405,9 @@ liaison retires what time has answered:
   <N> --json state,mergedAt,reviewDecision`) rather than opening messages one
   at a time. A message whose blocker is gone is archived without costing you
   a glance.
-- **Collapse repeat presses.** A daily press re-posts the same open question
-  every tick. Six messages restating one unanswered decision are one
+- **Collapse repeat presses.** A *press* is a recurring schedule that keeps
+  a long-running line of work moving, and it re-posts the same open question
+  every time it runs. Six messages restating one unanswered decision are one
   decision: archive all but the newest and carry that into pass 3.
 - **Sweep the deploy-gap class.** A job that halted on "the deployed garden
   lacks commit X" is dead the moment a deploy lands. The liaison re-posts the
@@ -491,7 +490,8 @@ gate first:
 sed -n '1,/^---$/p' journal/jobs/plan/<job>.md
 ```
 
-The bulletin's **Plan queue** section lists go-ahead jobs awaiting a
+The bulletin (the garden's status page, published to GitHub Pages from the
+journal; chapter 4, § 4.5) has a **Plan queue** section that lists go-ahead jobs awaiting a
 decision, answerable awaiting-maintainer questions with their links, and the
 top of the deferred queue, each with its gate reason. Procedure and recovery:
 [`context/operations/plan-queue.md`][plan-queue].
@@ -532,7 +532,8 @@ approved design, and you type **build #1234**.
    and opens the PR only through `ensure-pr.sh`, which embeds a
    `<!-- garden-job: ebfb-1234-build -->` marker and adopts an existing PR
    rather than opening a duplicate if a previous claimant already made one.
-   The PR opens against a frozen `llm-<sha7>` base, as a **draft**.
+   The PR opens as a **draft** against a frozen `llm-<sha7>` base, a
+   snapshot of that fork's `llm` branch (see *Weave and its alias*, above).
 5. **If it needs you, it asks.** A question goes through `message-user.sh`,
    surfaces in your liaison session, and your answer lands in the builder's
    inbox mid-job.

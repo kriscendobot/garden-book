@@ -1495,7 +1495,7 @@ Source: [`skills/issue-inbox/SKILL.md`](../../skills/issue-inbox/SKILL.md)
 
 Source: [`skills/reactji-acknowledgment/SKILL.md`](../../skills/reactji-acknowledgment/SKILL.md)
 
-**Purpose.** Leave an `eyes` reactji on a source comment the moment it is noticed, a cheap "received and processing" signal ahead of the substantive response. Since a maintainer directive, the reactji alone is never a sufficient response.
+**Purpose.** Leave an `eyes` reactji on a source comment the moment it is noticed, a cheap "received and processing" signal ahead of the substantive response. The reactji alone is never a sufficient response.
 
 **When it's used.** By the producer that first reads a comment, not the gardener that later claims a job from it: the triager reacts as it reads the comment and posts the job, and the claiming gardener does not react again. `roles/fixer/AGENT.md` references it, and `scripts/jobs/handlers/comment-reactji-gh.sh` implements the posting call for every surface (issue, issue-comment, pr-review-comment).
 
@@ -1503,7 +1503,7 @@ Source: [`skills/reactji-acknowledgment/SKILL.md`](../../skills/reactji-acknowle
 - Use `eyes` in nearly every case, `+1` for endorsed suggestions or thanks, `rocket` for a landed PR, and never `confused`, `-1`, or `laugh`.
 - The endpoint depends on the surface: `/issues/comments/<id>/reactions` for top-level conversation comments, `/pulls/comments/<id>/reactions` for inline review comments, `/issues/<n>/reactions` for an issue body; mixing the two comment endpoints returns 404.
 - PR reviews themselves carry no reactions endpoint; a substantive review body gets a substantive reply comment, not a reactji.
-- Since a directive from kriskowal on 2026-06-30, every acknowledged trusted comment gets a reply as well as the reactji: an actionable comment gets the reply plus a posted job, and a non-actionable one (a question, a status check) gets a deterministic `attention` job whose deliverable is the substantive reply.
+- Every acknowledged trusted comment gets a reply as well as the reactji: an actionable comment gets the reply plus a posted job, and a non-actionable one (a question, a status check) gets a deterministic `attention` job whose deliverable is the substantive reply.
 
 **Gotchas.**
 - Never react to a comment authored by the same identity as the agent, to a closed PR or issue, or to an automated bot comment.
@@ -1838,7 +1838,9 @@ Source: [`skills/xs-debugging/SKILL.md`](../../skills/xs-debugging/SKILL.md)
 
 ## 6.14 Ironhorse and test262
 
-Two small, mechanical disciplines for writing a test262-format test:
+Ironhorse is the Rust port of the XS engine introduced in chapter 1, § 1.1,
+and test262 is the conformance suite it is measured against. Two small,
+mechanical disciplines for writing a test262-format test:
 spell every spec-defined surface the way the specification does, and
 assert every independent metadata fact on its own line so a failure names
 exactly what drifted.

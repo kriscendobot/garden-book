@@ -25,6 +25,7 @@ import {
   classify,
   describe,
   ebfbPullRequest,
+  familyPullRequests,
   flatRoundDollars,
   frontmatter,
   gauntletStage,
@@ -66,9 +67,11 @@ const revision = git("rev-parse", "--verify", `${revisionArgument}^{commit}`).tr
 
 // Snapshot
 
-// The snapshot holds journal prose; it is removed however the run ends.
+// The snapshot holds journal prose; it is removed when the run exits, fails,
+// or is interrupted by SIGINT or SIGTERM.
 const snapshot = mkdtempSync(join(tmpdir(), "equilibrium-"));
 process.on("exit", () => rmSync(snapshot, { recursive: true, force: true }));
+for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => process.exit(130));
 const paths = ["reputation/events", "usage", "jobs/tada", "panel-runs", "review-misses", "legacy/v1/worktrees"];
 execFileSync("sh", ["-c", `git -C "$0" archive "$1" ${paths.join(" ")} | tar -x -C "$2"`, gitDirectory, revision, snapshot]);
 const cutoff = git("show", "-s", "--format=%cI", revision).trim();
@@ -97,7 +100,7 @@ for (const file of listFiles("jobs/tada")) {
 }
 // The regime and pull-request rules (rules.mjs) applied to one base and its report.
 const regimeOf = (base) => classify(base, reports.get(base));
-const pullRequestOf = (base) => ebfbPullRequest(base, reports.get(base));
+const ownPullRequest = (base) => ebfbPullRequest(base, reports.get(base));
 
 
 // Reputation events
@@ -125,6 +128,7 @@ for (const file of listFiles("reputation/events")) {
     stage: gauntletStage(base),
   });
 }
+const pullRequestOf = familyPullRequests([...reports.keys(), ...events.map((e) => e.base)], ownPullRequest);
 for (const e of events) if (e.regime === "ebfb") e.pullRequest = pullRequestOf(e.base);
 
 // The rate card's true-cost basis prices Anthropic at an amortized share of a
@@ -364,17 +368,18 @@ for (const file of listFiles("panel-runs")) {
   const relative = file.slice(snapshot.length + 1);
   panelRuns.push({
     repo: f.repo,
-    pullRequest: Number(f.pr),
+    pullRequest: f.pr === undefined || f.pr === "" ? null : Number(f.pr),
     kind: f.panel_kind || "code",
     rounds: Number(f.rounds) || 0,
     disposition: f.disposition,
-    mustFix: f.must_fix_total === "" ? null : Number(f.must_fix_total),
+    mustFix: f.must_fix_total === undefined || f.must_fix_total === "" ? null : Number(f.must_fix_total),
     date: panelDates.get(relative) ?? null,
   });
 }
 const ebfbRuns = panelRuns.filter((r) => /endo-but-for-bots$/.test(r.repo ?? ""));
 const runsByPullRequest = new Map();
 for (const r of ebfbRuns) {
+  if (r.pullRequest === null) continue;
   if (!runsByPullRequest.has(r.pullRequest)) runsByPullRequest.set(r.pullRequest, []);
   runsByPullRequest.get(r.pullRequest).push(r);
 }
@@ -386,6 +391,17 @@ for (const runs of runsByPullRequest.values()) runs.sort((a, b) => (a.date ?? ""
 const passed = (r) => r.disposition === "passed" || r.disposition === "passed-no-review-surface";
 const decided = (r) => passed(r) || r.disposition === "must-fix";
 const MUST_FIX_CAP = 20;
+// Every disposition panel-run-record.sh writes; the chart reads each one.
+const DISPOSITIONS = [
+  "passed",
+  "passed-no-review-surface",
+  "must-fix",
+  "error",
+  "seat-error",
+  "interrupted",
+  "max-rounds-exceeded",
+  "decider-error",
+];
 const convergence = [];
 for (const [pullRequest, runs] of runsByPullRequest) {
   const d = runs.filter(decided);
@@ -416,7 +432,7 @@ const panel = {
   runsAllRepos: panelRuns.length,
   ebfbRuns: ebfbRuns.length,
   ebfbPullRequestsWithRuns: runsByPullRequest.size,
-  dispositions: tally(ebfbRuns.map((r) => r.disposition)),
+  dispositions: tally(ebfbRuns.map((r) => r.disposition), DISPOSITIONS),
   runsWithVerdict: ebfbRuns.filter(decided).length,
   runsWithoutVerdict: ebfbRuns.filter((r) => !decided(r)).length,
   mustFixRunsAtCap: ebfbRuns.filter((r) => r.disposition === "must-fix" && r.rounds === 1 && r.mustFix >= MUST_FIX_CAP).length,
@@ -559,7 +575,8 @@ const ebfb = {
     pullRequests: withStages.length,
     panelStages: describe(withStages.map((r) => r.stages.panel), 2),
     fixStages: describe(withStages.map((r) => r.stages.fix), 2),
-    panelStageCounts: tally(withStages.map((r) => r.stages.panel)),
+    // Stages 0 to 6, the gauntlet's default --max-iterations.
+    panelStageCounts: tally(withStages.map((r) => r.stages.panel), [0, 1, 2, 3, 4, 5, 6]),
     mergedWithStages: withStages.filter((r) => r.state === "MERGED").length,
   },
   humanRoundsByMergeMonth: Object.fromEntries(
@@ -640,11 +657,11 @@ const learning = {
   classifiedReviewComments: missFiles.length + dismissedFiles.length,
   processMisses: missFiles.length,
   newDirection: dismissedFiles.length,
-  missSeverity: tally(missList.map((m) => m.severity ?? "unknown")),
+  missSeverity: tally(missList.map((m) => m.severity ?? "unknown"), ["minor", "moderate", "major", "unknown"]),
   missCategory: tally(missList.map((m) => m.category ?? "unknown")),
   missesByMonth: tally(missList.map((m) => month(m.review_at))),
   clusters: clusters.length,
-  clusterStatus: tally(clusters.map((c) => c.status)),
+  clusterStatus: tally(clusters.map((c) => c.status), ["closed", "improvement-dispatched", "open"]),
   improvedClusters: improved.length,
   improvedByUnresolved,
   improvedMembersBefore: sum(improved.map((c) => c.before)),

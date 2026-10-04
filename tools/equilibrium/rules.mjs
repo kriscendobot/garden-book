@@ -32,8 +32,13 @@ export const describe = (values, digits = 3) => {
     total: v.length ? round(sum(v), digits) : null,
   };
 };
-export const tally = (values) => {
-  const counts = {};
+// Counts each value. Every key of `domain` is present, at zero when the value
+// never occurs, so a reader of a fixed category set (panel stages, panel
+// dispositions) never meets a missing key. The counts start from a
+// prototype-free object, so a value named "constructor" counts like any other.
+export const tally = (values, domain = []) => {
+  const counts = Object.create(null);
+  for (const key of domain) counts[key] = 0;
   for (const value of values) counts[value] = (counts[value] ?? 0) + 1;
   return Object.fromEntries(Object.entries(counts).sort((a, b) => b[1] - a[1]));
 };
@@ -107,6 +112,28 @@ export const ebfbPullRequest = (base, report) => {
   const fromReport = report && /endo-but-for-bots\/pull\/(\d+)/.exec(report);
   return fromReport ? Number(fromReport[1]) : null;
 };
+// A gauntlet's stage bases (`<parent>-gauntlet-panel-3`) and the gauntlet
+// itself (`<parent>-gauntlet`) belong to the parent job's family.
+export const gauntletFamily = (base) => base.replace(/-gauntlet(?:-.*)?$/, "");
+// Many stage jobs name no pull request in their base or report. Such a stage
+// inherits the pull request of its parent job, else of the first sibling stage
+// (in base order) that names one, so its cost still reaches the pull request.
+// `own` is the per-base rule (ebfbPullRequest with the base's report).
+export const familyPullRequests = (bases, own) => {
+  const sibling = new Map();
+  for (const base of [...bases].sort()) {
+    const family = gauntletFamily(base);
+    if (family === base || sibling.has(family)) continue;
+    const pullRequest = own(base);
+    if (pullRequest !== null) sibling.set(family, pullRequest);
+  }
+  return (base) => {
+    const pullRequest = own(base);
+    const family = gauntletFamily(base);
+    if (pullRequest !== null || family === base) return pullRequest;
+    return own(family) ?? sibling.get(family) ?? null;
+  };
+};
 export const gauntletStage = (base) => {
   const m = /-gauntlet-(panel|fix|clean|undraft|viability)(?:-(\d+))?$/.exec(base);
   return m ? { stage: m[1], index: m[2] ? Number(m[2]) : null } : null;
@@ -137,12 +164,21 @@ export const HOURLY_RATE_DOLLARS = 125;
 // The reducer's review formula: five minutes per round plus one minute per
 // twenty words of review text, at the hourly rate.
 export const reviewFormulaDollars = (rounds, wordCount) => ((5 * rounds + wordCount / 20) / 60) * HOURLY_RATE_DOLLARS;
-export const flatRoundDollars = (rounds) => rounds * 30;
+// The flat price of one review round: twelve minutes at $150 an hour, the
+// illustrative price in designs/issue-cost-and-triple-evaluation.md on main2.
+// It is a second, separate rate from HOURLY_RATE_DOLLARS on purpose.
+export const FLAT_ROUND_MINUTES = 12;
+export const FLAT_HOURLY_RATE_DOLLARS = 150;
+export const flatRoundDollars = (rounds) => rounds * (FLAT_ROUND_MINUTES / 60) * FLAT_HOURLY_RATE_DOLLARS;
 
 // A usage line is Anthropic when it says so, or when it predates the provider
 // field and names a Claude model. Only Anthropic lines carry total_cost_usd.
 export const isAnthropic = (line) => line.provider === "anthropic" || (!line.provider && /^claude/.test(line.model ?? ""));
 
 // Flat dollars per notional dollar for one month. A month whose priced lines
-// sum to no notional dollars has no allocation (null), never Infinity.
-export const allocationFactor = (flatDollars, notional) => (notional > 0 ? flatDollars / notional : null);
+// sum to no notional dollars has no allocation (null), and so does any input
+// whose quotient is not a finite number: never Infinity or NaN.
+export const allocationFactor = (flatDollars, notional) => {
+  const factor = notional > 0 ? flatDollars / notional : null;
+  return Number.isFinite(factor) ? factor : null;
+};

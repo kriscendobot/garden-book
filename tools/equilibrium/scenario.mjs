@@ -30,7 +30,7 @@
 // R is the expected residual: 1 means one finding's worth of loss arrives.
 
 import { readFileSync } from "node:fs";
-import { HOURLY_RATE_DOLLARS } from "./rules.mjs";
+import { HOURLY_RATE_DOLLARS, round } from "./rules.mjs";
 
 const aggregatesPath = process.argv[2] ?? "data/equilibrium/aggregates.json";
 let aggregates;
@@ -39,7 +39,6 @@ try {
 } catch (error) {
   throw new Error(`scenario.mjs: cannot read aggregates from ${aggregatesPath}: ${error.message}`);
 }
-const round = (value, digits = 3) => Number(value.toFixed(digits));
 
 // describe() reports an empty bucket as a null median, and null + 1 is 1, so
 // each measured operand is checked before it enters a sum.
@@ -64,7 +63,10 @@ const anchorSampleSizes = {
   c: { panel: panel.allocatedDollarsPerBase.n, fix: fix.allocatedDollarsPerBase.n },
   d: aggregates.learning.classifiedReviewComments,
 };
-for (const [name, value] of Object.entries(anchors)) {
+// Machine rounds for the human-axis figure: the gauntlet's observed median
+// panel stages per PR.
+const kFixed = aggregates.ebfb.gauntletStagesPerPullRequest.panelStages.median;
+for (const [name, value] of Object.entries({ ...anchors, kFixed })) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new Error(`scenario.mjs: anchor ${name} has no value in the aggregates (got ${value})`);
   }
@@ -79,9 +81,19 @@ const cost = (L, k, h) => anchors.M + anchors.c * k + anchors.w * h + L * residu
 const minutes = Array.from({ length: 181 }, (_, h) => h);
 const rounds = Array.from({ length: 9 }, (_, k) => k);
 
-// Figure: expected cost against human minutes, machine rounds fixed at the
-// gauntlet's observed median panel stages per PR.
-const kFixed = aggregates.ebfb.gauntletStagesPerPullRequest.panelStages.median;
+// Both figures take the minimum of the unrounded cost, so they name the same
+// best minutes for the same machine rounds even when totals tie at two
+// decimals.
+const best = (L, k) => {
+  let found = { h: 0, total: Infinity };
+  for (const h of minutes) {
+    const total = cost(L, k, h);
+    if (total < found.total) found = { h, total };
+  }
+  return found;
+};
+
+// Figure: expected cost against human minutes, machine rounds fixed at kFixed.
 const humanAxis = losses.map((L) => {
   const series = minutes.map((h) => ({
     h,
@@ -90,8 +102,8 @@ const humanAxis = losses.map((L) => {
     residualLoss: round(L * residual(kFixed, h), 2),
     total: round(cost(L, kFixed, h), 2),
   }));
-  const best = series.reduce((a, b) => (b.total < a.total ? b : a));
-  return { L, k: kFixed, optimumMinutes: best.h, optimumTotal: best.total, series: series.filter((p) => p.h % 5 === 0) };
+  const optimum = best(L, kFixed);
+  return { L, k: kFixed, optimumMinutes: optimum.h, optimumTotal: round(optimum.total, 2), series: series.filter((p) => p.h % 5 === 0) };
 });
 
 // Figure: the split. For each machine-round count, the best human minutes and
@@ -100,18 +112,14 @@ const humanAxis = losses.map((L) => {
 const split = losses.map((L) => ({
   L,
   series: rounds.map((k) => {
-    let best = { h: 0, total: Infinity };
-    for (const h of minutes) {
-      const total = cost(L, k, h);
-      if (total < best.total) best = { h, total };
-    }
+    const optimum = best(L, k);
     return {
       k,
-      bestHumanMinutes: best.h,
-      humanDollars: round(anchors.w * best.h, 2),
+      bestHumanMinutes: optimum.h,
+      humanDollars: round(anchors.w * optimum.h, 2),
       machineDollars: round(anchors.M + anchors.c * k, 2),
-      residualLoss: round(L * residual(k, best.h), 2),
-      total: round(best.total, 2),
+      residualLoss: round(L * residual(k, optimum.h), 2),
+      total: round(optimum.total, 2),
     };
   }),
 }));

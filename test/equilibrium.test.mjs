@@ -10,10 +10,12 @@ import {
   classify,
   describe,
   ebfbPullRequest,
+  familyPullRequests,
   gauntletStage,
   isHuman,
   quantile,
   reviewFormulaDollars,
+  tally,
 } from "../tools/equilibrium/rules.mjs";
 
 const repository = new URL("..", import.meta.url);
@@ -136,6 +138,53 @@ test("prices: the reducer formula by hand, and no Infinity from an empty month",
   assert.equal(allocationFactor(400, 4000), 0.1);
 });
 
+test("a gauntlet stage that names no pull request inherits its family's", () => {
+  const own = (base) => ({ "build-x": 7, "build-y-gauntlet-panel-1": 9 })[base] ?? null;
+  const pullRequestOf = familyPullRequests(
+    ["build-x", "build-x-gauntlet-fix-1", "build-y-gauntlet-fix-1", "build-y-gauntlet-panel-1", "loose"],
+    own,
+  );
+  assert.equal(pullRequestOf("build-x-gauntlet-fix-1"), 7, "from the parent");
+  assert.equal(pullRequestOf("build-y-gauntlet-fix-1"), 9, "from a sibling stage");
+  assert.equal(pullRequestOf("build-y-gauntlet-panel-1"), 9, "its own wins");
+  assert.equal(pullRequestOf("build-z-gauntlet-fix-1"), null, "no family member names one");
+  assert.equal(pullRequestOf("loose"), null, "a base outside any gauntlet inherits nothing");
+});
+
+test("tally zero-fills its domain and counts inherited names as values", () => {
+  assert.deepEqual(tally(["a", "a"], ["a", "b"]), { a: 2, b: 0 });
+  assert.equal(tally(["constructor", "constructor"]).constructor, 2);
+});
+
+// Seeded so a failure reproduces; a small linear congruential generator.
+const random = (seed) => () => {
+  seed = (seed * 1664525 + 1013904223) % 2 ** 32;
+  return seed / 2 ** 32;
+};
+const sample = (next) => {
+  const choices = [0, -0, 1e-300, -1, 1e308, -1e308, Infinity, -Infinity, NaN];
+  return next() < 0.2 ? choices[Math.floor(next() * choices.length)] : (next() - 0.5) * 10 ** Math.floor(next() * 12);
+};
+
+test("properties: allocation is null or finite, quantiles are ordered and order-blind", () => {
+  const next = random(20261004);
+  for (let trial = 0; trial < 2000; trial += 1) {
+    const factor = allocationFactor(sample(next), sample(next));
+    assert.ok(factor === null || Number.isFinite(factor), `allocationFactor gave ${factor}`);
+    const values = Array.from({ length: Math.floor(next() * 12) }, () => sample(next));
+    const d = describe(values, 12);
+    if (d.n > 0) {
+      assert.ok(d.p25 <= d.median && d.median <= d.p75 && d.p75 <= d.p90 && d.p90 <= d.max, JSON.stringify(values));
+    }
+    const shuffled = [...values].sort(() => next() - 0.5);
+    const q = next();
+    assert.equal(quantile(shuffled, q), quantile(values, q));
+    const login = [values[0], String(values[0]), null, undefined, {}, `${String(trial)}bot`][trial % 6];
+    assert.equal(typeof isHuman(login), "boolean");
+    if (trial % 6 === 5) assert.equal(isHuman(login), false);
+  }
+});
+
 // A synthetic journal and GitHub fetch, with prose that must never reach the
 // aggregates, run through the real analyze.mjs.
 test("analyze.mjs prints no journal or review prose and cleans up its snapshot", () => {
@@ -150,7 +199,14 @@ test("analyze.mjs prints no journal or review prose and cleans up its snapshot",
     const git = (...args) =>
       execFileSync("git", ["-C", journal, "-c", "user.name=t", "-c", "user.email=t@example.invalid", ...args], {
         encoding: "utf8",
-        env: { ...process.env, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" },
+        env: {
+          ...process.env,
+          GIT_CONFIG_GLOBAL: "/dev/null",
+          GIT_CONFIG_NOSYSTEM: "1",
+          // The cutoff is the commit date, which fixes the month's coverage.
+          GIT_COMMITTER_DATE: "2026-10-04T00:00:00Z",
+          GIT_AUTHOR_DATE: "2026-10-04T00:00:00Z",
+        },
       }).trim();
     mkdirSync(journal);
     git("init", "-q", "-b", "journal2");
@@ -170,6 +226,20 @@ test("analyze.mjs prints no journal or review prose and cleans up its snapshot",
     );
     write(`jobs/tada/${stage}.md`, `${secret} https://github.com/endojs/endo-but-for-bots/pull/7\n`);
     write("jobs/tada/garden-thing.md", `${secret} pushed to main2\n`);
+    // A fix stage whose base and report name no pull request: it inherits
+    // pull request 7 from its parent job, build-thing. Its OpenAI event has a
+    // provisional price that must stay out of every true-basis total.
+    const orphan = "build-thing-gauntlet-fix-1";
+    write("jobs/tada/build-thing.md", `${secret} https://github.com/endojs/endo-but-for-bots/pull/7\n`);
+    write(`jobs/tada/${orphan}.md`, `${secret} fixed on endo-but-for-bots\n`);
+    write(
+      `reputation/events/${orphan}.md`,
+      `---\nprovider: openai\nduration_secs: 600\nestimated_dollars: 9\nrecorded_at: 2026-09-20T00:00:00Z\n---\n`,
+    );
+    write(
+      `usage/${orphan}.jsonl`,
+      `${JSON.stringify({ ts: "2026-09-20T00:00:00Z", provider: "anthropic", total_cost_usd: 6, outcome: "tada", elapsed_s: 50 })}\n`,
+    );
     write(
       "panel-runs/run-1.md",
       `---\nkind: panel-run\nrepo: endojs/endo-but-for-bots\npr: 7\nrounds: 1\ndisposition: must-fix\nmust_fix_total: 3\n---\n${secret}\n`,
@@ -210,7 +280,18 @@ test("analyze.mjs prints no journal or review prose and cleans up its snapshot",
     const aggregates = JSON.parse(result);
     assert.equal(aggregates.provenance.journalRevision, git("rev-parse", "HEAD"));
     assert.equal(aggregates.provenance.usageLinesUnparsed, 1);
-    assert.equal(aggregates.regimeCounts.ebfb, 1);
+    assert.equal(aggregates.regimeCounts.ebfb, 2);
+    // September is covered from the first usage line (09-10) to its end: 21 of
+    // 30 days of the $400 plan, $280, split 2:6 by notional dollars.
+    assert.equal(aggregates.gauntletStages.panel.allocatedDollarsPerBase.median, 70);
+    assert.equal(aggregates.gauntletStages.fix.allocatedDollarsPerBase.median, 210);
+    assert.equal(aggregates.gauntletStages.fix.events, 1);
+    assert.equal(aggregates.gauntletStages.fix.trueBasisDollars.n, 0, "OpenAI prices stay out");
+    assert.deepEqual(aggregates.ebfb.gauntletStagesPerPullRequest.fixStages.total, 1, "the orphan stage reaches PR 7");
+    assert.equal(aggregates.panel.ebfbRuns, 1);
+    assert.equal(aggregates.panel.runsWithVerdict, 1);
+    assert.equal(aggregates.panel.dispositions["must-fix"], 1);
+    assert.equal(aggregates.panel.dispositions.passed, 0, "every disposition is present");
     assert.equal(aggregates.regimeCounts.garden, 1);
     assert.equal(aggregates.ebfb.merged.humanRounds.median, 1);
     assert.equal(aggregates.ebfb.merged.humanWords.median, 3);

@@ -57,7 +57,7 @@ const FOOTER = 16;
 const FONT = "'Gill Sans', 'Gill Sans MT', Seravek, Candara, 'Noto Sans', 'Segoe UI', system-ui, sans-serif";
 
 // Number formatting at the spec's display precision.
-const fmt = value => String(Math.round(value * 100) / 100);
+const formatNumber = value => String(Math.round(value * 100) / 100);
 const grouped = value => value.toLocaleString('en-US');
 const dollars = (value, digits = 2) =>
   `$${value.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
@@ -66,11 +66,11 @@ const hours = value => (Number.isInteger(value) && value >= 100 ? `${value} h` :
 const seconds = value => `${grouped(value)} s`;
 const times = value => `${value}×`;
 
-const esc = value =>
+const escapeText = value =>
   String(value).replace(/&/gu, '&amp;').replace(/</gu, '&lt;').replace(/>/gu, '&gt;').replace(/"/gu, '&quot;');
 
 const text = (x, y, content, { size = 12, anchor = 'start', weight, italic } = {}) =>
-  `<text x="${fmt(x)}" y="${fmt(y)}" font-size="${size}"${anchor === 'start' ? '' : ` text-anchor="${anchor}"`}${weight ? ` font-weight="${weight}"` : ''}${italic ? ' font-style="italic"' : ''}${size === 13 && weight ? ' letter-spacing="0.18"' : ''} fill="currentColor">${esc(content)}</text>`;
+  `<text x="${formatNumber(x)}" y="${formatNumber(y)}" font-size="${size}"${anchor === 'start' ? '' : ` text-anchor="${anchor}"`}${weight ? ` font-weight="${weight}"` : ''}${italic ? ' font-style="italic"' : ''}${size === 13 && weight ? ' letter-spacing="0.18"' : ''} fill="currentColor">${escapeText(content)}</text>`;
 
 // Greedy word wrap by an estimated advance of 0.6 em per character; the
 // browser check measures the result.
@@ -104,10 +104,10 @@ const grid = `class="eq-grid" stroke="${palette.hairline}" stroke-width="1"`;
 const axis = 'stroke="currentColor" stroke-width="1.15" stroke-linecap="round"';
 
 const line = (x1, y1, x2, y2, attributes) =>
-  `<path d="M${fmt(x1)} ${fmt(y1)}L${fmt(x2)} ${fmt(y2)}" fill="none" ${attributes}/>`;
+  `<path d="M${formatNumber(x1)} ${formatNumber(y1)}L${formatNumber(x2)} ${formatNumber(y2)}" fill="none" ${attributes}/>`;
 
 const rect = (x, y, width, height, fill, extra = '') =>
-  `<rect x="${fmt(x)}" y="${fmt(y)}" width="${fmt(Math.max(width, 0))}" height="${fmt(height)}" fill="${fill}" ${outline()}${extra}/>`;
+  `<rect x="${formatNumber(x)}" y="${formatNumber(y)}" width="${formatNumber(Math.max(width, 0))}" height="${formatNumber(height)}" fill="${fill}" ${outline()}${extra}/>`;
 
 const hatch = (prefix, name, fill) =>
   `<pattern id="${prefix}-hatch-${name}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="${fill}"/><path d="M1.2-1V7" stroke="${palette.paper}" stroke-width="1.8" opacity="0.72"/><path d="M4.2-1V7" stroke="${palette.sand}" stroke-width="0.8" opacity="0.9"/></pattern>`;
@@ -131,27 +131,27 @@ const illuminatedFrame = height => {
 const marker = (shape, x, y, size, fill) => {
   const r = size / 2;
   if (shape === 'square') {
-    return `<rect x="${fmt(x - r)}" y="${fmt(y - r)}" width="${fmt(size)}" height="${fmt(size)}" fill="${fill}" ${outline(1.5)}/>`;
+    return `<rect x="${formatNumber(x - r)}" y="${formatNumber(y - r)}" width="${formatNumber(size)}" height="${formatNumber(size)}" fill="${fill}" ${outline(1.5)}/>`;
   }
   if (shape === 'diamond') {
     const d = r * 1.3;
-    return `<path d="M${fmt(x)} ${fmt(y - d)}L${fmt(x + d)} ${fmt(y)}L${fmt(x)} ${fmt(y + d)}L${fmt(x - d)} ${fmt(y)}Z" fill="${fill}" ${outline(1.5)}/>`;
+    return `<path d="M${formatNumber(x)} ${formatNumber(y - d)}L${formatNumber(x + d)} ${formatNumber(y)}L${formatNumber(x)} ${formatNumber(y + d)}L${formatNumber(x - d)} ${formatNumber(y)}Z" fill="${fill}" ${outline(1.5)}/>`;
   }
-  return `<circle cx="${fmt(x)}" cy="${fmt(y)}" r="${fmt(r)}" fill="${fill}" ${outline(1.5)}/>`;
+  return `<circle cx="${formatNumber(x)}" cy="${formatNumber(y)}" r="${formatNumber(r)}" fill="${fill}" ${outline(1.5)}/>`;
 };
 
 const arrowDown = (x, y1, y2) =>
-  `${line(x, y1, x, y2 - 5, outline(1.5))}<path d="M${fmt(x - 4)} ${fmt(y2 - 6)}L${fmt(x + 4)} ${fmt(y2 - 6)}L${fmt(x)} ${fmt(y2)}Z" ${outlineFill}/>`;
+  `${line(x, y1, x, y2 - 5, outline(1.5))}<path d="M${formatNumber(x - 4)} ${formatNumber(y2 - 6)}L${formatNumber(x + 4)} ${formatNumber(y2 - 6)}L${formatNumber(x)} ${formatNumber(y2)}Z" ${outlineFill}/>`;
 
 const arrowUp = (x, y1, y2) =>
-  `${line(x, y1, x, y2 + 5, outline(1.5))}<path d="M${fmt(x - 4)} ${fmt(y2 + 6)}L${fmt(x + 4)} ${fmt(y2 + 6)}L${fmt(x)} ${fmt(y2)}Z" ${outlineFill}/>`;
+  `${line(x, y1, x, y2 + 5, outline(1.5))}<path d="M${formatNumber(x - 4)} ${formatNumber(y2 + 6)}L${formatNumber(x + 4)} ${formatNumber(y2 + 6)}L${formatNumber(x)} ${formatNumber(y2)}Z" ${outlineFill}/>`;
 
 const swatch = (x, y, fill, label) =>
-  `<rect x="${fmt(x)}" y="${fmt(y - 10)}" width="14" height="12" fill="${fill}" ${outline()}/>${text(x + 19, y, label)}`;
+  `<rect x="${formatNumber(x)}" y="${formatNumber(y - 10)}" width="14" height="12" fill="${fill}" ${outline()}/>${text(x + 19, y, label)}`;
 
 // The word "scenario" on the plot, required by the spec for E8 and E9.
 const scenarioBanner = (x, y) =>
-  `<rect x="${fmt(x)}" y="${fmt(y)}" width="178" height="20" rx="7" fill="${palette.sand}" opacity="0.34" ${outline(1.5)} stroke-dasharray="5 3"/>${text(x + 8, y + 14.5, 'SCENARIO · illustrative model', { weight: 600 })}`;
+  `<rect x="${formatNumber(x)}" y="${formatNumber(y)}" width="178" height="20" rx="7" fill="${palette.sand}" opacity="0.34" ${outline(1.5)} stroke-dasharray="5 3"/>${text(x + 8, y + 14.5, 'SCENARIO · illustrative model', { weight: 600 })}`;
 
 const logScale = (min, max, start, end) => value =>
   start + ((Math.log10(value) - Math.log10(min)) / (Math.log10(max) - Math.log10(min))) * (end - start);
@@ -164,7 +164,7 @@ const linearScale = (min, max, start, end) => value =>
 // later snapshot is absent, not 0. Fill a chart's fixed domain with zeros.
 const zeroFilled = (tally, keys) => Object.fromEntries(keys.map(key => [key, tally?.[key] ?? 0]));
 
-const polyline = points => points.map(([x, y], index) => `${index ? 'L' : 'M'}${fmt(x)} ${fmt(y)}`).join('');
+const polyline = points => points.map(([x, y], index) => `${index ? 'L' : 'M'}${formatNumber(x)} ${formatNumber(y)}`).join('');
 
 // The three scenario losses share one line treatment per loss in E8 and E9:
 // dash pattern and marker shape, never color alone.
@@ -209,7 +209,7 @@ const e1 = ({ aggregates }, prefix) => {
     parts.push(line(x(p75), cy, x(p90), cy, outline(2)));
     parts.push(line(x(p90), cy - 6, x(p90), cy + 6, outline(2)));
     parts.push(rect(x(p25), cy - 7, x(p75) - x(p25), 14, row.fill));
-    parts.push(`<rect x="${fmt(x(median) - 2.5)}" y="${fmt(cy - 11)}" width="5" height="22" fill="${palette.gold}" ${outline(1.5)}/>`);
+    parts.push(`<rect x="${formatNumber(x(median) - 2.5)}" y="${formatNumber(cy - 11)}" width="5" height="22" fill="${palette.gold}" ${outline(1.5)}/>`);
     parts.push(text(0, cy + 24, `p25 ${dollars(p25)} · median ${dollars(median)} · p75 ${dollars(p75)} · p90 ${dollars(p90)}`));
   });
   // Ratio brackets between the machine medians and the human median.
@@ -353,7 +353,7 @@ const e4 = ({ aggregates }) => {
     const y = rowY(index);
     const cy = y + 14;
     parts.push(text(0, y, `${row.label}, n = ${grouped(row.q.n)}`));
-    parts.push(`<rect x="${fmt(x(row.s.p25))}" y="${fmt(cy - 5)}" width="${fmt(x(row.s.p75) - x(row.s.p25))}" height="10" rx="5" fill="${row.fill}" opacity="0.6" ${outline(1.5)}/>`);
+    parts.push(`<rect x="${formatNumber(x(row.s.p25))}" y="${formatNumber(cy - 5)}" width="${formatNumber(x(row.s.p75) - x(row.s.p25))}" height="10" rx="5" fill="${row.fill}" opacity="0.6" ${outline(1.5)}/>`);
     parts.push(marker(row.shape, x(row.s.median), cy, 12, row.fill));
     parts.push(text(0, cy + 20, `p25 ${row.unit(row.q.p25)} · median ${row.unit(row.q.median)} · p75 ${row.unit(row.q.p75)}`));
   });
@@ -449,7 +449,7 @@ const e5 = ({ aggregates }, prefix) => {
       parts.push(text(0, y + 8, names[regime]));
       const scale = value => x0 + (value / panel.max) * span;
       if (row.missing) {
-        parts.push(`<rect x="${x0}" y="${fmt(cy - 7)}" width="${span}" height="14" fill="none" ${outline(1)}/>`);
+        parts.push(`<rect x="${x0}" y="${formatNumber(cy - 7)}" width="${span}" height="14" fill="none" ${outline(1)}/>`);
         parts.push(text(x0 + span / 2, cy + 4, row.missing, { anchor: 'middle', italic: true }));
       } else if (row.note) {
         parts.push(text(x0, y + 8, row.note, { italic: true }));
@@ -462,7 +462,7 @@ const e5 = ({ aggregates }, prefix) => {
         const fill = row.fill ?? fills[regime];
         // The garden regime keeps its moss outline (4.46:1 light, 3.63:1 dark).
         parts.push(regime === 'garden'
-          ? `<rect x="${x0}" y="${fmt(cy - 6)}" width="${fmt(scale(row.value) - x0)}" height="12" fill="${fill}" stroke="${palette.moss}" stroke-width="2"/>`
+          ? `<rect x="${x0}" y="${formatNumber(cy - 6)}" width="${formatNumber(scale(row.value) - x0)}" height="12" fill="${fill}" stroke="${palette.moss}" stroke-width="2"/>`
           : rect(x0, cy - 6, scale(row.value) - x0, 12, fill));
         if (row.mean !== undefined) {
           parts.push(marker('diamond', scale(row.mean), cy, 8, 'none'));
@@ -655,8 +655,8 @@ const e7 = ({ aggregates }, prefix) => {
   );
   const caveatBottom = caveat.bottom + 10;
   parts.push(line(2, 426, 2, caveatBottom, outline(3)));
-  parts.push(`<rect x="8" y="${caveatTop}" width="${W - 10}" height="${fmt(caveatBottom - caveatTop)}" fill="none" ${outline(1.5)}/>`);
-  parts.push(`<rect x="8" y="${caveatTop}" width="4" height="${fmt(caveatBottom - caveatTop)}" fill="${palette.terracotta}"/>`);
+  parts.push(`<rect x="8" y="${caveatTop}" width="${W - 10}" height="${formatNumber(caveatBottom - caveatTop)}" fill="none" ${outline(1.5)}/>`);
+  parts.push(`<rect x="8" y="${caveatTop}" width="4" height="${formatNumber(caveatBottom - caveatTop)}" fill="${palette.terracotta}"/>`);
   parts.push(caveat.markup);
   parts.push(text(0, caveatBottom + 22, 'Counts observed; the hatched before/after split is derived.'));
   return {
@@ -945,8 +945,8 @@ export const renderChart = (chart, data) => {
   const { height, defs, body } = chart.render(data, prefix);
   const framedHeight = height + HEADER + FOOTER;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${framedHeight}" role="img" aria-labelledby="${prefix}-title ${prefix}-description" class="eq-chart" data-chart="${chart.id}" font-family="${FONT}" font-variant-numeric="tabular-nums">
-  <title id="${prefix}-title">${esc(chart.title)}</title>
-  <desc id="${prefix}-description">${esc(chart.description)}</desc>
+  <title id="${prefix}-title">${escapeText(chart.title)}</title>
+  <desc id="${prefix}-description">${escapeText(chart.description)}</desc>
   ${defs ? `<defs>${defs}</defs>\n  ` : ''}${illuminatedFrame(framedHeight)}
   <g transform="translate(0 ${HEADER})">${body}</g>
 </svg>

@@ -8,12 +8,12 @@
 # The ferried PR numbers are the `role: target` endojs/endo entries in the
 # journal's legacy/v1/worktrees/*ferry* dispatch records.
 set -eu
-out="$1"
+outputDirectory="$1"
 shift
-mkdir -p "$out"
+mkdir -p "$outputDirectory"
 gh pr list -R endojs/endo-but-for-bots --state all --limit 3000 \
   --json number,author,state,isDraft,createdAt,mergedAt,closedAt,reviews,baseRefName \
-  > "$out/ebfb-prs.json"
+  > "$outputDirectory/ebfb-prs.json"
 {
   printf '['
   sep=''
@@ -27,5 +27,5 @@ gh pr list -R endojs/endo-but-for-bots --state all --limit 3000 \
     sep=','
   done
   printf ']\n'
-} > "$out/upstream-ferried.json"
-printf '{"fetchedAt":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$out/meta.json"
+} > "$outputDirectory/upstream-ferried.json"
+printf '{"fetchedAt":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$outputDirectory/meta.json"

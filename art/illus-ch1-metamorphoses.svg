@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect class="ms-ground" x="4" y="4" width="632" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="616" height="376" rx="5" fill="none" stroke-width="2"/>
+  <!-- Four-lobed manuscript border: successive compartments joined by one vine. -->
+  <g aria-hidden="true" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-stem" d="M40 30C120 10 220 52 320 30C420 8 520 52 600 30"/>
+    <path class="ms-faint" d="M160 20v360M320 24v356M480 20v360" stroke-width="1.4"/>
+    <path class="ms-stem" d="M70 24c-14-10-30-6-36 8 14 8 30 2 36-8ZM250 22c14-10 30-6 36 8-14 8-30 2-36-8ZM410 24c-14-10-30-6-36 8 14 8 30 2 36-8ZM560 22c14-10 30-6 36 8-14 8-30 2-36-8Z"/>
+  </g>
+  <!-- The continuous ground and one persistent root threading all four stages. -->
+  <g fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-stone-s" d="M24 318h592"/>
+    <path class="ms-stem" d="M40 332c40 8 70-14 120-6 56 9 84-18 150-8 70 10 96-16 160-6 60 9 88-14 126-6" stroke-width="2.2" opacity=".9"/>
+    <path class="ms-stem" d="M96 338c-6 14-2 26 10 34M250 340c6 14 2 26-10 34M470 338c-6 14-2 26 10 34M560 340c8 12 6 26-6 32" stroke-width="1.6" opacity=".7"/>
+  </g>
+  <!-- The old path that passes through every enclosure. -->
+  <path class="ms-faint" d="M26 300c70-6 86 6 150 2 70-4 86 6 156 0 70-4 86 6 150 2 60-3 86 4 128 0" fill="none" stroke-width="5" stroke-dasharray="3 9" stroke-linecap="round"/>
+  <!-- 1: a solitary shepherd's plot. -->
+  <g fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M58 318V220M58 236c18 2 30 14 34 30M58 250c-14 0-24 10-28 24"/>
+    <path class="ms-stone-s" d="M96 318v-36M120 318v-30M78 300h52"/>
+    <path class="ms-ink" d="M44 316c0-96 0-96 0-150M44 170c-10-4-10-16 0-20 10 4 10 16 0 20Z"/>
+  </g>
+  <path class="ms-leaf" d="M58 236c-14-2-24-12-26-26 14 0 24 10 26 26Z"/>
+  <path class="ms-leaf2" d="M58 250c13-2 22-11 24-24-13 0-22 9-24 24Z"/>
+  <!-- 2: a protected glasshouse. -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M196 318V214l48-30 48 30v104Z"/>
+    <path class="ms-faint" d="M244 184v134M196 230h96M196 268h96M244 214l48 16M244 214l-48 16"/>
+  </g>
+  <g fill="none" stroke-width="2.2" stroke-linecap="round">
+    <path class="ms-stem" d="M220 318v-40M268 318v-46"/>
+  </g>
+  <path class="ms-leaf" d="M220 282c-12-2-20-10-22-22 12 0 20 8 22 22Z"/>
+  <path class="ms-leaf2" d="M268 276c12-2 20-10 22-22-12 0-20 8-22 22Z"/>
+  <!-- 3: a larger supervised nursery, with a distant beacon tower. -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M336 318v-78a40 30 0 0 1 80 0v78Z"/>
+    <path class="ms-faint" d="M336 262h80M336 290h80M376 212v106"/>
+  </g>
+  <!-- beacon tower on the horizon, secondary and small -->
+  <g aria-hidden="true" fill="none" stroke-width="1.8" stroke-linecap="round">
+    <path class="ms-stone-s" d="M408 196v-40M400 156h16M404 196h8"/>
+    <circle class="ms-gild" cx="408" cy="150" r="4" stroke="none"/>
+    <path class="ms-gild-s" d="M408 150l16-10M408 150l-16-10" stroke-width="1.3" opacity=".8"/>
+  </g>
+  <g fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-stem" d="M356 318v-40M376 318v-48M396 318v-40"/></g>
+  <path class="ms-leaf2" d="M356 282c-10-2-17-9-19-19 10 0 17 7 19 19ZM396 282c10-2 17-9 19-19-10 0-17 7-19 19Z"/>
+  <!-- 4: a distributed garden whose channels meet at a central ledger. -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M470 232h40v24h-40ZM560 232h40v24h-40ZM470 288h40v22h-40ZM560 288h40v22h-40Z"/>
+    <path class="ms-stem" d="M510 244h30M510 300h30M490 256v32M580 256v32" stroke-width="2"/>
+    <path class="ms-stem" d="M490 256c14 8 30 12 45 14M580 256c-14 8-30 12-45 14M490 288c14-8 30-12 45-14M580 288c-14-8-30-12-45-14"/>
+  </g>
+  <!-- the central ledger book the channels converge on -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ground2" d="M512 262h26v36h-26Z" stroke="none"/>
+    <path class="ms-gild-s" d="M512 262h26v36h-26ZM525 262v36"/>
+    <path class="ms-rubric-s" d="M517 272h6M530 272h6M517 282h6M530 282h6" stroke-width="1.4"/>
+  </g>
+</svg>

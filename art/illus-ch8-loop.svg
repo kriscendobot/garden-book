@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect class="ms-ground" x="4" y="4" width="392" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="376" height="376" rx="5" fill="none" stroke-width="2"/>
+  <!-- the causal loop framed in a roundel with calibrated ticks -->
+  <circle class="ms-faint" cx="200" cy="208" r="160" fill="none" stroke-width="2" aria-hidden="true"/>
+  <g aria-hidden="true" class="ms-gild-s" fill="none" stroke-width="1.4"><path d="M200 48v12M352 208h-12M200 368v-12M48 208h12"/></g>
+  <!-- cistern with a gauge; a stuck float and an overflow notch as small details -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M120 110h100v80h-100Z"/>
+    <path class="ms-violet" d="M120 150h100v40h-100Z" stroke="none" opacity=".7"/>
+    <path class="ms-rubric-s" d="M220 140h20" stroke-width="2"/><!-- overflow notch -->
+    <circle class="ms-rubric" cx="150" cy="150" r="7" stroke="none"/><!-- stuck float -->
+    <circle class="ms-ink" cx="250" cy="100" r="16"/><path class="ms-ink" d="M250 100l10-8"/>
+  </g>
+  <!-- gardener-adjusted valve -> irrigation bed -> return channel to the gauge -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M170 190v40"/><path class="ms-gild-s" d="M150 212h40M170 200v24"/>
+    <path class="ms-stone-s" d="M110 300h180M140 300v-20M180 300v-24M220 300v-20M260 300v-24"/>
+    <path class="ms-stem" d="M290 300c30-10 40-40 10-70-30-30-20-70 10-96" stroke-width="2.2"/>
+  </g>
+</svg>

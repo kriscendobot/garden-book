@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400">
+  <rect class="ms-ground" x="4" y="4" width="992" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="976" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-stem" d="M40 40c26 8 28 30 12 50M960 40c-26 8-28 30-12 50"/></g>
+  <!-- the river boundary, legible by reeds and current not by colour -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-violet" d="M400 90c30 60 30 160 0 220M620 90c-30 60-30 160 0 220" opacity=".7"/><path class="ms-faint" d="M460 150c40 10 60 10 100 0M460 220c40 10 60 10 100 0"/></g>
+  <g aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-stem" d="M470 310v-40M486 310v-48M502 310v-40"/></g>
+  <!-- bot-tended bank (left); garden paths stop at the water -->
+  <path class="ms-stone-s" d="M60 320h330M610 320h330" fill="none" stroke-width="3"/>
+  <g fill="none" stroke-width="2.4" stroke-linecap="round"><path class="ms-stem" d="M120 320v-40M150 320v-46"/><path class="ms-leaf" d="M120 284c-12-2-20-10-22-22 12 0 20 8 22 22Z" stroke="none"/></g>
+  <!-- the human on the departure bank hands over a signet, for the crossing only -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle class="ms-ink" cx="300" cy="250" r="12"/><path class="ms-ink" d="M300 262v36M300 274h26"/><circle class="ms-gild" cx="330" cy="272" r="6" stroke="none"/></g>
+  <!-- a ferryman carries one sealed graft across in a small boat -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M470 300h80l-12 24h-56Z"/>
+    <circle class="ms-ink" cx="510" cy="266" r="11"/><path class="ms-ink" d="M510 278v20M510 286l18-14"/>
+    <path class="ms-stem" d="M528 272l16-8"/>
+    <path class="ms-gild" d="M500 250h20v18h-20Z" stroke="none"/><path class="ms-rubric-s" d="M506 259h8"/>
+  </g>
+  <!-- upstream orchard (right) -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round"><path class="ms-ink" d="M760 320v-60M880 320v-60"/><path class="ms-leaf2" d="M760 264c-18-4-30-18-32-36 18 2 30 16 32 36ZM880 264c18-4 30-18 32-36-18 2-30 16-32 36Z" stroke="none"/></g>
+</svg>

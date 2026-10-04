@@ -66,6 +66,251 @@ const SPRITE = `<svg class="sprite" aria-hidden="true" focusable="false" width="
   )
   .join("")}</defs></svg>`;
 
+// The illuminated illustration set. Each entry binds one SVG file to the
+// heading anchor it illustrates. `anchor` is a placement key copied from the
+// generator's own rendered output (chapter key + GitHub slug), never inferred
+// from a chapter number, so a later heading edit that moves an anchor is caught
+// by the placement test rather than silently dropping or misplacing an image.
+// `kind` is "opener" (after the chapter heading and provenance, before the
+// first paragraph) or "section" (after the named section heading, past its
+// first paragraph). `alt` states the depicted relationship; `caption` adds the
+// interpretive link without repeating the alt.
+export const ILLUSTRATIONS = [
+  {
+    file: "illus-ch1-metamorphoses.svg",
+    anchor: "ch1-chapter-1-philosophy-history-and-metamorphosis",
+    kind: "opener",
+    ratio: "16:10",
+    alt: "One garden path runs through four successive enclosures — a lone shepherd's plot, a glasshouse, a supervised nursery, and a distributed garden whose channels meet at a central ledger — while a single root system continues unbroken beneath all four.",
+    caption:
+      "The practice is rebuilt into new forms as each reaches its limit; the root carried through all four is what keeps it one continuing garden.",
+  },
+  {
+    file: "illus-ch1-market.svg",
+    anchor: "ch1-15-the-next-metamorphosis-the-bidding-market",
+    kind: "section",
+    ratio: "5:2",
+    alt: "Gardeners at the edges of several unlike plots drop labelled seed tokens onto a balanced market scale; the chosen gardener's tool and seed match one plot's needs, while a faded footrace path runs behind the scale.",
+    caption:
+      "Selection by fit, cost, and learned reputation replaces the older first-to-arrive claim race, shown fading into the background.",
+  },
+  {
+    file: "illus-ch2-machinery.svg",
+    anchor: "ch2-chapter-2-architecture-and-operation",
+    kind: "opener",
+    ratio: "3:2",
+    alt: "A cutaway of a walled garden: above ground, gardeners tend separate beds beside individual potting sheds; below ground, channels converge on a single bound journal at the centre.",
+    caption:
+      "The separate beds and sheds are the workers' isolated worktrees; the bound book at the centre is the shared journal they coordinate through.",
+  },
+  {
+    file: "illus-ch2-journal.svg",
+    anchor: "ch2-21-the-journal-as-job-board-and-message-bus",
+    kind: "section",
+    ratio: "2:1",
+    alt: "An open triptych book: one leaf records dated events, one holds three trays bearing seed, sprout, and bloom marks for pending, active, and finished work, and one carries sealed messages on branching stems — all three fastened to one central clasp.",
+    caption:
+      "Transcript, job board, and message bus are three duties of one surface; the clasp is the accepted Git push that serialises them.",
+  },
+  {
+    file: "illus-ch2-deploy.svg",
+    anchor: "ch2-26-the-deliberate-deploy",
+    kind: "section",
+    ratio: "5:2",
+    alt: "A single graft is carried from a nursery bench along a row of orchard trees, tried on the two outer trees before reaching the central old tree; trunk tags show one settled graft per tree, and loose cuttings stay confined to the nursery.",
+    caption:
+      "A tested version moves development, then canary followers, then the leader, while each deployed root stays stable.",
+  },
+  {
+    file: "illus-ch3-gate.svg",
+    anchor: "ch3-chapter-3-using-the-garden",
+    kind: "opener",
+    ratio: "4:3",
+    alt: "A reader at an open garden gate speaks with a steward who stays at the threshold; beyond the gate, labelled forms become seed packets carried to distant workers, and reply ribbons return to a sheltered message box.",
+    caption:
+      "The liaison relays the reader's intent into durable work and carries the fleet's questions back; it stays at the gate rather than doing the field work.",
+  },
+  {
+    file: "illus-ch3-muster.svg",
+    anchor: "ch3-33-muster-working-the-maintainer-inbox",
+    kind: "section",
+    ratio: "3:1",
+    alt: "A potting table orders itself from left to right in three stages: a tangle of message leaves is pressed into concise bundles, sorted into a few baskets, then presented one basket at a time to a seated gardener.",
+    caption:
+      "Muster compacts, classifies, and disposes in three passes; the final hand to a person keeps the dispositions from being decided unaided.",
+  },
+  {
+    file: "illus-ch4-instance.svg",
+    anchor: "ch4-chapter-4-creating-your-own-instance",
+    kind: "opener",
+    ratio: "3:2",
+    alt: "An empty site laid out as a new walled plot: a boundary wall, a named gate, a tool chest closed with three locks, worker beds, and a path leaving the wall to join a larger network beyond.",
+    caption:
+      "Creating an instance provisions an enclosure with its own identity, credentials, and workers that can then join a larger shared garden.",
+  },
+  {
+    file: "illus-ch4-container.svg",
+    anchor: "ch4-42-the-container-model",
+    kind: "section",
+    ratio: "1:1",
+    alt: "A cutaway glass cloche holds worker beds, clockwork service wheels, and a bot's locked tool cabinet; outside the glass sit the human's house keys and private tools, unreachable, with one guarded doorway between.",
+    caption:
+      "The container gives the bot fleet a complete workspace while keeping the human's own credentials on the far side of the glass.",
+  },
+  {
+    file: "illus-ch4-turnkey.svg",
+    anchor: "ch4-46-the-turnkey-path-a-disposable-aws-host",
+    kind: "section",
+    ratio: "16:9",
+    alt: "A compact floating garden terrace is lowered from a cloud by winch, already fitted with beds and a conservatory but with three empty key niches; a person on the ground holds the keys, to be fitted only once it lands.",
+    caption:
+      "A disposable host can arrive prebuilt yet empty of secrets, which are supplied only through the human-controlled first entry.",
+  },
+  {
+    file: "illus-ch5-guilds.svg",
+    anchor: "ch5-chapter-5-roles-reference",
+    kind: "opener",
+    ratio: "3:2",
+    alt: "One gardener stands before a semicircle of six tool alcoves — building, tending, judging, researching, operating, and repairing — wearing no fixed uniform while taking a single emblem and one slim book from one alcove.",
+    caption:
+      "A role is a temporary posture: the same worker adopts a different brief and its playbooks for the work at hand.",
+  },
+  {
+    file: "illus-ch5-panel.svg",
+    anchor: "ch5-54-judicial-and-panel-adjacent-roles",
+    kind: "section",
+    ratio: "2:1",
+    alt: "A manuscript folio on a rotating stand beneath an arbor; several small observers examine its edges, joinery, language, locks, and roots through different lenses, and their ribbons converge into one mechanical sorting device rather than a crowned judge.",
+    caption:
+      "Many specialist seats inspect one artifact from different angles while deterministic machinery gathers the findings and runs the review loop.",
+  },
+  {
+    file: "illus-ch6-cabinet.svg",
+    anchor: "ch6-chapter-6-skills-reference",
+    kind: "opener",
+    ratio: "3:2",
+    alt: "An apothecary seed cabinet whose drawers hold slim procedure folios, tools, and measured packets; a gardener bearing a role emblem opens only a few drawers, while small gears turn beneath the cabinet.",
+    caption:
+      "Skills are reusable, just-in-time playbooks, chosen by a role and, where they are mechanised, turned by deterministic scripts.",
+  },
+  {
+    file: "illus-ch6-trust.svg",
+    anchor: "ch6-610-security-and-trust-surfaces",
+    kind: "section",
+    ratio: "5:2",
+    alt: "A garden wall with two controlled openings: at one, an unfamiliar scroll is inspected under a glass before it may enter; at the other, a messenger checks that a destination tag is complete before a note leaves. Beyond the wall the paths stay deliberately indistinct.",
+    caption:
+      "Inbound material is classified and outbound references validated at the edge, before either reaches an agent or a public surface.",
+  },
+  {
+    file: "illus-ch7-paths.svg",
+    anchor: "ch7-chapter-7-procedures-and-workflows",
+    kind: "opener",
+    ratio: "16:10",
+    alt: "An overhead garden map with several distinct routes: a loop through inspection beds, a branching sequence of plots, a path waiting at a closed gate, and a river crossing, with signposts and terrain marking the choices.",
+    caption:
+      "Procedures turn recurring work into explicit routes so progress survives changing workers and interrupted sessions.",
+  },
+  {
+    file: "illus-ch7-gauntlet.svg",
+    anchor: "ch7-72-the-gauntlet-end-to-end",
+    kind: "section",
+    ratio: "3:1",
+    alt: "One potted espalier travels a curved sequence of stations — root inspection, pruning, a many-lensed arbor, repair and regrowth, then an open display gate — with a visible loop from the arbor back to the repair bench; the same pot continues throughout.",
+    caption:
+      "A single draft pull request passes viability, cleaning, specialist review, fixes, and release, looping back to repair whenever review finds a problem.",
+  },
+  {
+    file: "illus-ch7-orchestration.svg",
+    anchor: "ch7-74-orchestration",
+    kind: "section",
+    ratio: "2:1",
+    alt: "A head gardener lays seed packets into a ruled planting plan; some furrows run one after another and one pair runs side by side, stop and continue symbols stand at a damaged plot, and a measured water reservoir feeds the whole plan.",
+    caption:
+      "Multi-part work records its children, their order, a failure policy, and a bounded shared budget before any of it begins.",
+  },
+  {
+    file: "illus-ch7-ferry.svg",
+    anchor: "ch7-76-the-ferry",
+    kind: "section",
+    ratio: "5:2",
+    alt: "A ferryman carries one sealed graft across a narrow river from a bot-tended bank to an upstream orchard; a person on the departure bank hands over a signet for the crossing alone, and the ordinary garden paths stop at the water.",
+    caption:
+      "Approved work reaches upstream only through a separate, human-authorised crossing that uses the maintainer's identity.",
+  },
+  {
+    file: "illus-ch8-loops.svg",
+    anchor: "ch8-chapter-8-cybernetics-and-budgeting",
+    kind: "opener",
+    ratio: "3:2",
+    alt: "An irrigation garden where gauges measure reservoirs, float valves compare levels against marked setpoints, gates change the flow, and soil moisture returns through roots to the gauges; several loops run at visibly different sizes.",
+    caption:
+      "Spending and capacity are regulated by sensors, setpoints, controllers, and actuators that observe their own effects; budget is one regulated quantity among several.",
+  },
+  {
+    file: "illus-ch8-loop.svg",
+    anchor: "ch8-81-why-cybernetics",
+    kind: "section",
+    ratio: "1:1",
+    alt: "A close study of one cistern, a gauge, a gardener-adjusted valve, an irrigation bed, and a return channel back to the gauge; a stuck float and an overflow notch appear as small secondary details.",
+    caption:
+      "The question is how a measurement changes behaviour and returns as a new measurement — including sensor failure, saturation, and the human-adjusted control.",
+  },
+  {
+    file: "illus-ch8-budget.svg",
+    anchor: "ch8-86-per-orchestration-budgets-a-bounded-pie",
+    kind: "section",
+    ratio: "4:3",
+    alt: "A round garden divided into planned beds is fed from one finite seed bowl; a gardener fills the beds in sequence, and later gates stay closed when the bowl is empty or the measuring scoop is missing.",
+    caption:
+      "Serial children draw from one finite campaign budget; promotion stops when the budget is spent or when metering is incomplete.",
+  },
+  {
+    file: "illus-ch9-library.svg",
+    anchor: "ch9-chapter-9-the-library-and-how-it-spends-context",
+    kind: "opener",
+    ratio: "4:5",
+    alt: "A terraced hanging library garden whose shelves descend from broad topics to source sections; a reader at ground level draws one small basket down by pulley instead of climbing through or harvesting the whole structure.",
+    caption:
+      "The library is cultivated so a worker can retrieve the smallest useful portion of what is known within a limited context.",
+  },
+  {
+    file: "illus-ch9-indexes.svg",
+    anchor: "ch9-92-what-it-looks-like-on-disk",
+    kind: "section",
+    ratio: "4:3",
+    alt: "A central bed of bound folios reached by three paths — an archival path from source markers, a thematic path through named plots, and a stepping-stone path of keywords — with small pruning tags marking stale, superseded, and contradictory growth left in place.",
+    caption:
+      "Source, topic, and keyword indexes give different routes to section-sized content while preserving provenance and maintenance signals.",
+  },
+  {
+    file: "illus-ch9-basket.svg",
+    anchor: "ch9-96-why-it-is-shaped-this-way-the-context-economy",
+    kind: "section",
+    ratio: "2:1",
+    alt: "A reader with a finite woven basket walks a branching garden archive; at each fork a concise sign lets them stop or descend to one narrower bed. The basket holds a few complete cuttings while a large archive stays untouched behind.",
+    caption:
+      "Good structure lets a worker stop at a sufficient abstract and load only the child documents a question actually needs.",
+  },
+  {
+    file: "illus-ch10-tiers.svg",
+    anchor: "ch10-chapter-10-inference-tiers-reference",
+    kind: "opener",
+    ratio: "3:2",
+    alt: "Four stepped terraces hold increasingly demanding plants beside several ladders owned by different worker guilds; more than one ladder reaches the same terrace, a safety rail blocks some role-marked pots from descending below their floor, and a switchback path shows a permitted fallback.",
+    caption:
+      "Jobs receive capability tiers, worker kinds bind providers, and role floors limit fallback — so a worker kind is not the same thing as a tier.",
+  },
+];
+
+// Portrait and square plates stay in the reading column; broader scenes may
+// reach into the sidenote margin on wide screens.
+const PANEL_RATIOS = new Set(["4:3", "1:1", "4:5"]);
+
+export const illustrationFiles = ILLUSTRATIONS.map((entry) => entry.file);
+
+const chapterNumberOfAnchor = (anchor) => Number(/^ch(\d+)-/.exec(anchor)[1]);
+
 const escapeHtml = (value) =>
   value
     .replaceAll("&", "&amp;")
@@ -95,6 +340,54 @@ const inlineSvg = (source, className, decorative = false) => {
 
 const glyph = (key, className = "glyph") =>
   `<svg class="${className}" aria-hidden="true" focusable="false"><use href="#g-${key}"/></svg>`;
+
+// An illustration file is authored without a role or label: the generator is
+// the single source of the alt text (the registry), so it labels the inlined
+// SVG as one image and injects a <title> stating the relationship. Decorative
+// flourishes inside each file carry their own aria-hidden and, under role=img,
+// are not separately announced.
+const inlineIllustration = (source, anchor, alt) => {
+  const titleId = `illus-${anchor}-t`;
+  const svg = source
+    .trim()
+    .replace(
+      /<svg\s+xmlns="[^"]+"/,
+      `<svg class="illus-art" role="img" aria-labelledby="${titleId}"`,
+    );
+  return svg.replace(
+    ">",
+    `><title id="${titleId}">${escapeHtml(alt)}</title>`,
+  );
+};
+
+const buildFigure = (spec) => {
+  const sizeClass = PANEL_RATIOS.has(spec.ratio) ? "illus--panel" : "illus--wide";
+  const svg = inlineIllustration(spec.source, spec.anchor, spec.alt);
+  return `<figure class="illus illus--${spec.kind} ${sizeClass}" data-illustration="${spec.anchor}">${svg}<figcaption>${escapeHtml(
+    spec.caption,
+  )}</figcaption></figure>`;
+};
+
+// Place a section figure after the first paragraph that follows its named
+// heading (its first conceptual turn), but never past the next heading, so a
+// heading without body prose still receives its figure immediately below it.
+const insertSectionFigure = (html, spec) => {
+  const open = new RegExp(`<h([2-6]) id="${spec.anchor}">`).exec(html);
+  if (!open) {
+    return { inserted: false, html };
+  }
+  const closeTag = `</h${open[1]}>`;
+  const headingEnd = html.indexOf(closeTag, open.index) + closeTag.length;
+  const nextHeading = html.slice(headingEnd).search(/<h[2-6] /);
+  const limit = nextHeading < 0 ? html.length : headingEnd + nextHeading;
+  const paragraphEnd = html.indexOf("</p>", headingEnd);
+  const insertAt =
+    paragraphEnd >= 0 && paragraphEnd < limit ? paragraphEnd + 4 : headingEnd;
+  return {
+    inserted: true,
+    html: `${html.slice(0, insertAt)}\n${buildFigure(spec)}${html.slice(insertAt)}`,
+  };
+};
 
 const partOf = (number) =>
   PARTS.find((part) => part[3][0] <= number && number <= part[3][1]);
@@ -251,10 +544,23 @@ export const renderBook = ({ chapterSources, introSource, artwork }) => {
 
   const resolveHref = makeHrefResolver({ roleAnchors, skillAnchors });
   const titleArt = inlineSvg(artwork.titleGarden, "title-art", true);
-  const gardenBedFigure = `<figure class="chapter-figure garden-bed">${inlineSvg(
-    artwork.gardenBed,
-    "garden-bed-art",
-  )}<figcaption>Different kinds of work, coordinated through one shared plot.</figcaption></figure>`;
+
+  // Bind every configured illustration to its SVG source. An entry is placeable
+  // only when its file was supplied; openers key on the chapter heading id and
+  // sections on their own heading anchor. The placed set drives the completeness
+  // report so no image can quietly land at the wrong heading.
+  const illustrationSources = artwork.illustrations || {};
+  const illustrations = ILLUSTRATIONS.map((entry) => ({
+    ...entry,
+    source: illustrationSources[entry.file],
+  }));
+  const openerByChapterId = new Map(
+    illustrations
+      .filter((entry) => entry.kind === "opener" && entry.source)
+      .map((entry) => [entry.anchor, entry]),
+  );
+  const placedAnchors = new Set();
+
   const tableOfContents = [];
   const sections = [];
 
@@ -334,8 +640,10 @@ export const renderBook = ({ chapterSources, introSource, artwork }) => {
       bodyHtml = partMark + bodyHtml;
     }
     let opening = `</h2>\n${provenanceHtml}`;
-    if (chapter.number === 2 && chapter.part === 1) {
-      opening += `\n${gardenBedFigure}`;
+    const opener = openerByChapterId.get(chapterId);
+    if (opener) {
+      opening += `\n${buildFigure(opener)}`;
+      placedAnchors.add(opener.anchor);
     }
     bodyHtml = bodyHtml.replace("</h2>", opening);
     bodyHtml = bodyHtml.replace(
@@ -379,6 +687,20 @@ export const renderBook = ({ chapterSources, introSource, artwork }) => {
       /<p><strong>([^<\n]{1,48}[.:])<\/strong>/g,
       '<p class="runin"><strong>$1</strong>',
     );
+    for (const spec of illustrations) {
+      if (
+        spec.kind !== "section" ||
+        !spec.source ||
+        !spec.anchor.startsWith(`${chapter.prefix}-`)
+      ) {
+        continue;
+      }
+      const placement = insertSectionFigure(bodyHtml, spec);
+      if (placement.inserted) {
+        bodyHtml = placement.html;
+        placedAnchors.add(spec.anchor);
+      }
+    }
     sections.push(
       `<section class="chapter part-${part ? part[4] : "none"}" aria-labelledby="${chapterId}">\n${bodyHtml}\n<p class="back"><a href="#toc">&uarr; Contents</a></p>\n</section>`,
     );
@@ -489,10 +811,29 @@ ${sections.join("")}
 </html>
 `;
 
+  // A configured illustration is "missing" only when its file was supplied and
+  // its chapter is in this build, yet its anchor was not found: that is a
+  // heading-edit drift the caller must treat as a hard error, distinct from an
+  // entry that is simply absent from a partial render.
+  const presentChapters = new Set(chapters.map((chapter) => chapter.number));
+  const missing = illustrations
+    .filter(
+      (entry) =>
+        entry.source &&
+        presentChapters.has(chapterNumberOfAnchor(entry.anchor)) &&
+        !placedAnchors.has(entry.anchor),
+    )
+    .map((entry) => entry.anchor);
+
   return {
     html: page,
     chapterCount: chapters.length,
     roleCount: roleAnchors.size,
     skillCount: skillAnchors.size,
+    illustrations: {
+      configured: ILLUSTRATIONS.length,
+      placed: [...placedAnchors],
+      missing,
+    },
   };
 };

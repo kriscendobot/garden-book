@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400">
+  <rect class="ms-ground" x="4" y="4" width="992" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="976" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2.4" stroke-linecap="round">
+    <path class="ms-stem" d="M30 40c60 24 60 72 10 96M970 40c-60 24-60 72-10 96"/>
+    <path class="ms-leaf" d="M50 70c-16-4-26-16-26-32 16 2 26 14 26 32ZM950 70c16-4 26-16 26-32-16 2-26 14-26 32Z" stroke="none"/>
+    <path class="ms-rubric-s" d="M120 372h760" stroke-width="1.2" stroke-dasharray="2 8"/>
+  </g>
+  <!-- the faded first-to-arrive footrace path, behind and secondary -->
+  <path class="ms-faint" d="M120 300c200 30 560 30 760-6" fill="none" stroke-width="6" stroke-dasharray="4 12" opacity=".7"/>
+  <g aria-hidden="true" class="ms-faint" fill="none" stroke-width="2" opacity=".6"><path d="M180 300l-8 20M176 300l10 20M760 290l-8 20M756 290l10 20"/></g>
+  <!-- balanced market scale at the centre -->
+  <g fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M500 318V150M470 330h60M500 150l-150 40M500 150l150 40"/>
+    <circle class="ms-gild" cx="500" cy="146" r="7" stroke="none"/>
+    <path class="ms-stone-s" d="M310 190a40 20 0 0 0 80 0M610 190a40 20 0 0 0 80 0"/>
+    <path class="ms-ink" d="M350 190v0M350 190l-40 0M390 190h0M350 150v40" stroke-width="0"/>
+    <path class="ms-ink" d="M350 150v40M650 150v40"/>
+  </g>
+  <!-- labelled seed tokens offered into the pans -->
+  <g stroke="none"><circle class="ms-gild" cx="340" cy="206" r="6"/><circle class="ms-leaf" cx="360" cy="206" r="6"/><circle class="ms-rubric" cx="650" cy="206" r="6"/></g>
+  <!-- bidders at the edge of several unlike plots, distinguished by heraldic tools -->
+  <g fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-stone-s" d="M150 318V250h70v68M820 318V250h70v68"/>
+    <path class="ms-ink" d="M185 250v-40M170 214l15 10 15-10"/><!-- spade bidder -->
+    <path class="ms-leaf" d="M185 210c-10-2-16-10-16-20 10 0 16 8 16 20Z" stroke="none"/>
+    <path class="ms-ink" d="M855 250v-40M845 206h20v10h-20Z"/><!-- hoe/rake bidder -->
+    <path class="ms-rubric-s" d="M845 206v-6M851 206v-6M857 206v-6M863 206v-6"/>
+    <!-- the selected gardener, whose tool and seed match one plot -->
+    <path class="ms-gild-s" d="M470 318V256h60v62" stroke-width="3"/>
+    <path class="ms-ink" d="M500 256v-34M488 226l12 8 12-8"/>
+    <circle class="ms-gild" cx="500" cy="300" r="7" stroke="none"/>
+  </g>
+</svg>

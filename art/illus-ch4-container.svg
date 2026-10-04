@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect class="ms-ground" x="4" y="4" width="392" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="376" height="376" rx="5" fill="none" stroke-width="2"/>
+  <!-- thornless protective vines ringing the cloche medallion -->
+  <g aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round"><circle class="ms-faint" cx="200" cy="208" r="150" stroke-dasharray="2 10"/></g>
+  <!-- the cloche: a complete environment, sealed from outside -->
+  <circle class="ms-ink" cx="200" cy="210" r="120" fill="none" stroke-width="2.8"/>
+  <!-- inside: worker beds, a clockwork service wheel, a locked tool cabinet -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-stone-s" d="M150 270v-26h40v26M150 244h40"/>
+    <circle class="ms-gild-s" cx="238" cy="190" r="20"/><path class="ms-gild-s" d="M238 170v40M218 190h40M224 176l28 28M252 176l-28 28" stroke-width="1.2"/>
+    <path class="ms-stone-s" d="M160 210h34v40h-34Z"/><circle class="ms-rubric" cx="177" cy="230" r="4" stroke="none"/>
+  </g>
+  <!-- one guarded doorway: the launcher and container check -->
+  <path class="ms-rubric-s" d="M200 330v-24h0M188 330h24v-24h-24Z" fill="none" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- outside the glass: the human's keys and tools, unreachable -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <circle class="ms-ink" cx="350" cy="120" r="10"/><path class="ms-ink" d="M350 130v22M345 145h10M345 152h8"/>
+    <path class="ms-stone-s" d="M44 300v-30M38 270h12"/>
+  </g>
+</svg>

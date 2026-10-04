@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <rect class="ms-ground" x="4" y="4" width="792" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="768" height="376" rx="5" fill="none" stroke-width="2"/>
+  <!-- the arbor forms a restrained arch, not a courtroom -->
+  <path class="ms-stem" d="M120 150C260 60 540 60 680 150" fill="none" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"/>
+  <g aria-hidden="true" stroke="none"><path class="ms-leaf" d="M160 118c-14 0-24-8-28-22 14-2 26 6 28 22Z"/><path class="ms-leaf2" d="M640 118c14 0 24-8 28-22-14-2-26 6-28 22Z"/></g>
+  <!-- a folio on a rotating stand at the centre -->
+  <g fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ground2" d="M360 150h80v120h-80Z" stroke="none"/>
+    <path class="ms-ink" d="M360 150h80v120h-80ZM400 150v120M400 300v30M376 330h48"/>
+    <path class="ms-rubric-s" d="M372 180h22M372 196h22M406 180h22M406 196h22" stroke-width="1.4"/>
+  </g>
+  <!-- several small observers with different lenses examine its edges -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <circle class="ms-ink" cx="200" cy="210" r="14"/><path class="ms-ink" d="M212 222l16 16"/>
+    <circle class="ms-ink" cx="230" cy="310" r="14"/><path class="ms-ink" d="M242 322l16 16"/>
+    <circle class="ms-ink" cx="600" cy="210" r="14"/><path class="ms-ink" d="M588 222l-16 16"/>
+    <circle class="ms-ink" cx="570" cy="310" r="14"/><path class="ms-ink" d="M558 322l-16 16"/>
+  </g>
+  <!-- ribbons converge into one mechanical sorting device, not a judge -->
+  <path class="ms-rubric-s" d="M214 224c60 40 130 60 186 64M244 324c50 10 110 8 156-36M586 224c-60 40-130 60-186 64M556 324c-50 10-110 8-156-36" fill="none" stroke-width="1.6" opacity=".8"/>
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path class="ms-gild-s" d="M360 330h80v40h-80Z"/><path class="ms-gild-s" d="M375 330v40M400 330v40M425 330v40"/></g>
+</svg>

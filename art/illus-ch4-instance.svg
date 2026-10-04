@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <rect class="ms-ground" x="4" y="4" width="592" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="576" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true"><path class="ms-stem" d="M40 40c0 24 18 28 18 52" fill="none" stroke-width="2.2" stroke-linecap="round"/><path class="ms-gild-s" d="M520 60l10 10 10-10M530 56v28" stroke-width="1.4"/></g>
+  <!-- a new walled plot: boundary, named gate, worker beds, path to a larger network -->
+  <g fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M110 120h360v200H110" />
+    <path class="ms-rubric-s" d="M110 190v-70h70" stroke-dasharray="4 6"/>
+    <path class="ms-ink" d="M110 180v40"/>
+    <path class="ms-stone-s" d="M160 300v-40h70v40M260 300v-40h70v40M360 300v-40h70v40"/>
+    <path class="ms-leaf" d="M195 260c0-12 7-18 15-18 0 12-7 18-15 18Z" stroke="none"/><circle class="ms-leaf2" cx="295" cy="250" r="7" stroke="none"/>
+  </g>
+  <!-- a tool chest closed with three locks (credentials) -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path class="ms-stone-s" d="M360 220h70v40h-70Z"/><circle class="ms-gild" cx="378" cy="240" r="4" stroke="none"/><circle class="ms-gild" cx="395" cy="240" r="4" stroke="none"/><circle class="ms-gild" cx="412" cy="240" r="4" stroke="none"/></g>
+  <!-- the path leaving the wall to join the shared garden beyond -->
+  <path class="ms-faint" d="M470 220c40-10 70-10 110 6" fill="none" stroke-width="4" stroke-dasharray="3 8"/>
+  <g stroke="none"><circle class="ms-leaf" cx="548" cy="200" r="6"/><circle class="ms-leaf2" cx="572" cy="232" r="6"/><circle class="ms-gild" cx="560" cy="256" r="5"/></g>
+</svg>

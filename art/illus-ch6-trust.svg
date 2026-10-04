@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400">
+  <rect class="ms-ground" x="4" y="4" width="992" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="976" height="376" rx="5" fill="none" stroke-width="2"/>
+  <!-- bramble and warding-knot motifs around a clear central threshold -->
+  <g aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-stem" d="M40 40c30 6 30 40 60 46M960 40c-30 6-30 40-60 46"/><path class="ms-rubric-s" d="M496 360a8 8 0 1 0 8 0M500 360v-10" stroke-width="1.6"/></g>
+  <!-- a garden wall with two controlled openings -->
+  <path class="ms-stone-s" d="M60 300h880M80 300V140h220v160M700 300V140h220v160" fill="none" stroke-width="3"/>
+  <!-- inbound: an unfamiliar scroll inspected under a glass before entering -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M110 300V170h60v130"/>
+    <path class="ms-rubric-s" d="M40 236h40M40 230a8 8 0 0 1 0 12"/>
+    <circle class="ms-ink" cx="150" cy="226" r="22" fill="none"/><path class="ms-ink" d="M166 242l18 18"/>
+    <path class="ms-rubric-s" d="M142 218c4-6 12-6 16 0" stroke-width="1.6"/>
+  </g>
+  <!-- outbound: a messenger checks a complete destination tag before a note leaves -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M830 300V170h60v130"/>
+    <rect class="ms-gild" x="840" y="210" width="40" height="26" rx="2" stroke="none"/><path class="ms-gild-s" d="M880 210l10 8-10 8"/>
+    <path class="ms-rubric-s" d="M900 236h50" stroke-width="2"/>
+  </g>
+  <!-- beyond the wall the paths stay deliberately indistinct -->
+  <path class="ms-faint" d="M320 240c120 20 240 20 360 0" fill="none" stroke-width="4" stroke-dasharray="2 12"/>
+</svg>

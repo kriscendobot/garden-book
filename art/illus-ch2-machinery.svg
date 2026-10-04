@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <rect class="ms-ground" x="4" y="4" width="592" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="576" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2.4" stroke-linecap="round">
+    <path class="ms-stem" d="M30 36c40 18 44 60 6 86M570 36c-40 18-44 60-6 86"/>
+    <path class="ms-leaf" d="M46 66c-14-4-22-14-22-28 14 2 22 12 22 28ZM554 66c14-4 22-14 22-28-14 2-22 12-22 28Z" stroke="none"/>
+  </g>
+  <!-- compass rose made of a flower -->
+  <g aria-hidden="true" transform="translate(300 60)"><circle class="ms-gild" r="6" stroke="none"/><path class="ms-gild-s" d="M0-18V18M-18 0H18M-12-12l24 24M12-12l-24 24" stroke-width="1.4" opacity=".85"/></g>
+  <!-- the walled enclosure and the ground line of the cutaway -->
+  <path class="ms-stone-s" d="M40 236h520M60 236V120M540 236V120" fill="none" stroke-width="3" stroke-linecap="round"/>
+  <!-- above ground: separate beds with potting sheds (worktree isolation) -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M96 236v-40h70v40M250 236v-40h70v40M404 236v-40h70v40"/>
+    <path class="ms-ink" d="M110 196l21-22 21 22M264 196l21-22 21 22M418 196l21-22 21 22"/>
+    <path class="ms-stem" d="M200 236v-34M224 236v-40M354 236v-36" stroke-width="2"/>
+  </g>
+  <path class="ms-leaf" d="M200 204c-11-2-18-9-19-20 11 0 18 7 19 20ZM354 204c11-2 18-9 19-20-11 0-18 7-19 20Z" stroke="none"/>
+  <path class="ms-leaf2" d="M224 198c11-2 18-9 19-20-11 0-18 7-19 20Z" stroke="none"/>
+  <!-- below ground: channels converge on one bound journal at the centre -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-stem" d="M131 236c0 40 60 60 150 66M285 236c0 36-2 52-1 66M439 236c0 40-60 60-150 66"/>
+  </g>
+  <g fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ground2" d="M262 300h56v48h-56Z" stroke="none"/>
+    <path class="ms-gild-s" d="M262 300h56v48h-56ZM290 300v48"/>
+    <path class="ms-rubric-s" d="M270 314h12M298 314h12M270 326h12M298 326h12" stroke-width="1.4"/>
+  </g>
+</svg>

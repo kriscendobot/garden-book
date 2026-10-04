@@ -1,137 +1,98 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { fileURLToPath } from 'node:url';
-import { join, resolve } from 'node:path';
+import assert from "node:assert/strict";
+import test from "node:test";
 
-import {
-  generateIllustrations,
-  illustrations,
-  palette,
-  renderIllustration,
-} from '../art/generate-illuminations.mjs';
+import { assembleBook } from "../build/assemble-book.mjs";
+import { makeNodeReadableTree } from "../build/node-tree.mjs";
+import { ILLUSTRATIONS } from "../build/render-book.mjs";
 
-const repository = fileURLToPath(new URL('..', import.meta.url));
-const artDirectory = resolve(repository, 'art');
-
-const occurrences = (text, value) => text.split(value).length - 1;
-
-const assertTagNesting = (source, file) => {
-  const stack = [];
-  const tagPattern = /<\/?([A-Za-z][\w:.-]*)(?:\s[^<>]*?)?\s*\/?>/gu;
-  for (const match of source.matchAll(tagPattern)) {
-    const tag = match[0];
-    const name = match[1];
-    if (tag.startsWith('</')) {
-      assert.equal(stack.pop(), name, `${file} closes ${name} out of order`);
-    } else if (!tag.endsWith('/>')) {
-      stack.push(name);
-    }
-  }
-  assert.deepEqual(stack, [], `${file} has unclosed elements`);
+const renderRealBook = async () => {
+  const output = {};
+  const result = await assembleBook({
+    chaptersTree: makeNodeReadableTree(new URL("../chapters/", import.meta.url)),
+    buildTree: makeNodeReadableTree(new URL("../build/", import.meta.url)),
+    artworkTree: makeNodeReadableTree(new URL("../art/", import.meta.url)),
+    outputTree: {
+      async writeText(name, content) {
+        output[name] = content;
+      },
+    },
+  });
+  return { result, html: output["index.html"] };
 };
 
-test('the brief has one reproducible SVG for each of its 25 entries', async () => {
-  const files = (await readdir(artDirectory))
-    .filter(file => /^illumination-.*\.svg$/u.test(file))
-    .sort();
-  const expectedFiles = illustrations.map(({ file }) => file).sort();
+// The anchor for each illustration is a placement key copied from the
+// generator's own output, so a heading edit that moves or deletes a target
+// must fail the build rather than silently dropping or relocating an image.
+test("every configured illustration lands at its own heading, exactly once", async () => {
+  const { result, html } = await renderRealBook();
 
-  assert.equal(illustrations.length, 25);
-  assert.deepEqual(files, expectedFiles);
   assert.deepEqual(
-    illustrations.map(({ number }) => number),
-    Array.from({ length: 25 }, (_, index) => index + 1),
+    result.illustrations.missing,
+    [],
+    "configured anchors with no heading in the rendered book",
   );
+  assert.equal(result.illustrations.placed.length, ILLUSTRATIONS.length);
+  assert.equal(result.illustrations.configured, ILLUSTRATIONS.length);
 
-  for (const illustration of illustrations) {
-    const source = await readFile(resolve(artDirectory, illustration.file), 'utf8');
-    assert.equal(source, renderIllustration(illustration));
-    assertTagNesting(source, illustration.file);
-  }
-});
+  for (const spec of ILLUSTRATIONS) {
+    const headingIndex = html.search(new RegExp(`<h[2-6] id="${spec.anchor}">`));
+    assert.notEqual(headingIndex, -1, `heading missing for ${spec.anchor}`);
 
-test('generateIllustrations reproduces the committed SVGs', async t => {
-  const scratch = await mkdtemp(join(tmpdir(), 'illuminations-'));
-  t.after(() => rm(scratch, { recursive: true, force: true }));
-  const directory = resolve(scratch, 'nested', 'art');
+    const marker = `data-illustration="${spec.anchor}"`;
+    const occurrences = html.split(marker).length - 1;
+    assert.equal(occurrences, 1, `figure count for ${spec.anchor}`);
 
-  await generateIllustrations(directory);
-
-  const files = (await readdir(directory)).sort();
-  assert.deepEqual(files, illustrations.map(({ file }) => file).sort());
-  for (const file of files) {
-    assert.equal(
-      await readFile(resolve(directory, file), 'utf8'),
-      await readFile(resolve(artDirectory, file), 'utf8'),
-      file,
+    // The figure must fall inside its own heading's block — between that
+    // heading and the next heading — so no image falls back to a neighbour.
+    const fromHeading = html.slice(headingIndex);
+    const nextHeading = fromHeading.slice(1).search(/<h[2-6] id=/);
+    const block =
+      nextHeading < 0 ? fromHeading : fromHeading.slice(0, nextHeading + 1);
+    assert.ok(
+      block.includes(marker),
+      `${spec.anchor} figure drifted out of its heading block`,
     );
   }
 });
 
-test('manifest and brief map every target anchor exactly once', async () => {
-  const [brief, manifest] = await Promise.all([
-    readFile(resolve(artDirectory, 'chapter-illustrations-brief.md'), 'utf8'),
-    readFile(resolve(artDirectory, 'MANIFEST.md'), 'utf8'),
-  ]);
-  const briefAnchors = [
-    ...brief.matchAll(/\*\*Target anchor:\*\* `([^`]+)`/gu),
-  ].map(match => match[1]);
-
-  assert.equal(briefAnchors.length, 25);
-  assert.equal(new Set(briefAnchors).size, 25);
-  assert.deepEqual(
-    illustrations.map(({ anchor }) => anchor),
-    briefAnchors,
-  );
-
-  for (const { anchor, file } of illustrations) {
-    assert.equal(occurrences(manifest, `\`${anchor}\``), 1, anchor);
-    assert.equal(occurrences(manifest, `\`${file}\``), 1, file);
+test("each illustration is a labelled image with non-empty alt text", async () => {
+  const { html } = await renderRealBook();
+  for (const spec of ILLUSTRATIONS) {
+    const titleId = `illus-${spec.anchor}-t`;
+    assert.ok(
+      html.includes(`role="img" aria-labelledby="${titleId}"`),
+      `${spec.anchor} is not labelled as an image`,
+    );
+    assert.ok(
+      spec.alt.length > 20 && spec.caption.length > 0,
+      `${spec.anchor} needs meaningful alt and caption text`,
+    );
+    assert.ok(
+      html.includes(`<title id="${titleId}">`),
+      `${spec.anchor} is missing its injected alt title`,
+    );
   }
 });
 
-test('SVGs are inline-safe, accessible, and collision-free together', async () => {
-  const allIds = new Set();
-  const allowedColors = new Set(Object.values(palette));
-
-  for (const illustration of illustrations) {
-    const source = await readFile(resolve(artDirectory, illustration.file), 'utf8');
-    const prefix = illustration.file.replace(/\.svg$/u, '');
-
-    assert.match(source, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/u);
-    assert.match(source, /role="img"/u);
-    assert.match(source, new RegExp(`<title id="${prefix}-title">[^<]+<\\/title>`, 'u'));
-    assert.match(source, new RegExp(`<desc id="${prefix}-description">[^<]+<\\/desc>`, 'u'));
-    assert.doesNotMatch(source, /<script\b|<foreignObject\b|<iframe\b|<image\b/iu);
-    assert.doesNotMatch(source, /\son[a-z]+\s*=/iu);
+test("illustration sources hide decorative flourishes and carry no invalid paint", async () => {
+  const artworkTree = makeNodeReadableTree(new URL("../art/", import.meta.url));
+  for (const spec of ILLUSTRATIONS) {
+    const source = await (await artworkTree.lookup(spec.file)).text();
+    assert.ok(
+      source.includes('aria-hidden="true"'),
+      `${spec.file} marks no decorative flourish hidden from assistive tech`,
+    );
+    // CSS custom properties are not valid inside SVG presentation attributes;
+    // the manuscript paint must come through the shared classes, not var().
     assert.doesNotMatch(
       source,
-      /(?:href|src)\s*=\s*["'](?:https?:|\/\/|data:)|url\(\s*["']?(?:https?:|\/\/|data:)|@import/iu,
+      /="var\(/,
+      `${spec.file} uses var() in a presentation attribute`,
     );
-
-    const localIds = new Set();
-    for (const match of source.matchAll(/\sid="([^"]+)"/gu)) {
-      const id = match[1];
-      assert.ok(id.startsWith(`${prefix}-`), `${id} is not prefixed by ${prefix}`);
-      assert.ok(!localIds.has(id), `${illustration.file} repeats ${id}`);
-      assert.ok(!allIds.has(id), `combined SVGs collide on ${id}`);
-      localIds.add(id);
-      allIds.add(id);
-    }
-
-    const references = [
-      ...source.matchAll(/url\(#([^)]+)\)|href="#([^"]+)"|aria-labelledby="([^"]+)"/gu),
-    ].flatMap(match => (match[3] ? match[3].split(/\s+/u) : [match[1] ?? match[2]]));
-    for (const reference of references) {
-      assert.ok(localIds.has(reference), `${illustration.file} has missing #${reference}`);
-    }
-
-    for (const match of source.matchAll(/#[0-9A-Fa-f]{6}\b/gu)) {
-      assert.ok(allowedColors.has(match[0].toUpperCase()), `${illustration.file} uses ${match[0]}`);
-    }
+    assert.doesNotMatch(
+      source,
+      /\brole=|aria-labelledby=|<title/,
+      `${spec.file} should leave labelling to the generator`,
+    );
   }
-
-  assert.equal(allIds.size, 50);
 });

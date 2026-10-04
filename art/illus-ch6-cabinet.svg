@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <rect class="ms-ground" x="4" y="4" width="592" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="576" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-stem" d="M40 40c20 10 20 34 4 48M560 40c-20 10-20 34-4 48"/></g>
+  <!-- an apothecary seed cabinet: grouped drawers with botanical labels -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M150 60h300v250H150Z"/>
+    <path class="ms-ink" d="M150 123h300M150 186h300M150 249h300M250 60v250M350 60v250"/>
+    <g stroke="none"><circle class="ms-stone" cx="200" cy="92" r="4"/><circle class="ms-stone" cx="300" cy="92" r="4"/><circle class="ms-stone" cx="400" cy="92" r="4"/><circle class="ms-stone" cx="200" cy="155" r="4"/><circle class="ms-stone" cx="400" cy="155" r="4"/><circle class="ms-stone" cx="300" cy="218" r="4"/><circle class="ms-stone" cx="200" cy="281" r="4"/><circle class="ms-stone" cx="400" cy="281" r="4"/></g>
+    <!-- a few open drawers: only the needed playbooks drawn out -->
+    <path class="ms-gild-s" d="M250 123h100v30h-100ZM350 249h100v30H350Z"/>
+    <path class="ms-rubric-s" d="M285 138h30M385 264h30" stroke-width="1.4"/>
+  </g>
+  <!-- small gears turn beneath for the procedures with scripted mechanisms -->
+  <g aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round"><circle class="ms-stone-s" cx="300" cy="350" r="16"/><path class="ms-stone-s" d="M300 330v-8M300 378v-8M280 350h-8M328 350h-8M286 336l-6-6M320 336l6-6M286 364l-6 6M320 364l6 6"/></g>
+  <!-- a gardener with a role emblem opens only the few drawers needed -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle class="ms-ink" cx="90" cy="250" r="14"/><path class="ms-ink" d="M90 264v50M90 280h40"/><rect class="ms-gild" x="78" y="224" width="16" height="12" rx="2" stroke="none"/></g>
+</svg>

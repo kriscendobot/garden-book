@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400">
+  <rect class="ms-ground" x="4" y="4" width="992" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="976" height="376" rx="5" fill="none" stroke-width="2"/>
+  <g aria-hidden="true" fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-stem" d="M40 40c0 30 24 34 24 64M960 40c0 30-24 34-24 64"/><path class="ms-gild-s" d="M470 360h60" stroke-width="2"/></g>
+  <path class="ms-stone-s" d="M40 316h920" fill="none" stroke-width="3"/>
+  <!-- nursery bench on the left, loose cuttings confined to it -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M70 316v-40h120v40M80 276v-18h100v18"/>
+    <path class="ms-stem" d="M100 258v-16M130 258v-20M160 258v-14"/>
+  </g>
+  <!-- a graft carried bench -> two canary trees -> central old tree -->
+  <path class="ms-faint" d="M200 250c120-30 180-30 230 0" fill="none" stroke-width="3" stroke-dasharray="3 8"/>
+  <g fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <path class="ms-ink" d="M360 316v-70M520 316V206M680 316v-70"/>
+    <path class="ms-leaf" d="M360 250c-24-4-40-22-42-46 24 2 40 20 42 46ZM360 250c24-4 40-22 42-46-24 2-40 20-42 46Z" stroke="none"/>
+    <path class="ms-leaf2" d="M520 212c-34-6-56-30-58-62 34 2 56 26 58 62ZM520 212c34-6 56-30 58-62-34 2-56 26-58 62Z" stroke="none"/>
+    <path class="ms-leaf" d="M680 250c-24-4-40-22-42-46 24 2 40 20 42 46ZM680 250c24-4 40-22 42-46-24 2-40 20-42 46Z" stroke="none"/>
+    <!-- trunk tags: one settled graft per tree -->
+    <path class="ms-rubric-s" d="M372 288h22v14h-22ZM532 288h22v14h-22ZM692 288h22v14h-22Z" stroke-width="1.8"/>
+  </g>
+  <!-- distant beacon echoing the upgrade-ready signal, thumbprint-small -->
+  <g aria-hidden="true"><circle class="ms-gild" cx="900" cy="150" r="4" stroke="none"/><path class="ms-stone-s" d="M900 160v30" stroke-width="1.6"/></g>
+</svg>

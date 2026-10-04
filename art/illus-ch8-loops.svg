@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <rect class="ms-ground" x="4" y="4" width="592" height="392" rx="8"/>
+  <rect class="ms-gild-s" x="12" y="12" width="576" height="376" rx="5" fill="none" stroke-width="2"/>
+  <!-- an ornate circular vine border around the instruments -->
+  <circle class="ms-faint" cx="300" cy="210" r="168" fill="none" stroke-width="2" stroke-dasharray="2 10" aria-hidden="true"/>
+  <!-- several feedback loops at visibly different scales -->
+  <path class="ms-stem" d="M300 90a120 120 0 1 0 2 0" fill="none" stroke-width="2.4" stroke-linecap="round"/>
+  <path class="ms-rubric-s" d="M230 180a70 70 0 1 0 2 0" fill="none" stroke-width="2.2" stroke-linecap="round"/>
+  <path class="ms-gild-s" d="M360 240a44 44 0 1 0 2 0" fill="none" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- a gauge (sensor) measuring a reservoir -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle class="ms-ink" cx="300" cy="120" r="22"/><path class="ms-ink" d="M300 120l12-10M292 142h16"/></g>
+  <!-- a float valve comparing level with a marked setpoint -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-ink" d="M180 200v34M172 234h16"/><circle class="ms-violet" cx="180" cy="196" r="7" stroke="none"/><path class="ms-rubric-s" d="M198 210h14" stroke-width="2"/></g>
+  <!-- a gate (actuator) changing the flow -->
+  <g fill="none" stroke-width="2.2" stroke-linecap="round"><path class="ms-gild-s" d="M400 246v36M384 264h32"/></g>
+  <!-- soil moisture returns through roots to the gauges -->
+  <g fill="none" stroke-width="2" stroke-linecap="round"><path class="ms-stem" d="M300 300c-20 20-18 40 0 60M300 300c20 20 18 40 0 60"/></g>
+</svg>

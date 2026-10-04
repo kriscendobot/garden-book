@@ -3,7 +3,7 @@
 // the script that reads the journal so test/equilibrium.test.mjs can pin each
 // rule against hand-worked inputs.
 
-// ---------------------------------------------------------------- statistics
+// Statistics
 
 export const numbers = (values) => values.filter((v) => typeof v === "number" && Number.isFinite(v));
 export const quantile = (values, q) => {
@@ -58,7 +58,7 @@ export const frontmatter = (text) => {
   return fields;
 };
 
-// ---------------------------------------------------------------- regime rules
+// Regime rules
 //
 // The three scrutiny regimes the chapter compares:
 //   garden   work landed on the garden's own main2 with no pull request;
@@ -112,7 +112,7 @@ export const gauntletStage = (base) => {
   return m ? { stage: m[1], index: m[2] ? Number(m[2]) : null } : null;
 };
 
-// ---------------------------------------------------------------- reviewers
+// Reviewers
 
 export const BOT_LOGIN = "kriscendobot";
 // A reviewer is a person unless the login is the bot itself (in any case),
@@ -128,7 +128,7 @@ export const isHuman = (login, botLogin = BOT_LOGIN) =>
   !/^copilot/i.test(login);
 export const words = (text) => (text ?? "").split(/\s+/).filter(Boolean).length;
 
-// ---------------------------------------------------------------- prices
+// Prices
 
 // GARDEN_REP_HOURLY_RATE's default in scripts/jobs/reputation.sh on main2: the
 // configured price of a maintainer hour, not a measurement. scenario.mjs reads

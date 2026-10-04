@@ -10,9 +10,9 @@
 // It reads the journal at one fixed commit (via `git archive`, never a working
 // tree), plus GitHub pull-request metadata saved by fetch-github.sh, and prints
 // one JSON document of aggregates. Nothing it prints quotes journal or review
-// prose: only counts, sums, medians, PR numbers, and dates. Every rule that
-// decides what a record means lives in this file, so a reader can disagree
-// with a rule by changing it and re-running.
+// prose: only counts, sums, medians, PR numbers, and dates. The pure rules that
+// decide what a record means live in rules.mjs, so a reader can disagree with
+// a rule by changing it there and re-running.
 
 
 import { execFileSync } from "node:child_process";
@@ -64,7 +64,7 @@ const git = (...args) =>
 // the archive, the cutoff, and the recorded provenance different commits.
 const revision = git("rev-parse", "--verify", `${revisionArgument}^{commit}`).trim();
 
-// ---------------------------------------------------------------- snapshot
+// Snapshot
 
 // The snapshot holds journal prose; it is removed however the run ends.
 const snapshot = mkdtempSync(join(tmpdir(), "equilibrium-"));
@@ -87,7 +87,7 @@ const listFiles = (directory) => {
   return out;
 };
 
-// ---------------------------------------------------------------- completion reports
+// Completion reports
 //
 // Keyed by basename; a re-posted base keeps the report that sorts last by path.
 
@@ -100,7 +100,7 @@ const regimeOf = (base) => classify(base, reports.get(base));
 const pullRequestOf = (base) => ebfbPullRequest(base, reports.get(base));
 
 
-// ---------------------------------------------------------------- reputation events
+// Reputation events
 
 const events = [];
 for (const file of listFiles("reputation/events")) {
@@ -132,7 +132,7 @@ for (const e of events) if (e.regime === "ebfb") e.pullRequest = pullRequestOf(e
 // ceiling that is not money, so they are excluded from every true-basis total.
 const trueBasis = (e) => (e.provider === "openai" ? null : e.estimated);
 
-// ---------------------------------------------------------------- usage ledger
+// Usage ledger
 
 // A line that does not parse (an interrupted append) is dropped, counted in
 // provenance.usageLinesUnparsed, and named on stderr.
@@ -212,7 +212,7 @@ for (const [base, lines] of usage) {
   }
 }
 
-// ---------------------------------------------------------------- per-regime summary
+// Per-regime summary
 
 const regimes = ["garden", "ebfb", "upstream", "other", "unclassified"];
 const regimeSummary = {};
@@ -246,7 +246,7 @@ for (const regime of regimes) {
   };
 }
 
-// ---------------------------------------------------------------- reconcile ledgers
+// Reconcile ledgers
 //
 // For events that carry both a notional ledger price (cost_source: ledger or a
 // numeric agentic_dollars on an Anthropic arm) and a true-basis wallclock
@@ -286,7 +286,7 @@ const reconciliation = {
   medianPerEventRatio: round(quantile(anthropicBoth.map((e) => e.agentic / e.estimated), 0.5), 1),
 };
 
-// ---------------------------------------------------------------- weekly throughput
+// Weekly throughput
 
 const weekly = {};
 for (const u of usageRows) {
@@ -311,7 +311,7 @@ const weeklySeries = Object.keys(weekly)
     pricedEngagements: weekly[week].elapsed.length,
   }));
 
-// ---------------------------------------------------------------- gauntlet stages
+// Gauntlet stages
 
 const stageEvents = events.filter((e) => e.stage && e.regime === "ebfb");
 // What one stage costs: the subscription-allocated dollars of each ebfb stage
@@ -346,7 +346,7 @@ for (const e of stageEvents) {
   stagesByPullRequest.set(e.pullRequest, s);
 }
 
-// ---------------------------------------------------------------- panel runs
+// Panel runs
 
 const panelDates = new Map();
 {
@@ -448,9 +448,16 @@ const panel = {
   ),
 };
 
-// ---------------------------------------------------------------- GitHub: endo-but-for-bots
+// GitHub: endo-but-for-bots
 
-const readJson = (name) => JSON.parse(readFileSync(join(githubDirectory, name), "utf8"));
+const readJson = (name) => {
+  const path = join(githubDirectory, name);
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    throw new Error(`analyze.mjs: cannot read ${path}: ${error.message}`);
+  }
+};
 const github = readJson("meta.json");
 
 const ebfbPullRequests = readJson("ebfb-prs.json").filter((p) => p.author?.login === BOT_LOGIN);
@@ -566,7 +573,7 @@ const ebfb = {
   },
 };
 
-// ---------------------------------------------------------------- GitHub: upstream endo
+// GitHub: upstream endo
 
 // Ferry targets come from the v1 dispatch records (frontmatter `prs:` entries
 // with `role: target` on endojs/endo); fetch-github.sh fetched each one.
@@ -591,7 +598,7 @@ const upstream = {
   commits: describe(upstreamPullRequests.map((p) => p.commits?.length ?? p.commits), 1),
 };
 
-// ---------------------------------------------------------------- learning loop
+// Learning loop
 
 const missFiles = listFiles("review-misses/misses").filter((f) => f.endsWith(".md"));
 const dismissedFiles = listFiles("review-misses/dismissed").filter((f) => f.endsWith(".md"));
@@ -654,7 +661,7 @@ const learning = {
   })),
 };
 
-// ---------------------------------------------------------------- garden rework proxy
+// Garden rework proxy
 
 const gardenEvents = events.filter((e) => e.regime === "garden");
 const repair = /^(self-heal|fu-self-heal|fix-|fu-fix-)/;
@@ -666,7 +673,7 @@ for (const e of gardenEvents) {
   if (repair.test(e.base)) gardenByMonth[m].repair += 1;
 }
 
-// ---------------------------------------------------------------- output
+// Output
 
 const recorded = events.map((e) => e.recordedAt).filter(Boolean).sort();
 console.log(

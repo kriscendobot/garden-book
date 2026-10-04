@@ -50,6 +50,24 @@ test("the scenario agrees with the model worked by hand from its anchors", () =>
   assert.ok(kZero.total < noReview);
 });
 
+test("scenario.mjs refuses an anchor whose stage has no priced bases", () => {
+  const directory = mkdtempSync(join(tmpdir(), "equilibrium-scenario-"));
+  try {
+    for (const stage of ["panel", "fix"]) {
+      const aggregates = read("data/equilibrium/aggregates.json");
+      aggregates.gauntletStages[stage].allocatedDollarsPerBase = describe([]);
+      const path = join(directory, `${stage}.json`);
+      writeFileSync(path, JSON.stringify(aggregates));
+      assert.throws(
+        () => execFileSync(process.execPath, ["tools/equilibrium/scenario.mjs", path], { cwd: repository, stdio: "pipe" }),
+        (error) => error.stderr.toString().includes(`anchor c (${stage}) has no measured median`),
+      );
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("the aggregates record their provenance and hold no review prose", () => {
   const aggregates = read("data/equilibrium/aggregates.json");
   assert.match(aggregates.provenance.journalRevision, /^[0-9a-f]{40}$/);

@@ -32,13 +32,29 @@
 import { readFileSync } from "node:fs";
 import { HOURLY_RATE_DOLLARS } from "./rules.mjs";
 
-const aggregates = JSON.parse(readFileSync(process.argv[2] ?? "data/equilibrium/aggregates.json", "utf8"));
+const aggregatesPath = process.argv[2] ?? "data/equilibrium/aggregates.json";
+let aggregates;
+try {
+  aggregates = JSON.parse(readFileSync(aggregatesPath, "utf8"));
+} catch (error) {
+  throw new Error(`scenario.mjs: cannot read aggregates from ${aggregatesPath}: ${error.message}`);
+}
 const round = (value, digits = 3) => Number(value.toFixed(digits));
+
+// describe() reports an empty bucket as a null median, and null + 1 is 1, so
+// each measured operand is checked before it enters a sum.
+const measuredMedian = (name, statistic) => {
+  const value = statistic?.median;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`scenario.mjs: anchor ${name} has no measured median in the aggregates (n = ${statistic?.n})`);
+  }
+  return value;
+};
 
 const { panel, fix } = aggregates.gauntletStages;
 const anchors = {
-  M: aggregates.ebfb.mergedJoined.machineAllocatedDollars.median,
-  c: panel.allocatedDollarsPerBase.median + fix.allocatedDollarsPerBase.median,
+  M: measuredMedian("M", aggregates.ebfb.mergedJoined.machineAllocatedDollars),
+  c: measuredMedian("c (panel)", panel.allocatedDollarsPerBase) + measuredMedian("c (fix)", fix.allocatedDollarsPerBase),
   w: HOURLY_RATE_DOLLARS / 60,
   d: aggregates.learning.newDirection / aggregates.learning.classifiedReviewComments,
 };

@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readdir, readFile } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 import {
+  generateIllustrations,
   illustrations,
   palette,
   renderIllustration,
@@ -47,6 +49,24 @@ test('the brief has one reproducible SVG for each of its 25 entries', async () =
     const source = await readFile(resolve(artDirectory, illustration.file), 'utf8');
     assert.equal(source, renderIllustration(illustration));
     assertTagNesting(source, illustration.file);
+  }
+});
+
+test('generateIllustrations reproduces the committed SVGs', async t => {
+  const scratch = await mkdtemp(join(tmpdir(), 'illuminations-'));
+  t.after(() => rm(scratch, { recursive: true, force: true }));
+  const directory = resolve(scratch, 'nested', 'art');
+
+  await generateIllustrations(directory);
+
+  const files = (await readdir(directory)).sort();
+  assert.deepEqual(files, illustrations.map(({ file }) => file).sort());
+  for (const file of files) {
+    assert.equal(
+      await readFile(resolve(directory, file), 'utf8'),
+      await readFile(resolve(artDirectory, file), 'utf8'),
+      file,
+    );
   }
 });
 

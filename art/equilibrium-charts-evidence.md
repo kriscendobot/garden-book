@@ -100,7 +100,6 @@ Each chart was screenshotted and inspected in both schemes at 353 px:
 
 ## Data note for the supervisor
 
-`humanAxis` picks the first minimum of the rounded totals and `split` the
-minimum of the unrounded cost, so the two can name different minutes when
-totals tie at two decimals. With the current anchors they agree: both put the
-L = $400, k = 3 minimum at 42 minutes, $132.09.
+`humanAxis` and `split` both take the minimum of the unrounded cost, so they
+name the same minutes even when totals tie at two decimals. Both put the
+L = $400, k = 3 minimum at 42 minutes, $132.10.

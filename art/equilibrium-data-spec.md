@@ -14,7 +14,7 @@ discrepancy rather than adjusting the art.
 | --- | --- |
 | Journal revision | `journal2` at `6485a3b8d83b250470a2447bbc947ae1a1e7fd24` |
 | Journal cutoff | 2026-10-04T06:16:22Z (that commit's committer time) |
-| GitHub fetch | 2026-10-04T07:04:50Z (`tools/equilibrium/fetch-github.sh`) |
+| GitHub fetch | 2026-10-04T07:35:36Z (`tools/equilibrium/fetch-github.sh`) |
 | Reputation events | 8,623 (`reputation/events/*.md`), recorded 2026-07-14T03:04Z to 2026-10-04T06:10Z |
 | Usage ledger | 11,418 lines in 6,632 files (`usage/*.jsonl`); dated lines from the week of 2026-07-27 |
 | Completion reports | 10,793 (`jobs/tada/**`); 8,086 events have one |
@@ -157,13 +157,13 @@ paragraph the figure follows.
 
   | Row | p25 | Median | p75 | p90 | Kind | Color |
   | --- | --- | --- | --- | --- | --- | --- |
-  | Machine, subscription allocation | $0.27 | $0.63 | $1.94 | $3.73 | derived | moss, hatched |
-  | Machine, list price | $5.03 | $10.71 | $29.28 | $54.11 | observed (never charged) | sage, solid |
+  | Machine, subscription allocation | $0.29 | $0.63 | $2.00 | $3.79 | derived | moss, hatched |
+  | Machine, list price | $5.38 | $11.05 | $30.53 | $57.47 | observed (never charged) | sage, solid |
   | Human, reducer formula | $10.57 | $21.77 | $34.32 | $54.15 | derived | terracotta, hatched |
 
-  Annotation: "Median human ÷ machine per PR: 38× (allocation), 2.4× (list price)".
-  Per-PR ratio quantiles (formula ÷ allocation): p25 15×, median 38×, p75 81×,
-  p90 179×; with the $30 round: 38×, 93×, 200×, 492×.
+  Annotation: "Median human ÷ machine per PR: 36× (allocation), 2.2× (list price)".
+  Per-PR ratio quantiles (formula ÷ allocation): p25 15×, median 36×, p75 79×,
+  p90 179×; with the $30 round: 36×, 88×, 197×, 492×.
 - **Reconciliation note for the caption.** The 2026-08-03 study reported 50×
   to 190× at the median on 68 joined PRs, with a 29% job join and machine
   time priced by the rate card's capped wall-clock proxy.
@@ -295,8 +295,8 @@ paragraph the figure follows.
 - **Placement.** "The gauntlet's rounds" (`ch8-the-gauntlets-rounds`), after the
   paragraph on the six-round cap.
 - **Form.** Two parts. (a) Column histogram of the highest panel stage index
-  per PR (observed, n = 161 PRs with gauntlet-stage events): 0: 14, 1: 51,
-  2: 11, 3: 5, 4: 12, 5: 3, 6: 65. Mark 6 as "cap (`--max-iterations` default)".
+  per PR (observed, n = 173 PRs with gauntlet-stage events): 0: 15, 1: 53,
+  2: 13, 3: 6, 4: 8, 5: 5, 6: 73. Mark 6 as "cap (`--max-iterations` default)".
   Stage 0 means a gauntlet with clean or fix stages but no numbered panel.
   (b) One horizontal 100% bar of panel-run outcomes (observed, n = 869 runs,
   2026-09-23 to cutoff): must-fix 675, pass 22, no verdict 172 (error 111,
@@ -349,9 +349,9 @@ paragraph the figure follows.
 - **Data** (`scenario.json` `humanAxis`, machine rounds fixed at k = 3, the
   observed median panel stages per PR). Totals every 15 minutes, 0 to 180:
 
-  - L = $100: 83.29, 72.03, 83.01, 104.54, 131.10, 160.07, 190.18, 220.86, 251.81, 282.90, 314.07, 345.26, 376.48; minimum 13 min, $71.89.
-  - L = $400: 328.88, 190.12, 140.28, 132.66, 145.15, 167.25, 193.97, 222.93, 252.99, 283.61, 314.50, 345.54, 376.67; minimum 42 min, $132.09.
-  - L = $1,600: 1,311.26, 662.48, 369.37, 245.15, 201.34, 195.99, 209.11, 231.21, 257.71, 286.41, 316.24, 346.66, 377.41; minimum 70 min, $195.02.
+  - L = $100: 83.29, 72.04, 83.01, 104.55, 131.11, 160.07, 190.19, 220.86, 251.82, 282.91, 314.07, 345.27, 376.49; minimum 13 min, $71.89.
+  - L = $400: 328.88, 190.13, 140.29, 132.67, 145.15, 167.25, 193.97, 222.93, 253.00, 283.61, 314.50, 345.55, 376.67; minimum 42 min, $132.10.
+  - L = $1,600: 1,311.26, 662.49, 369.37, 245.15, 201.35, 195.99, 209.12, 231.21, 257.71, 286.42, 316.24, 346.67, 377.41; minimum 70 min, $195.03.
 
   Full 5-minute series with components are in `scenario.json`.
 - **Model and parameters.** `C = M + c*k + w*h + L*R`,
@@ -386,9 +386,9 @@ paragraph the figure follows.
   "gauntlet cap".
 - **Data** (`scenario.json` `split`), k = 0 to 8:
 
-  - L = $100: cost 84.17, 77.19, 73.62, 71.89, 71.11, 70.85, 70.84, 70.96, 71.15; minutes 16, 15, 14, 13, 13, 13, 13, 13, 13.
-  - L = $400: cost 158.18, 143.79, 136.06, 132.09, 130.14, 129.26, 128.94, 128.90, 129.01; minutes 48, 44, 42, 42, 41, 41, 41, 41, 41.
-  - L = $1,600: cost 246.48, 219.34, 203.57, 195.02, 190.61, 188.42, 187.43, 187.04, 186.96; minutes 84, 76, 72, 70, 69, 69, 69, 68, 68.
+  - L = $100: cost 84.17, 77.19, 73.62, 71.89, 71.12, 70.85, 70.84, 70.96, 71.16; minutes 16, 15, 14, 13, 13, 13, 13, 13, 13.
+  - L = $400: cost 158.18, 143.79, 136.07, 132.10, 130.14, 129.26, 128.94, 128.91, 129.02; minutes 48, 44, 42, 42, 41, 41, 41, 41, 41.
+  - L = $1,600: cost 246.49, 219.34, 203.57, 195.03, 190.61, 188.42, 187.43, 187.04, 186.96; minutes 84, 76, 72, 70, 69, 69, 69, 68, 68.
 
 - **Alt text intent.** In the same model, adding machine review rounds lowers
   the best human review time and the total cost at first, then both flatten
@@ -399,8 +399,11 @@ paragraph the figure follows.
 
 ## Reproducing the numbers
 
-From a garden clone with `origin/journal2` and `main2` fetched, and `gh`
-authenticated:
+From a garden clone with the full (not shallow) history of `origin/journal2`
+and `main2` fetched, and `gh` authenticated. The panel-run dates come from
+`git log` over `panel-runs/`, so a shallow clone dates every run to its
+shallow boundary; `git clone --bare --filter=blob:none --branch journal2` and
+a `main2` fetch into it is enough:
 
 ```sh
 git -C <garden> fetch origin journal2 main2

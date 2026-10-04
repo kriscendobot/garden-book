@@ -720,10 +720,10 @@ be joined to the ledger:
 
 | Per merged pull request | Median | Middle half | Kind |
 | --- | --- | --- | --- |
-| Machine engagements (attempts) | 10 | 5.5 to 22 | observed |
+| Machine engagements (attempts) | 12 | 6 to 26 | observed |
 | Human review rounds | 2 | 1 to 3 | observed |
-| Human ÷ machine, per pull request (formula) | 38× | 15× to 81× | derived |
-| Human ÷ machine, per pull request ($30 a round) | 93× | 38× to 200× | derived |
+| Human ÷ machine, per pull request (formula) | 36× | 15× to 79× | derived |
+| Human ÷ machine, per pull request ($30 a round) | 88× | 36× to 197× | derived |
 
 The earlier study reported human review at about 50 to 190 times the median
 machine cost. The figures here land in the same range, a little lower,
@@ -781,8 +781,8 @@ The panel has been recording its runs since 2026-09-23. Of 869 runs on
 - 174 pull requests received at least one verdict. Their median was four
   verdicts. Only 18 ended on a pass.
 
-The gauntlet rarely converges to a pass: among the 161 pull requests whose
-gauntlet stages appear in the events, 65 used all six panel rounds that the
+The gauntlet rarely converges to a pass: among the 173 pull requests whose
+gauntlet stages appear in the events, 73 used all six panel rounds that the
 fix loop allows by default (`post-gauntlet.sh --max-iterations`). By design,
 a loop that reaches its cap leaves the pull request improved for a human
 decision, so the human review after it is the real merge gate. Whether must-fix lists shrink from round to

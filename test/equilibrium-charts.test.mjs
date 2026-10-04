@@ -90,7 +90,9 @@ test('the spec tables agree with the committed data the charts read', () => {
   assert.deepEqual(
     e1.map(row => row.slice(1, 5).map(number)),
     [m.machineAllocatedDollars, m.machineNotionalDollars, m.formulaHumanDollars].map(q =>
-      [q.p25, q.median, q.p75, q.p90].map(value => Number(value.toFixed(2))),
+      // The charts round with toLocaleString (decimal half-up), which
+      // differs from toFixed on values such as 0.285.
+      [q.p25, q.median, q.p75, q.p90].map(value => Number(value.toLocaleString('en-US', { maximumFractionDigits: 2, useGrouping: false }))),
     ),
   );
 
@@ -147,14 +149,14 @@ test('the spec tables agree with the committed data the charts read', () => {
 
 const expected = {
   E1: [
-    'p25 $0.27 · median $0.63 · p75 $1.94 · p90 $3.73',
-    'p25 $5.03 · median $10.71 · p75 $29.28 · p90 $54.11',
+    'p25 $0.29 · median $0.63 · p75 $2.00 · p90 $3.79',
+    'p25 $5.38 · median $11.05 · p75 $30.53 · p90 $57.47',
     'p25 $10.57 · median $21.77 · p75 $34.32 · p90 $54.15',
     'Machine, subscription allocation (derived)',
     'Machine, list price (observed, never charged)',
     'Human, reducer formula (derived)',
     'Median human ÷ machine per PR:',
-    '38× (allocation), 2.4× (list price)',
+    '36× (allocation), 2.2× (list price)',
     'n = 107 merged bot PRs',
     '$0.10', '$1', '$10', '$100',
   ],
@@ -181,13 +183,13 @@ const expected = {
     'lands on push', '59.9 h', '118.4 h', 'n = 14', 'not recorded',
     'Jul 93 of 339; Aug 46 of 286; Sep 106 of 597', 'Bot fork: not computed', 'Upstream: not recorded',
   ],
-  E6: ['14', '51', '11', '5', '12', '3', '65', 'cap (--max-iterations default)', 'n = 161 PRs', 'n = 869 runs', 'must-fix 675', 'pass 22', 'no verdict 172', 'error 111', 'seat error 40', 'interrupted 15', 'max rounds 4', 'decider error 2', '346 of the 675 must-fix runs hit the 20-item recording cap', '18 of 174 PRs with a verdict ended on a pass'],
+  E6: ['15', '53', '13', '6', '8', '5', '73', 'cap (--max-iterations default)', 'n = 173 PRs', 'n = 869 runs', 'must-fix 675', 'pass 22', 'no verdict 172', 'error 111', 'seat error 40', 'interrupted 15', 'max rounds 4', 'decider error 2', '346 of the 675 must-fix runs hit the 20-item recording cap', '18 of 174 PRs with a verdict ended on a pass'],
   E7: [
     '534', 'classified review comments', '422', 'new direction (79%)', '112', 'misses (21%)', '52', '13 closed', '2 improvement dispatched', '37 open', '18', 'clusters with a recorded improvement commit', '41', 'before the commit', '8', 'after (in 5 clusters)', '16 undated',
     '70 minor, 21 moderate, 19 major, 2 unrecorded',
     'Clusters are dispatched only after three misses across two pull requests, so members accumulate before a fix by construction. Suggestive, not measured.',
   ],
-  E8: ['SCENARIO', '$100', '$400', '$1,600 loss', '$100 loss: 13 min, $71.89', '$400 loss: 42 min, $132.09', '$1,600 loss: 70 min, $195.02', '$1,311.26 at 0 min', 'k = 3', 'machine $1.42', '0', '60', '120', '180'],
+  E8: ['SCENARIO', '$100', '$400', '$1,600 loss', '$100 loss: 13 min, $71.89', '$400 loss: 42 min, $132.10', '$1,600 loss: 70 min, $195.03', '$1,311.26 at 0 min', 'k = 3', 'machine $1.42', '0', '60', '120', '180'],
   E9: ['SCENARIO', 'gauntlet cap', '$100 loss', '$400 loss', '$1,600 loss', '0', '1', '2', '3', '4', '5', '6', '7', '8', 'd = 0.7903'],
 };
 

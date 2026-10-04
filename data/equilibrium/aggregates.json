@@ -2,7 +2,7 @@
   "provenance": {
     "journalRevision": "6485a3b8d83b250470a2447bbc947ae1a1e7fd24",
     "journalCutoff": "2026-10-04T06:16:22+00:00",
-    "githubFetchedAt": "2026-10-04T07:04:50Z",
+    "githubFetchedAt": "2026-10-04T07:35:36Z",
     "firstEventRecordedAt": "2026-07-14T03:04:20Z",
     "lastEventRecordedAt": "2026-10-04T06:10:26Z",
     "reputationEvents": 8623,
@@ -999,73 +999,73 @@
       "n": 107,
       "machineAllocatedDollars": {
         "n": 107,
-        "mean": 1.742,
-        "p25": 0.27,
-        "median": 0.63,
-        "p75": 1.936,
-        "p90": 3.725,
-        "max": 29.46,
-        "total": 186.428
+        "mean": 1.831,
+        "p25": 0.285,
+        "median": 0.633,
+        "p75": 1.995,
+        "p90": 3.789,
+        "max": 31.378,
+        "total": 195.904
       },
       "machineEventEstimateDollars": {
         "n": 107,
-        "mean": 0.981,
-        "p25": 0.04,
-        "median": 0.121,
+        "mean": 0.993,
+        "p25": 0.046,
+        "median": 0.136,
         "p75": 0.6,
         "p90": 2.672,
         "max": 18.305,
-        "total": 104.96
+        "total": 106.264
       },
       "machineEngagements": {
         "n": 107,
-        "mean": 19.1,
-        "p25": 5.5,
-        "median": 10,
-        "p75": 22,
-        "p90": 43.4,
+        "mean": 20.2,
+        "p25": 6,
+        "median": 12,
+        "p75": 26,
+        "p90": 44.4,
         "max": 307,
-        "total": 2045
+        "total": 2161
       },
       "machineModelSeconds": {
         "n": 107,
-        "mean": 6405,
-        "p25": 1113,
-        "median": 2084,
-        "p75": 7075,
+        "mean": 6764,
+        "p25": 1198,
+        "median": 2580,
+        "p75": 7863,
         "p90": 15726,
-        "max": 52245,
-        "total": 685369
+        "max": 57841,
+        "total": 723741
       },
       "machineNotionalDollars": {
         "n": 107,
-        "mean": 27.29,
-        "p25": 5.03,
-        "median": 10.71,
-        "p75": 29.28,
-        "p90": 54.11,
-        "max": 427.13,
-        "total": 2919.78
+        "mean": 28.73,
+        "p25": 5.38,
+        "median": 11.05,
+        "p75": 30.53,
+        "p90": 57.47,
+        "max": 454.93,
+        "total": 3074.46
       },
       "machineEventSeconds": {
         "n": 107,
-        "mean": 8605,
-        "p25": 1965,
-        "median": 3940,
+        "mean": 8851,
+        "p25": 2006,
+        "median": 4285,
         "p75": 10315,
-        "p90": 18016,
+        "p90": 20467,
         "max": 94350,
-        "total": 920764
+        "total": 947105
       },
       "machineEvents": {
         "n": 107,
-        "mean": 12.6,
+        "mean": 13,
         "p25": 5,
-        "median": 7,
-        "p75": 14.5,
+        "median": 8,
+        "p75": 16,
         "p90": 25.4,
         "max": 185,
-        "total": 1351
+        "total": 1395
       },
       "formulaHumanDollars": {
         "n": 107,
@@ -1079,23 +1079,23 @@
       },
       "perPullRequestRatioFormulaOverAllocated": {
         "n": 107,
-        "mean": 76,
-        "p25": 15,
-        "median": 38.2,
-        "p75": 81.2,
+        "mean": 75,
+        "p25": 14.6,
+        "median": 35.5,
+        "p75": 79,
         "p90": 178.8,
         "max": 952,
-        "total": 8135
+        "total": 8024.7
       },
       "perPullRequestRatioFlatOverAllocated": {
         "n": 107,
-        "mean": 199.2,
-        "p25": 37.7,
-        "median": 93,
-        "p75": 200,
+        "mean": 196.3,
+        "p25": 36.3,
+        "median": 88.4,
+        "p75": 196.6,
         "p90": 491.7,
         "max": 2146.8,
-        "total": 21314
+        "total": 21000.8
       },
       "humanRounds": {
         "n": 107,
@@ -1109,54 +1109,54 @@
       },
       "perPullRequestRatioFormulaOverNotional": {
         "n": 107,
-        "mean": 4,
+        "mean": 3.9,
         "p25": 0.9,
-        "median": 2.4,
-        "p75": 4.5,
+        "median": 2.2,
+        "p75": 4.4,
         "p90": 11,
         "max": 22,
-        "total": 422.7
+        "total": 416.4
       }
     },
     "allJoined": {
       "pullRequests": 419,
-      "machineAllocatedTotal": 378.31,
-      "machineAllocatedMergedTotal": 186.43,
-      "machineNotionalTotal": 6316.15,
+      "machineAllocatedTotal": 425,
+      "machineAllocatedMergedTotal": 195.9,
+      "machineNotionalTotal": 7155.45,
       "mergedAmongJoined": 160
     },
     "gauntletStagesPerPullRequest": {
-      "pullRequests": 161,
+      "pullRequests": 173,
       "panelStages": {
-        "n": 161,
-        "mean": 3.36,
+        "n": 173,
+        "mean": 3.42,
         "p25": 1,
         "median": 3,
         "p75": 6,
         "p90": 6,
         "max": 6,
-        "total": 541
+        "total": 592
       },
       "fixStages": {
-        "n": 161,
-        "mean": 2.9,
+        "n": 173,
+        "mean": 3.01,
         "p25": 0,
         "median": 3,
         "p75": 6,
         "p90": 6,
         "max": 6,
-        "total": 467
+        "total": 521
       },
       "panelStageCounts": {
-        "0": 14,
-        "1": 51,
-        "2": 11,
-        "3": 5,
-        "4": 12,
-        "5": 3,
-        "6": 65
+        "0": 15,
+        "1": 53,
+        "2": 13,
+        "3": 6,
+        "4": 8,
+        "5": 5,
+        "6": 73
       },
-      "mergedWithStages": 39
+      "mergedWithStages": 44
     },
     "humanRoundsByMergeMonth": {
       "2026-05": {

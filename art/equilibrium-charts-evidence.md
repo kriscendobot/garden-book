@@ -24,30 +24,24 @@ The check fails on any of: document horizontal overflow, a chart not exactly
 - light: document scrollWidth 390, clientWidth 390, page background `rgb(251, 248, 240)`
 - dark: document scrollWidth 390, clientWidth 390, page background `rgb(26, 28, 24)`
 
-| Chart | Scheme | Rendered px | Labels | Smallest label (px) | Text fill | Outline stroke | Problems |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| E1 | light | 353 x 396 | 18 | 12 | `rgb(42, 40, 35)` | `rgb(106, 98, 83)` | none |
-| E2 | light | 353 x 418 | 25 | 12 | `rgb(42, 40, 35)` | `rgb(106, 98, 83)` | none |
-| E3 | light | 353 x 352 | 19 | 12 | `rgb(42, 40, 35)` | `rgb(106, 98, 83)` | none |
-| E4 | light | 353 x 466 | 21 | 12 | `rgb(42, 40, 35)` | `rgb(106, 98, 83)` | none |
-| E5 | light | 353 x 750 | 47 | 12 | `rgb(42, 40, 35)` | `rgb(106, 98, 83)` | none |
-| E6 | light | 353 x 534 | 34 | 12 | `rgb(42, 40, 35)` | `rgb(106, 98, 83)` | none |
-| E7 | light | 353 x 646 | 28 | 12 | `rgb(42, 40, 35)` | `rgb(106, 98, 83)` | none |
-| E8 | light | 353 x 688 | 40 | 12 | `rgb(42, 40, 35)` | `rgb(106, 98, 83)` | none |
-| E9 | light | 353 x 512 | 32 | 12 | `rgb(42, 40, 35)` | `rgb(106, 98, 83)` | none |
-| E1 | dark | 353 x 396 | 18 | 12 | `rgb(228, 223, 209)` | `rgb(232, 216, 185)` | none |
-| E2 | dark | 353 x 418 | 25 | 12 | `rgb(228, 223, 209)` | `rgb(232, 216, 185)` | none |
-| E3 | dark | 353 x 352 | 19 | 12 | `rgb(228, 223, 209)` | `rgb(232, 216, 185)` | none |
-| E4 | dark | 353 x 466 | 21 | 12 | `rgb(228, 223, 209)` | `rgb(232, 216, 185)` | none |
-| E5 | dark | 353 x 750 | 47 | 12 | `rgb(228, 223, 209)` | `rgb(232, 216, 185)` | none |
-| E6 | dark | 353 x 534 | 34 | 12 | `rgb(228, 223, 209)` | `rgb(232, 216, 185)` | none |
-| E7 | dark | 353 x 646 | 28 | 12 | `rgb(228, 223, 209)` | `rgb(232, 216, 185)` | none |
-| E8 | dark | 353 x 688 | 40 | 12 | `rgb(228, 223, 209)` | `rgb(232, 216, 185)` | none |
-| E9 | dark | 353 x 512 | 32 | 12 | `rgb(228, 223, 209)` | `rgb(232, 216, 185)` | none |
+Both schemes measured the same for every chart, with no problems:
+
+| Chart | Rendered px | Labels | Smallest label (px) |
+| --- | --- | --- | --- |
+| E1 | 353 x 396 | 18 | 12 |
+| E2 | 353 x 418 | 25 | 12 |
+| E3 | 353 x 352 | 19 | 12 |
+| E4 | 353 x 466 | 21 | 12 |
+| E5 | 353 x 750 | 47 | 12 |
+| E6 | 353 x 534 | 34 | 12 |
+| E7 | 353 x 646 | 28 | 12 |
+| E8 | 353 x 688 | 40 | 12 |
+| E9 | 353 x 512 | 32 | 12 |
 
 Text inherits the body ink in both schemes (`rgb(42, 40, 35)` light,
 `rgb(228, 223, 209)` dark), and the `eq-outline` class switches mark outlines
-from soil text brown to warm sand in the dark scheme.
+from soil text brown (`rgb(106, 98, 83)`) to warm sand (`rgb(232, 216, 185)`)
+in the dark scheme.
 
 The stage 3 illumination adds exactly 24 user units above and 16 below the
 unchanged chart body. Gold rules, moss vines, sage leaves, and soil/sand

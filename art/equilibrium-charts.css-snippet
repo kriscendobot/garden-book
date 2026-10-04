@@ -1,0 +1,11 @@
+/* Review-economics charts (art/equilibrium-e*.svg), inlined in section 8.8.
+   The SVGs carry light-scheme presentation attributes; these rules switch
+   data-mark outlines and gridlines for the dark page. Text uses
+   currentColor and needs no rule. Copy into the same-origin book stylesheet:
+   the clip CSP allows style-src 'self' only. */
+.eq-chart{display:block;width:100%;height:auto;overflow:visible}
+@media (prefers-color-scheme:dark){
+  .eq-chart .eq-outline{stroke:#E8D8B9}
+  .eq-chart .eq-outline-fill{fill:#E8D8B9}
+  .eq-chart .eq-grid{stroke:#E8D8B9;stroke-opacity:.25}
+}

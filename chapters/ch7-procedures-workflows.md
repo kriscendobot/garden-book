@@ -176,49 +176,24 @@ Concurrent PRs therefore never see each other's rebases. Moving that base
 later is the **weave** verb (`skills/frozen-base-branch/SKILL.md`; chapter 6,
 § 6.3).
 
-### 7.2.2 What triggers the chain: the trigger regime, then and now
+### 7.2.2 What triggers the chain
 
-Whether the chain starts on its own has changed twice, and that history
-explains the current guardrails.
-
-**Before 2026-09-16: automatic.** A completed build staged its gauntlet
-through `auto-gauntlet-handoff.sh`, and an hourly coverage audit staged
-gauntlets for any uncovered design PR. On 2026-08-30 that audit mass-staged
-69 gauntlets in one pass, about $482 on one host.
-
-**2026-09-16 to 2026-09-29: the manual regime.**
-`designs/manual-gauntlet-trigger.md` retired the automatic stager. A
-completed build or design stopped at its open draft PR, and **`run the
-gauntlet #N` became the sole ordinary trigger**, from the comment watcher or
-the liaison, both calling `scripts/jobs/post-gauntlet.sh` directly. The
-design separated two decisions the automatic edge had conflated: *a worker has
-produced a reviewable artifact*, and *the maintainer wants to spend a full
-gauntlet on it now*. It replaced "every PR gets a gauntlet" with a weaker but
-still mechanical invariant:
-
-> A garden-authored build or design PR may complete without a gauntlet only
-> while it is draft. Moving it into the mergeable queue requires a separate,
-> maintainer-visible act.
-
-**Since 2026-09-29: automatic again, but narrower.** The design's status line
-reads "Superseded 2026-09-29 by the restored completion-local automatic
-handoff" (commit `18df481c04b`, `feat(gauntlet): restore automatic producer
-handoff`). The maintainer reversed the manual default once fleet health
-improved. `scripts/jobs/gardener.sh` again calls
-`scripts/jobs/auto-gauntlet-handoff.sh` on completion, but the restored edge is
-deliberately narrower than the original:
+A completed build or design stages its own gauntlet: `scripts/jobs/gardener.sh` calls
+`scripts/jobs/auto-gauntlet-handoff.sh` when a job completes. The edge is
+deliberately narrow, and each restriction exists because a broader version
+once did damage:
 
 - It considers **only the PR named in the completing job's report**. It is a
-  completion edge, not a backlog sweep, so it cannot repeat the 2026-08-30
-  mass-stage.
+  completion edge, not a backlog sweep. An earlier hourly sweep, which staged a
+  gauntlet for any design PR that lacked one, once mass-staged 69 gauntlets in
+  a single pass, about $482 on one host.
 - A job-file citation is never treated as the job's artifact. A PR that a
   build opens did not exist when the job was posted, so a PR URL in the job
-  body is by construction a reference. (Scraping both documents is how, on 2026-07-29,
-  a build that opened no PR force-drafted the unrelated, live
-  `endojs/endo-but-for-bots#671`.)
-- The PR's author must be the bot. A report that cites someone else's PR
-  cannot stage it, which closes the sibling 2026-07-29 incident on the
-  Dependabot PR `#867`.
+  body is by construction a reference. (Treating the job body's citations as
+  artifacts once let a build that opened no PR force-draft an unrelated, live
+  PR.)
+- The PR's author must be the bot. A report that cites someone else's PR,
+  such as a Dependabot update, cannot stage it.
 - **Builder** roles owe a feature gauntlet, recorded under the base
   `<build-base>-gauntlet`. **Non-builder** jobs (a designer, a research job)
   owe one only when their PR is design-only, recorded under the PR-keyed base
@@ -227,14 +202,26 @@ deliberately narrower than the original:
 - Probes and the garden's own open-question answer surfaces are skipped.
 - It **never changes PR state.**
 
-The manual regime's guardrails survived the reversal:
+For about two weeks the garden ran with no automatic edge at all.
+`designs/manual-gauntlet-trigger.md` made `run the gauntlet #N` the sole
+ordinary trigger, separating two decisions the automatic edge had conflated:
+*a worker has produced a reviewable artifact*, and *the maintainer wants to
+spend a full gauntlet on it now*. The automatic edge came back, in the narrow
+form above, once fleet health improved. The manual period left behind an
+invariant that still holds:
+
+> A garden-authored build or design PR may complete without a gauntlet only
+> while it is draft. Moving it into the mergeable queue requires a separate,
+> maintainer-visible act.
+
+Three guardrails enforce it:
 
 - **Draft-at-completion sensor.** `scripts/jobs/assert-producer-pr-draft.sh`
   passes a draft producer PR. When a completion names a bot-authored **non-draft**
   PR with no gauntlet coverage (the "opened ready by mistake" class), the
   gardener records one deduplicated maintainer action and terminalizes the
   already-complete producer. It never re-drafts the PR, because re-drafting a
-  PR under live human review repeats the `#671`/`#867` hazard.
+  PR under live human review would disrupt that review.
 - **Readiness audit.** `scripts/jobs/design-pr-gauntlet-coverage-audit.sh`
   still runs hourly, but it only **alerts**. It finds bot-authored open
   non-draft PRs with no gauntlet and raises a maintainer alert, deduplicated on
@@ -255,8 +242,9 @@ chat directive (chapter 3, § 3.5 walks through one). It serves a draft PR that
 has no producing job, or a direct request for review. It is idempotent: an
 active or completed record under the same base makes it a no-op.
 
-One scoped exception is the **Ironhorse autopilot**, whose 2026-09-28
-authorization lets its serial controller stage and advance its own crank-PR
+One scoped exception is the **Ironhorse autopilot**, a maintainer-authorized
+controller that advances the Ironhorse engine port (chapter 1, § 1.1) one
+pull request at a time. It may stage and advance its own pull requests'
 gauntlets (`skills/orchestration/SKILL.md` § Authorized Ironhorse ratchet).
 The exception applies to no other orchestration.
 
@@ -352,9 +340,11 @@ record. No one hand-edits the journal.
 - **Design-only PR.** When every changed path is under a design directory, the
   chain is **build → design panel → fix-loop → un-draft**. With no test or
   source surface, there is no assayer or cleaner. Design PRs and
-  implementation PRs are always separate PRs against separate bases. The
-  maintainer's framing (2026-05-14): "The designs should be based on llm. The
-  implementations should be based on master, for those designs." Keeping them
+  implementation PRs are always separate PRs against separate bases. On the
+  Endo fork, designs target the bots' `llm` branch and implementations target
+  `master` (chapter 1, § 1.1); in the original maintainer's words, "The
+  designs should be based on llm. The implementations should be based on
+  master, for those designs." Keeping them
   apart gives each panel the right audience and lets the ferry carry the
   implementation alone.
 - **Cleaner-skipped tiny PR.** Pure documentation, a lockfile-only churn, a
@@ -502,9 +492,9 @@ Each seat returns one block:
 The key rule is **cite-or-propose**: every finding either cites the standing
 rule it enforces (`[rule: skills/rename-discipline/SKILL.md]`) or proposes a new
 one in a sentence. A finding carrying neither is **dropped** at aggregation.
-The rule came from the review of PR #75, where 71 inline and 14 top-level
-maintainer comments mapped largely onto rules the garden had already written
-down and the seats had not read. Proposed rules go to the gardener over the
+The rule exists because, on one heavily reviewed pull request, most of the
+maintainer's 71 inline and 14 top-level comments restated rules the garden had
+already written down and the seats had not read. Proposed rules go to the gardener over the
 bus to be encoded later, which is how the panel feeds the library.
 
 ### 7.3.4 Dispositions
@@ -591,8 +581,8 @@ must-fix counts and truncated titles, whether the appellate ran, and the full
 
 ## 7.4 Orchestration
 
-The maintainer's standing directive (kriskowal, 2026-07-01): **for a multi-part
-job, always make an orchestration job.** A loose pile of sub-jobs depends on
+The standing rule: **for a multi-part job, always make an orchestration
+job.** A loose pile of sub-jobs depends on
 someone remembering the follow-ups, and the garden, like any system with
 amnesiac workers, forgets. An orchestration writes the sequence down and has a
 deterministic watcher carry it out. Skill: `skills/orchestration/SKILL.md`.
@@ -723,9 +713,8 @@ Its life, step by step:
    A child that is a recurring verb against a target (a weave, a shepherd, a
    restack of a specific PR) must carry a `-YYYYMMDD` suffix; otherwise
    `post-plan.sh` may find an old completed job of the same name in `tada/` and
-   silently skip the park. That happened to an
-   `endojs-endo-but-for-bots-pr395-weave` child on 2026-08-17, and the script now
-   warns loudly about it.
+   silently skip the park. That has happened, and the script now warns loudly
+   about it.
 3. **Record the orchestration:**
 
    ```sh
@@ -770,7 +759,7 @@ case.
 
 Both `blocked_on` and orchestration anchor on a **board base reaching
 `tada/`**. Some follow-ups depend on an event the board never records. The
-motivating case (kriscendobot/minion.town#41) was a review that asked the
+motivating case was a review on minion.town (chapter 1, § 1.1) that asked the
 garden to "post a job to design X, and a follow-up to act on that
 implementation here, triggered when it lands." Blocking the follow-up on the
 design job fires it as soon as the design is *written*, long before anything is
@@ -813,10 +802,9 @@ The skill warns about two pitfalls. A plain `--deferred` F is **not** safe,
 because the foreman auto-promotes `deferred` jobs. And completing N with
 neither an F nor a re-arm silently forgets the follow-up.
 
-The first live use of the chain was D
-`ebfb-daemon-commit-formula-design` (a daemon "commit" formula on
-endo-but-for-bots), N `mtown-git-remote-followup-notice`, and an F minted by
-N for the minion.town git remote.
+The chain was first used for exactly that case: D designed a feature in Endo,
+and N waited for it to be built before minting F, which used the feature in
+minion.town.
 
 **How it relates to orchestration.** An orchestration could hold D and F as
 serial children, but it would promote F when D reaches `tada/`, which is

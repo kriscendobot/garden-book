@@ -119,9 +119,9 @@ they are the same. `post-job.sh --identity <owner>/<repo>#<pr>:comment:<cid>` (o
 `jobs/index/<hash>`, written in the same commit as the job; a later post with
 the same identity while its job is live, or after it completed, is a no-op.
 When no identity is passed, one is derived from the body if it cites exactly
-one canonical GitHub comment URL. This layer closed the
-`endojs/endo-but-for-bots#58` incident, in which two differently named jobs
-for one comment raced and one worker clobbered the other's working tree.
+one canonical GitHub comment URL. Without this layer, two differently named
+jobs for one comment can both be claimed, and on the original instance two
+such jobs raced and one worker clobbered the other's working tree.
 
 ### The push is the compare-and-swap
 
@@ -171,8 +171,7 @@ Two operational rules follow:
   can hold a peer's uncommitted changes. Content edits under `library/` or
   `projects/` go through `scripts/jobs/land-journal-edit.sh`, which applies
   the change in the producer clone on the current tip, with the same CAS loop
-  and a verify-pushed guard. Earlier editions used that path while the book
-  lived in the journal; this edition lives in its own repository.
+  and a verify-pushed guard.
 
 ## 2.2 The job lifecycle
 
@@ -348,8 +347,8 @@ actually run a job, meaning that its kind's agent CLI resolves
 (`worker_health_gate` in `common.sh`). A worker that fails the gate does not
 claim; it idle-polls on backoff and resumes by itself when the binary
 reappears. The gate matters because a broken worker fails each job in about a
-second and so wins claim races disproportionately. In the 2026-07-27/28
-incident, one host with an unresolvable CLI held all 52 `doin/` claims and
+second and so wins claim races disproportionately. Before the gate existed,
+one host with an unresolvable CLI once held all 52 `doin/` claims and
 produced zero completions while healthy hosts sat idle. Peers cannot take
 such a host out of rotation (`set-workers.sh` refuses cross-host writes, and
 the drain marker is host-local), so the gate has to live in the spine.
@@ -371,7 +370,8 @@ auto-load them. The `role:` field also drives machinery around the handler:
 - **Handler budget.** `role_default_handler_timeout` gives structurally long
   roles their 7200 s default (§ 2.2).
 - **Environment.** The handler exports `GARDEN_JOB_ROLE`, which, for
-  instance, gives a `botanist` a scripts-disabled dependency install in
+  instance, gives a `botanist` (the role that handles automated
+  dependency-update PRs) a scripts-disabled dependency install in
   `ensure-project-worktree.sh` and labels the worker's journal entries.
 - **Completion edges.** When a `role: builder` job completes with an open
   draft PR authored by the bot, `scripts/jobs/auto-gauntlet-handoff.sh` posts
@@ -633,8 +633,9 @@ in-flight claim and then stop claiming (`claim-job.sh` exits 3), so a drain
 brakes claims without killing anything. The **foreman brake**
 (`scripts/jobs/brake-foreman.sh on|off|status`) is journal-backed and acts on
 the foreman alone: it stops the foreman from promoting or generating work
-while workers keep draining the existing board. The shipped foreman active
-target is 10, and `GARDEN_TOKEN_BACKOFF_FRACTION` is the spend brake. The
+while workers keep draining the existing board. The foreman's *active
+target*, the number of jobs it tries to keep in flight, ships at 10, and
+`GARDEN_TOKEN_BACKOFF_FRACTION` is the spend brake. The
 control loops that turn these levers (worker-count leveling, the foreman as
 pacing actuator) are chapter 8, § 8.3 and § 8.4; see also
 [`context/operations/cybernetics.md`][cybernetics].
@@ -644,7 +645,7 @@ pacing actuator) are chapter 8, § 8.3 and § 8.4; see also
 ### The root checkout is a deployed version
 
 `<garden-root>` is not a development tree. Nothing fast-forwards it
-continuously; the old `garden-deploy-sync` path is retired. It holds a
+continuously. It holds a
 specific, recorded `main2` SHA, and every unit on the host runs that code.
 Development happens only in per-job worktrees (§ 2.3), which push to
 `origin/main2`; the root moves only when that host **deploys**

@@ -279,8 +279,8 @@ this path is implemented, but no read-once bootstrap script exists yet.
 The design deliberately excludes one thing from the secret store: the Claude
 subscription login. It is an account session, not bootstrap material the garden
 can safely receive, serialize, or replay, so it is always interactive device
-auth. The design also rejects the "sparsecap" idea from issue #44, a Claude
-capability string supplied at launch: the garden has no specified format,
+auth. For the same reason the design declines to accept a Claude capability
+string supplied at launch: the garden has no specified format,
 verifier, revocation rule, or scope for such a value, and accepting one would
 turn the launcher into a credential-ingestion service with no security model.
 
@@ -383,7 +383,7 @@ Two properties protect a new host from a bad declaration:
   the other API-key kinds until that kind's probe passes on this host, and names
   the missing piece. `GARDEN_FORCE_DECLARE=1` stages a declaration ahead of a
   credential, and the runtime cap still holds it at 0. Setting a kind to 0 is
-  always allowed. The local-Qwen `hermit` lane is retired and pinned to 0.
+  always allowed. A retired local-model kind, `hermit`, stays pinned to 0.
   Chapter 10 lists the worker kinds and the tiers each can serve.
 
 ### Step 5: designate the leader
@@ -451,9 +451,9 @@ liaison arms these as Claude Code **Monitor** tools in its own session:
 | **Liaison-bus watch** | every host | A standing loop over `read-msgs.sh` for `liaison-<host>`, `role/liaison`, `broadcast`, and `host/<GARDEN>`, with an `awk` filter that drops the session's own sends. On a drained host, it is the only reader of the bus. |
 
 The liaison-bus watch is a standing monitor, not a one-time read at bring-up,
-because of an incident: on 2026-08-02 a liaison that read the bus once went
-about 36 hours without reading it again and missed four deploy broadcasts and a
-direct request from a peer.
+because a liaison that reads the bus only once can go dark: on the original
+instance one went about 36 hours without reading it again and missed four
+deploy broadcasts and a direct request from a peer.
 
 ### Optional armings
 
@@ -494,8 +494,8 @@ job and watch a gardener claim it, closing the loop end to end. Chapter 3,
 ## 4.6 The turnkey path: a disposable AWS host
 
 Everything above assumes a hand-provisioned machine. For a host you want to
-create, discard, and recreate from a script, [issue #44][issue44] produced
-the **turnkey Amazon garden host**: a one-click EC2 launch that puts no Claude
+create, discard, and recreate from a script, the garden has a **turnkey
+Amazon garden host** ([issue #44][issue44]): a one-click EC2 launch that puts no Claude
 credential, GitHub token, or user secret in the AMI, the launch template, the
 repository, or instance user-data. Its status is "Implemented (first release)."
 
@@ -508,7 +508,10 @@ path. **No inbound port is open.** The launch template sets the security group,
 an encrypted gp3 volume, IMDSv2 as required, and tags. It sets no credentials,
 no user-data, and no key pair.
 
-### The resources (us-west-1, account 292378781985, tag `project=garden-turnkey`)
+### The resources (tag `project=garden-turnkey`)
+
+On the original instance these live in one AWS account in `us-west-1`; an
+instance of your own would use its own account and region.
 
 | Piece | Script (`scripts/aws/turnkey/`) | Default |
 | --- | --- | --- |
@@ -582,9 +585,9 @@ You reach the instance over SSM, with port 22 still closed to the internet:
   rule for your own CIDR with `ensure-security-group.sh --open-ssh <cidr>` and
   your own key pair. A public key is not a secret.
 
-This resolves two review notes on the design that seemed to conflict: "SSH stays
-closed" (no inbound SSH exposed to the internet) and "use the ordinary Claude
-device-auth workflow from the operator's ssh CLI." The port stays closed, and
+So the host gets both properties that might seem to conflict: no inbound SSH
+is exposed to the internet, yet the operator still runs the ordinary Claude
+device-auth workflow from their own `ssh` client. The port stays closed, and
 the CLI arrives over SSM.
 
 Once in:
@@ -606,9 +609,10 @@ The design's decisions table records three choices for the first release:
 1. **ARM64 Ubuntu, private AMI plus launch template**, on the pinned base above.
 2. **GitHub login: interactive `gh auth login` by default**, with the scoped
    Secrets Manager PAT as an opt-in (`--with-secret <arn>`), off by default.
-3. **Account `292378781985`, region `us-west-1`.** AWS Marketplace publication
-   (seller enrollment, version review, terms, regional copies, a support
-   commitment) is deferred and remains a maintainer-only decision. It would
+3. **One private account and region** (on the original instance,
+   `us-west-1`). AWS Marketplace publication (seller enrollment, version
+   review, terms, regional copies, a support commitment) is deferred and
+   remains a maintainer-only decision. It would
    consume the same tested AMI rather than fork the build.
 
 ### Why an AMI and not something else

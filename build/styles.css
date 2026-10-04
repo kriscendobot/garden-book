@@ -153,6 +153,34 @@ li>p.runin>strong:first-child{font:inherit;font-weight:600;letter-spacing:0;text
 .illumination.ratio-1-1{width:24rem}
 .illumination.ratio-4-5{width:19rem}
 
+/* Review-economics charts (section 8.8). Each chart is a figure followed by
+   a disclosure of its exact values. The chart rules below are copied from
+   art/equilibrium-charts.css-snippet: the SVGs carry light-scheme
+   presentation attributes, and these switch data-mark outlines and gridlines
+   for the dark page. Text in the charts uses currentColor. */
+.eq-chart{display:block;width:100%;height:auto;overflow:visible}
+@media (prefers-color-scheme:dark){
+  .eq-chart .eq-outline{stroke:#E8D8B9}
+  .eq-chart .eq-outline-fill{fill:#E8D8B9}
+  .eq-chart .eq-grid{stroke:#E8D8B9;stroke-opacity:.25}
+}
+.eq-exhibit{margin:2rem 0 2.4rem}
+.eq-figure{margin:0 auto;max-width:24rem}
+.eq-figure figcaption{font:italic .88rem/1.45 var(--serif);color:var(--soil);margin:.55rem .3rem 0}
+.eq-values{margin:.7rem .3rem 0;font:.8rem/1.45 var(--sans);color:var(--soil)}
+.eq-values summary{cursor:pointer;color:var(--leaf);letter-spacing:.02em;padding:.2rem 0}
+.eq-values summary:focus-visible{outline:2px solid var(--leaf);outline-offset:2px;border-radius:2px}
+.eq-values[open] summary{margin-bottom:.4rem}
+.chapter .eq-values table{display:table;width:100%;max-width:100%;margin:.6rem 0 1rem;font-size:.75rem;color:var(--ink)}
+.eq-values caption{caption-side:top;text-align:left;font:italic .8rem/1.4 var(--serif);color:var(--soil);padding-bottom:.4rem}
+.eq-values th,.eq-values td{padding:.35rem .4rem .35rem 0;overflow-wrap:normal}
+.eq-values td:last-child,.eq-values th:last-child{padding-right:0}
+.eq-values thead th{font-size:.75rem;letter-spacing:.02em;text-transform:none}
+.eq-values .eq-value{white-space:nowrap}
+.eq-values tbody th{font:inherit;letter-spacing:0;text-transform:none;color:inherit;border-bottom:0;padding-top:.35rem}
+.eq-values tbody tr+tr th{border-top:1px solid var(--rule)}
+.eq-note{margin:.2rem 0 .6rem}
+
 blockquote{margin:1.4rem 0 1.4rem 1.6rem;padding:0;font-style:italic}
 blockquote strong{font-style:normal}
 blockquote code{font-style:normal}

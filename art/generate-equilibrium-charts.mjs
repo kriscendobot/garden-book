@@ -914,7 +914,7 @@ export const charts = [
     render: e8,
     title: 'The marginal crossing (scenario)',
     description:
-      'Scenario, not observed. In an illustrative model, total expected cost first falls as review minutes rise, reaches a minimum, then rises along the cost of the reviewer\'s time; the higher the stakes, the later the minimum: 13, 41, and 70 minutes for losses of $100, $400, and $1,600. A second panel splits the $400 case into rising human dollars, falling residual loss, and flat machine cost.',
+      'Scenario, not observed. In an illustrative model, total expected cost first falls as review minutes rise, reaches a minimum, then rises along the cost of the reviewer\'s time; the higher the stakes, the later the minimum: 13, 42, and 70 minutes for losses of $100, $400, and $1,600. A second panel splits the $400 case into rising human dollars, falling residual loss, and flat machine cost.',
     kind: 'scenario',
     caption: () =>
       'Scenario: illustrative model C = M + c·k + w·h + L·R with machine rounds fixed at k = 3; anchors observed or derived, κ, τM, τD, and L assumed. Not identified by the garden\'s records.',

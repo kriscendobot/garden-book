@@ -1,3 +1,4 @@
+import { equilibriumCharts as defaultEquilibriumCharts } from "./equilibrium-charts.mjs";
 import { illuminations as defaultIlluminations } from "./illuminations.mjs";
 import { renderBook } from "./render-book.mjs";
 import { readText, writeText } from "./tree-io.mjs";
@@ -10,6 +11,7 @@ export const assembleBook = async ({
   artworkTree,
   outputTree,
   illuminations = defaultIlluminations,
+  equilibriumCharts = defaultEquilibriumCharts,
 }) => {
   const chapterFileNames = (await chaptersTree.list()).filter((fileName) =>
     chapterFilePattern.test(fileName),
@@ -20,11 +22,14 @@ export const assembleBook = async ({
       text: await readText(chaptersTree, fileName),
     })),
   );
-  const [introSource, styles, ...illuminationSources] = await Promise.all([
+  const [introSource, styles, ...artSources] = await Promise.all([
     readText(buildTree, "intro.html"),
     readText(buildTree, "styles.css"),
     ...illuminations.map(({ file }) => readText(artworkTree, file)),
+    ...equilibriumCharts.map(({ file }) => readText(artworkTree, file)),
   ]);
+  const illuminationSources = artSources.slice(0, illuminations.length);
+  const chartSources = artSources.slice(illuminations.length);
   const result = renderBook({
     chapterSources,
     introSource,
@@ -35,8 +40,12 @@ export const assembleBook = async ({
           illuminationSources[index],
         ]),
       ),
+      charts: Object.fromEntries(
+        equilibriumCharts.map(({ file }, index) => [file, chartSources[index]]),
+      ),
     },
     illuminations,
+    equilibriumCharts,
   });
   await Promise.all([
     writeText(outputTree, "index.html", result.html),

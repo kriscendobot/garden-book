@@ -720,11 +720,8 @@ be joined to the ledger:
 
 | Per merged pull request | Median | Middle half | Kind |
 | --- | --- | --- | --- |
-| Machine cost, subscription allocation | $0.63 | $0.27 to $1.94 | derived |
-| Machine cost, list price | $10.71 | $5.03 to $29.28 | observed, never charged |
 | Machine engagements (attempts) | 10 | 5.5 to 22 | observed |
 | Human review rounds | 2 | 1 to 3 | observed |
-| Human cost, reducer formula | $21.77 | $10.57 to $34.32 | derived |
 | Human ÷ machine, per pull request (formula) | 38× | 15× to 81× | derived |
 | Human ÷ machine, per pull request ($30 a round) | 93× | 38× to 200× | derived |
 
@@ -752,14 +749,6 @@ economy if it adds even part of a review round.
 ### Latency and throughput
 
 Cost is only part of what review spends. It also takes time:
-
-| Step | Median | Kind |
-| --- | --- | --- |
-| A panel stage of the gauntlet | 7 minutes (424 s; n = 628) | observed |
-| A fix stage of the gauntlet | 15 minutes (885 s; n = 549) | observed |
-| Bot pull request opened → first human review | 24 hours (n = 272) | observed |
-| Bot pull request opened → merged, `endo-but-for-bots` | 60 hours (n = 296) | observed |
-| Ferried pull request opened → merged, upstream | 118 hours (n = 14) | observed |
 
 The spread is wide: a quarter of merged bot pull requests waited more than
 four days for their first human review, and a tenth more than nineteen. Weekly

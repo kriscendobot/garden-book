@@ -34,6 +34,13 @@ drawn for, an optional later heading inside that section (`at`), how many body
 blocks to pass before the figure (margin notes don't count), and its caption.
 A placement whose heading is gone, which would leave its section, or which
 names missing art fails the build instead of moving silently.
+`equilibrium-charts.mjs` does the same for the nine review-economics charts
+(`art/equilibrium-e*.svg`) in section 8.8: each entry names the chart, the
+subsection the spec places it under (which must stay inside 8.8), the body
+blocks to pass (margin notes and charts already placed don't count), its
+caption, and the exact values a reader can open in a `details` disclosure
+directly after it. `tools/equilibrium/integration-check.mjs` checks those
+nine placements in a built edition in the browser.
 `tools/browser-check.mjs` loads a built edition in headless Chromium at phone
 and desktop widths in both color schemes and reports overflow, clipped or
 overlapping figures, and caption contrast (Playwright is not a dependency;

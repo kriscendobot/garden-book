@@ -1,6 +1,10 @@
 import MarkdownIt from "markdown-it";
 import markdownItAnchor from "markdown-it-anchor";
 
+import {
+  EQUILIBRIUM_SECTION,
+  equilibriumCharts as defaultEquilibriumCharts,
+} from "./equilibrium-charts.mjs";
 import { illuminations as defaultIlluminations } from "./illuminations.mjs";
 
 const GARDEN_SOURCE = "https://github.com/kriscendobot/garden/blob/main2/";
@@ -114,9 +118,9 @@ const elementEnd = (html, start, tag) => {
 };
 
 // Inserts a figure after the given number of body blocks that follow the
-// heading with the given id, passing over margin notes without counting them.
-// The figure never moves past the next heading: a count that runs out first is
-// an error.
+// heading with the given id, passing over margin notes and placed charts
+// without counting them. The figure never moves past the next heading: a count
+// that runs out first is an error.
 export const insertAfterBlocks = (html, id, blocks, insertion) => {
   const heading = new RegExp(`<h([2-6]) id="${id}"[^>]*>`).exec(html);
   if (!heading) {
@@ -138,7 +142,7 @@ export const insertAfterBlocks = (html, id, blocks, insertion) => {
       }
       break;
     }
-    const marginNote = /\bclass="marginnote\b/.test(open[2]);
+    const marginNote = /\bclass="(?:marginnote|eq-exhibit)\b/.test(open[2]);
     if (!marginNote && counted === blocks) {
       break;
     }
@@ -169,6 +173,65 @@ const illuminationFigure = (placement, source, opener) => {
     source,
     "illumination-art",
   )}<figcaption>${escapeHtml(placement.caption)}</figcaption></figure>`;
+};
+
+// Inline code in a chart's table cells and notes is written between
+// backquotes. Any word with a digit in it, such as a date or an amount, is kept
+// on one line, together with a unit of time that follows it.
+const VALUE = /(\S*\d\S*(?: (?:s|h|min)(?=[\s,;.)]|$))?)/;
+const cellHtml = (value) =>
+  value
+    .split(/`([^`]+)`/)
+    .map((segment, index) =>
+      index % 2 === 1
+        ? `<code>${escapeHtml(segment)}</code>`
+        : segment
+            .split(VALUE)
+            .map((part, inner) =>
+              inner % 2 === 1
+                ? `<span class="eq-value">${escapeHtml(part)}</span>`
+                : escapeHtml(part),
+            )
+            .join(""),
+    )
+    .join("");
+
+// A review-economics chart, verbatim, as a captioned figure, with its exact
+// values in a disclosure directly after it.
+const equilibriumExhibit = (chart, source) => {
+  const title = /<title id="[^"]+">([^<]+)<\/title>/.exec(source)?.[1];
+  if (!title || !source.includes(`data-chart="${chart.id}"`)) {
+    throw new RangeError(`${chart.file} is not the drawing of ${chart.id}`);
+  }
+  const tables = chart.tables
+    .map(
+      (table) =>
+        `<table><caption>${cellHtml(table.caption)}</caption><thead><tr>${table.head
+          .map((cell) => `<th scope="col">${cellHtml(cell)}</th>`)
+          .join("")}</tr></thead><tbody>${table.rows
+          .map(
+            ([first, ...rest]) =>
+              `<tr><th scope="row">${cellHtml(first)}</th>${rest
+                .map((cell) => `<td>${cellHtml(cell)}</td>`)
+                .join("")}</tr>`,
+          )
+          .join("")}</tbody></table>`,
+    )
+    .join("");
+  const rowNotes = chart.tables.flatMap((table) =>
+    (table.rowNotes ?? [])
+      .map((note, index) => [table.rows[index][0], note])
+      .filter(([, note]) => note !== ""),
+  );
+  const notes = [
+    ...rowNotes.map(([row, note]) => `${row}: ${note}.`),
+    ...(chart.notes ?? []),
+  ]
+    .map((note) => `<p class="eq-note">${cellHtml(note)}</p>`)
+    .join("");
+  return `<div class="eq-exhibit" data-chart="${chart.id}"><figure class="eq-figure">${source.trim()}<figcaption>${escapeHtml(
+    chart.caption,
+  )}</figcaption></figure><details class="eq-values"><summary>Exact values: ${title}</summary>${tables}${notes}</details></div>`;
 };
 
 const partOf = (number) =>
@@ -283,6 +346,7 @@ export const renderBook = ({
   introSource,
   artwork,
   illuminations = defaultIlluminations,
+  equilibriumCharts = defaultEquilibriumCharts,
 }) => {
   const chapters = chapterSources
     .map(({ fileName, text }) => {
@@ -474,6 +538,31 @@ export const renderBook = ({
       );
       placed.add(placement.file);
     }
+    for (const chart of equilibriumCharts) {
+      if (!bodyHtml.includes(`id="${chart.anchor}"`)) {
+        continue;
+      }
+      if (placed.has(chart.file)) {
+        throw new RangeError(`${chart.file} is placed twice`);
+      }
+      if (!bodyHtml.includes(`id="${EQUILIBRIUM_SECTION}"`)) {
+        throw new RangeError(
+          `#${chart.anchor} is not inside the section #${EQUILIBRIUM_SECTION}`,
+        );
+      }
+      assertWithinSection(bodyHtml, EQUILIBRIUM_SECTION, chart.anchor);
+      const source = artwork.charts?.[chart.file];
+      if (source === undefined) {
+        throw new RangeError(`No artwork for ${chart.file}`);
+      }
+      bodyHtml = insertAfterBlocks(
+        bodyHtml,
+        chart.anchor,
+        chart.blocks,
+        equilibriumExhibit(chart, source),
+      );
+      placed.add(chart.file);
+    }
     sections.push(
       `<section class="chapter part-${part ? part[4] : "none"}" aria-labelledby="${chapterId}">\n${bodyHtml}\n<p class="back"><a href="#toc">&uarr; Contents</a></p>\n</section>`,
     );
@@ -554,7 +643,9 @@ export const renderBook = ({
   mainContents.push("</ol>");
   frieze.push("</ol>");
 
-  const unplaced = illuminations.filter(({ file }) => !placed.has(file));
+  const unplaced = [...illuminations, ...equilibriumCharts].filter(
+    ({ file }) => !placed.has(file),
+  );
   if (unplaced.length > 0) {
     throw new RangeError(
       `No heading for ${unplaced.map(({ file, anchor }) => `${file} (#${anchor})`).join(", ")}`,

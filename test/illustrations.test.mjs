@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import {
   generateIllustrations,
@@ -12,7 +12,7 @@ import {
   renderIllustration,
 } from '../art/generate-illuminations.mjs';
 
-const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const repository = fileURLToPath(new URL('..', import.meta.url));
 const artDirectory = resolve(repository, 'art');
 
 const occurrences = (text, value) => text.split(value).length - 1;

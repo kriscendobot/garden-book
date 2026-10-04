@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { resolve } from 'node:path';
 
 export const palette = Object.freeze({
   paper: '#FBF8F0',
@@ -15,7 +15,6 @@ export const palette = Object.freeze({
   lavender: '#B9ACCC',
   gold: '#E6CF7A',
 });
-
 
 const leaf = (x, y, rotation = 0, fill = palette.sage, scale = 1) => `
   <path d="M0 0C-16-18-35-13-43 6C-21 12-7 9 0 0Z" fill="${fill}" transform="translate(${x} ${y}) rotate(${rotation}) scale(${scale})"/>`;
@@ -560,5 +559,5 @@ export const generateIllustrations = async directory => {
 
 const modulePath = fileURLToPath(import.meta.url);
 if (process.argv[1] && resolve(process.argv[1]) === modulePath) {
-  await generateIllustrations(dirname(modulePath));
+  await generateIllustrations(fileURLToPath(new URL('.', import.meta.url)));
 }

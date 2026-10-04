@@ -105,6 +105,18 @@ directly, and pull requests are reserved for forks of *other* repositories. As
 the README puts it, "The cobbler's children go barefoot so yours don't have
 to."
 
+Most of this book's examples come from the projects the original instance
+works on, so a few names recur. The largest is **Endo**, a JavaScript
+framework for running mutually suspicious code safely. The garden works on a
+bot-writable fork of it, `endojs/endo-but-for-bots`, whose `llm` branch
+collects the bots' work and whose `master` branch tracks the upstream
+project. **Ironhorse** is a Rust port of the XS JavaScript engine under way
+inside that fork, measured against test262, the standard JavaScript
+conformance suite. **minion.town** is a web service the garden's maintainers
+deploy and operate. None of these is part of the garden. They are the work it
+happened to be grown on, and an instance of your own would substitute its own
+projects.
+
 ## 1.2 Why it exists
 
 The problem the garden addresses is how to get a large amount of real
@@ -189,7 +201,8 @@ in-flight PRs." The current repository was created by `garden: initial
 scaffold` (`741e1519`, 2026-05-12), and its record of the shepherd begins the
 same day, when that earlier garden was imported as a read-only reference shelf
 (`c68a23c8`, recorded against the predecessor's commit `cc79140a6`). The
-shepherd and conductor roles were ported into the active library a day later
+shepherd and the conductor (the role that merges an approved pull request)
+were ported into the active library a day later
 (`83b03907`, 2026-05-13).
 
 **What it established.** The pattern every later role follows was already
@@ -214,8 +227,9 @@ gave it an identity separate from the maintainer's.
   bind-mounts the host's garden directory into the container and pins the
   container's hostname, so each instance has a stable logical identity
   (chapter 4, § 4.2 and § 4.3). In the same week, each subagent began running
-  in its own worktree triple, torn down afterward (`2f434611`), so no
-  subagent could modify the orchestrator's checkout.
+  in its own throwaway set of checkouts (one each of the garden, the journal,
+  and the project), torn down afterward (`2f434611`), so no subagent could
+  modify the orchestrator's checkout.
 - **The bot.** Routine work runs under a bot GitHub account (`kriscendobot`
   by default), never under the maintainer's own. The maintainer's identity is
   reserved for exactly one act: carrying finished work upstream. That act
@@ -318,8 +332,9 @@ editing v1. On 2026-06-24 `main2` was created as an **orphan branch with no
 common ancestor with `main`** (`acb97c7f`), and `journal2` was seeded the same
 day (`63816e45`). The migration was framed as "translation, not blind copy":
 every juror seat on the review panels was carried over verbatim, the judicial
-roles were rewritten as a scripted panel and fix-loop, and the steward and
-the general-contractor were left behind.
+roles (the agents that convened review panels and acted on their verdicts)
+were rewritten as a scripted panel and fix-loop (chapter 7, § 7.3), and the
+steward and the general-contractor were left behind.
 
 **The three bands.** `HISTORY.md` describes the result as three layers:
 

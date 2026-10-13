@@ -542,7 +542,7 @@ Source: [`skills/review-feedback-followup-commits/SKILL.md`](../../skills/review
 - Close out with [`pr-review-thread-replies`](#pr-review-thread-replies) and a top-level summary ([`pr-completion-summary-comment`](#pr-completion-summary-comment)) mapping each item to its commit.
 
 **Gotchas.**
-- A PR can merge between the fixer's preflight and its push. If the reviewed branch is gone, rebase onto the live base and open a follow-up PR; never recreate or force-push the deleted merged branch ([`kriscendobot/minion.town#40`](https://github.com/kriscendobot/minion.town/pull/40) and [`#46`](https://github.com/kriscendobot/minion.town/pull/46)).
+- A PR can merge between the fixer's preflight and its push. If the reviewed branch is gone, rebase onto the live base and open a follow-up PR; never recreate or force-push the deleted merged branch (`kriscendobot/minion.town#40` and `#46`).
 - A job's line-number citation is authoritative but can be off; check it against the actual file before editing.
 
 ### `pr-review-thread-replies`
@@ -694,7 +694,7 @@ Source: [`skills/chained-followup/SKILL.md`](../../skills/chained-followup/SKILL
 
 **Purpose.** Wire a follow-up that must run only after a design advances to a build, possibly across a repo boundary, on an event no single job's completion names. It adds a notice job as a level of indirection instead of posting a blind follow-up that would fire against nothing ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.5](#ch7-75-chained-follow-ups)).
 
-**When it's used.** For the maintainer's standing ask "post a job to design X, and a follow-up triggered when it lands" ([`kriscendobot/minion.town#41`](https://github.com/kriscendobot/minion.town/pull/41)). `scripts/jobs/handlers/follow-up-claude.sh` names it for the mechanical design-build recheck.
+**When it's used.** For the maintainer's standing ask "post a job to design X, and a follow-up triggered when it lands" (`kriscendobot/minion.town#41`). `scripts/jobs/handlers/follow-up-claude.sh` names it for the mechanical design-build recheck.
 
 **Key mechanics.**
 - Three jobs: D (the design, posted normally), N (a notice job parked with `post-plan.sh --blocked --blocked-on D`), and F (the real follow-up, posted by N only after it confirms the design reached a build).
@@ -844,7 +844,7 @@ Source: [`skills/design-dependency-walk/SKILL.md`](../../skills/design-dependenc
 
 **Gotchas.**
 - Relatedness is declared, never invented: only PRs the seed's `## Related` or `## See also` sections or the job body name are checked, and a changes-requested review later approved or dismissed does not block.
-- The gate exists because of [`kriscendobot/minion.town#48`](https://github.com/kriscendobot/minion.town/pull/48), whose build asserted independence from a sibling design based on the document alone while that sibling's live review had already replaced the seam; the maintainer closed the PR.
+- The gate exists because of `kriscendobot/minion.town#48`, whose build asserted independence from a sibling design based on the document alone while that sibling's live review had already replaced the seam; the maintainer closed the PR.
 - A dependency already being built by another job (per the job board) must not get a second build; the walk stacks on that job's PR or leaves the slot empty.
 - Closed-without-merge PRs are not evidence a dependency shipped, and cross-repo dependency references are unsupported (treated as a missing design).
 - A job may name a seed PR that was closed and reconstructed as a replacement stack; follow the closing comments to the live PRs.
@@ -1192,7 +1192,7 @@ Source: [`skills/liaison-reports/SKILL.md`](../../skills/liaison-reports/SKILL.m
 
 Source: [`skills/mermaid-validation/SKILL.md`](../../skills/mermaid-validation/SKILL.md)
 
-**Purpose.** Confirm that every mermaid fence in a document parses before committing, without a browser. An invalid diagram renders as an error box on GitHub and once cost a dedicated fix PR ([`kriscendobot/minion.town#5`](https://github.com/kriscendobot/minion.town/pull/5)).
+**Purpose.** Confirm that every mermaid fence in a document parses before committing, without a browser. An invalid diagram renders as an error box on GitHub and once cost a dedicated fix PR (`kriscendobot/minion.town#5`).
 
 **When it's used.** The designer brief mandates mermaid for diagrams and cites this skill; the groom brief cites it too. A completion report that claims "diagrams validated" should cite the checker's output.
 
@@ -2012,7 +2012,7 @@ Source: [`skills/minion-town-clip-publishing/SKILL.md`](../../skills/minion-town
 - `evaluate`'s `values` entries must be existing pet names in the guest's store, not literal values, whatever the tool's own description suggests.
 
 **Gotchas.**
-- An `Invalid pet name "@main"` failure on every `publish` call was a real platform bug: the production daemon did not endow `@main`, and probing it with `has` threw instead of returning false. The fix, deployed 2026-09-01 ([`kriscendobot/minion.town#71`](https://github.com/kriscendobot/minion.town/pull/71)), repairs legacy guests automatically, with no per-guest action needed.
+- An `Invalid pet name "@main"` failure on every `publish` call was a real platform bug: the production daemon did not endow `@main`, and probing it with `has` threw instead of returning false. The fix, deployed 2026-09-01 (`kriscendobot/minion.town#71`), repairs legacy guests automatically, with no per-guest action needed.
 - No `playwright` package is preinstalled in garden containers; install it into a scratch directory, not the garden tree root.
 - Whatever a job spec asks for, the CSP forbids inline CSS; ship a linked stylesheet.
 

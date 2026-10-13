@@ -146,7 +146,7 @@ growth-stage glyphs):
   across chapters, tense/voice/audience made consistent, cross-references added
   between chapters including into [chapters 9](../chapters/ch9-library-structure.md) and [10](../chapters/ch10-inference-tiers-reference.md), repeated explanations
   collapsed to one home, house style applied; [chapters 8](../chapters/ch8-cybernetics-budgeting.md)-[10](../chapters/ch10-inference-tiers-reference.md) gained Contents
-  lists and [chapters 9](../chapters/ch9-library-structure.md)-[10](../chapters/ch10-inference-tiers-reference.md) numbered sections; published from [PR #8](https://github.com/kriscendobot/garden-book/pull/8) branch
+  lists and [chapters 9](../chapters/ch9-library-structure.md)-[10](../chapters/ch10-inference-tiers-reference.md) numbered sections; published from [PR #1](https://github.com/kriscendobot/garden-book/pull/1) branch
   `book-copyedit` ahead of merge, as the job requested):
   [published edition](https://7uzjtuxvwf7m6dcqjhrvdxuv7wr43245b5pgypkvrtqqudpoepsa.ocap.site/)
 - 2026-10-01 (migrated into [`kriscendobot/garden-book`](https://github.com/kriscendobot/garden-book); content unchanged from

@@ -112,9 +112,10 @@ each host's `journal/hosts/<GARDEN>` file.
    without that stamp; mentat is the only tier they gate on.
 3. **The scoped Ironhorse exception.** A foreman promotion of an
    `ironhorse-test262-press-<UTC stamp>` plan may carry `tier: mentat` with
-   `dispatch: ratchet-delegated`, under the maintainer's 2026-09-28 delegation.
-   Claim and handlers check the active journal authorization, the basename,
-   the arc marker, and the canonical task text. No fallback, pin, or provider
+   `dispatch: ratchet-delegated`, under a standing maintainer delegation for
+   the Ironhorse engine port (chapter 1, § 1.1). Claim and handlers check the
+   active journal authorization, the basename, the marker that ties the job
+   to that line of work, and the canonical task text. No fallback, pin, or provider
    override rides that path.
 4. **Claiming.** Mentor, mentat, and minion are multi-provider: whichever live
    kind has a model at that tier may claim. Today that means a monk, on

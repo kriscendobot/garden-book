@@ -66,7 +66,32 @@ role/skill links to the in-book [chapter 5](../chapters/ch5-roles-reference.md)/
 paths to `main2` on GitHub ([`kriscendobot/garden`](https://github.com/kriscendobot/garden), where the roles/skills
 this book documents actually live).
 
-Current edition, 2026-10-04, review economics (jobs
+Current edition, 2026-10-13, linked and reader copy-edited (jobs
+`book-reader-exposure-copyedit` and
+`book-hyperlink-references-after-copyedit-20261004`): the prose introduces
+garden-specific terms before using them, foregrounds reader-visible
+consequences, and links references to the relevant book section or public
+source: [published edition](https://5kwirevgc77outc6vptymbj6tfwpwuldnb74qumkrs55qlxzxutq.ocap.site/).
+
+- Copy-edit: [PR #8](https://github.com/kriscendobot/garden-book/pull/8),
+  merged as `c75caaed974e6691ab914c874cb80b909d23fcce`.
+- Hyperlinks: [PR #13](https://github.com/kriscendobot/garden-book/pull/13),
+  merged as `eaf634ae5d4d839e8979dc3f359037dca1594c96`; published from
+  that commit.
+- Build: `npm ci && npm test && node build/build.mjs chapters out` (62/62
+  tests). Output sha256: `index.html`
+  `384dbd3ce3224354dfc2652b44773fe632a77363b75049d7bfdc7bb3e7087155`,
+  `styles.css`
+  `859ffed2b91ea2db5f0a963cbe22d5ffa48a8168423250fee4f251d4d27a49d0`;
+  the served clip returns the same bytes.
+- Browser: the full-book check against the live URL passes at 390x844 and
+  1440x900 in light and dark, with no horizontal overflow, clipped or
+  overlapping figures, caption contrast at least 5.68:1, and body contrast at
+  least 12.9:1. Browser navigation reached two representative new internal
+  targets (chapter 5 and section 2.1) and two representative external targets
+  (`endojs/endo-but-for-bots` and `kriscendobot/garden#15`, both HTTP 200).
+
+Previous edition, 2026-10-04, review economics (jobs
 `book-equilibrium-data-draft-20261004`,
 `book-equilibrium-visualize-20261004`,
 `book-equilibrium-stylize-20261004`, and
@@ -100,7 +125,7 @@ requests, and 19 upstream ferries: [published edition](https://xddmohl7mf56oiaps
   least 12.9:1. The equilibrium-specific integration check also passes all 36
   chart/viewport/color-scheme cases, including keyboard-operated disclosures.
 
-Previous edition, 2026-10-04, illuminated (jobs
+Earlier edition, 2026-10-04, illuminated (jobs
 `book-illumination-integrate-20261004` and
 `book-illumination-supervisor-after-integrate-20261004`): the 25 plates in
 `art/illumination-*.svg` are inlined at the places `build/illuminations.mjs`

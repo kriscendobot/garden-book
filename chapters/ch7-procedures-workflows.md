@@ -24,18 +24,18 @@ garden. There are five of them:
 One idea runs through all five. The garden keeps **control flow in deterministic scripts** and spends a model only on
 **judgment**. The v1 garden walked a PR through its lifecycle by having an agent
 read a checklist and dispatch a subagent per step. The v2 garden moved that
-state machine into shell (`designs/gardening-state-machine.md`). Scripts
+state machine into shell ([`designs/gardening-state-machine.md`](../../designs/gardening-state-machine.md)). Scripts
 rebase, push, wait on CI, promote jobs, and read board state. `claude -p` is
 invoked only for questions that need a reader: what a jury seat thinks of a
 diff, whether the aggregate verdict is `must-fix` or `pass`, whether a PR's
 premise has been overtaken. Everything in this chapter is an instance of that
 split.
 
-Sources: `skills/pr-creation-flow/SKILL.md`, `skills/panel/SKILL.md`,
-`skills/panel-review/SKILL.md`, `skills/orchestration/SKILL.md`,
-`skills/chained-followup/SKILL.md`, `roles/boatman/AGENT.md`, `CLAUDE.md`
-§ The ferry, `designs/gardening-state-machine.md`,
-`designs/manual-gauntlet-trigger.md`, and the scripts named in each section,
+Sources: [`skills/pr-creation-flow/SKILL.md`](../../skills/pr-creation-flow/SKILL.md), [`skills/panel/SKILL.md`](../../skills/panel/SKILL.md),
+[`skills/panel-review/SKILL.md`](../../skills/panel-review/SKILL.md), [`skills/orchestration/SKILL.md`](../../skills/orchestration/SKILL.md),
+[`skills/chained-followup/SKILL.md`](../../skills/chained-followup/SKILL.md), [`roles/boatman/AGENT.md`](../../roles/boatman/AGENT.md), [`CLAUDE.md`
+§ The ferry](../../CLAUDE.md#the-ferry-and-host-preconditions), [`designs/gardening-state-machine.md`](../../designs/gardening-state-machine.md),
+[`designs/manual-gauntlet-trigger.md`](../../designs/manual-gauntlet-trigger.md), and the scripts named in each section,
 read at `main2` `087f4e1c22b`. Where a skill's prose and its script disagree,
 this chapter follows the script and says so.
 
@@ -52,7 +52,7 @@ this chapter follows the script and says so.
 
 ## 7.1 The supervised-script principle
 
-`designs/gardening-state-machine.md` gives three reasons for moving the state
+[`designs/gardening-state-machine.md`](../../designs/gardening-state-machine.md) gives three reasons for moving the state
 machine out of the agent and into scripts:
 
 - **Determinism and cost.** A rebase, a push, or a CI wait needs no model. A
@@ -141,7 +141,7 @@ duplicate PR is not."
 The pairing matters because **a job can be claimed more than once**: a stranded
 worker, a reaper requeue, a resumed claim. On 2026-07-28 one build job was
 claimed four times and left two divergent PRs for one change
-(`endojs/endo-but-for-bots#865` and `#871`). The marker is what relates two
+([`endojs/endo-but-for-bots#865`](https://github.com/endojs/endo-but-for-bots/pull/865) and [`#871`](https://github.com/endojs/endo-but-for-bots/pull/871)). The marker is what relates two
 incarnations that share nothing else, not even a head branch.
 `ensure-pr.sh` is one of three guards on a re-claimed job's writes. The
 others are `safe-push-pr-head.sh`, which refuses to rewind a peer's newer
@@ -153,7 +153,7 @@ and only the ferry's upstream PR may pass `--no-draft`. The skill calls this
 draft flag is how every downstream sensor decides whether the bot-side chain
 has finished.
 
-- The next-stage-owed heuristic (§ 7.2.5) reads "already un-drafted" as "nothing
+- The next-stage-owed heuristic ([§ 7.2.5](#ch7-725-the-next-stage-owed-heuristic)) reads "already un-drafted" as "nothing
   owed."
 - The panel's pre-round state check short-circuits on `isDraft == false`.
 - GitHub itself enforces draft: no auto-requested reviewers, and the merge
@@ -166,15 +166,15 @@ because the chain un-drafts it.
 
 **Only the end of the gauntlet moves a PR out of draft.** Un-draft is earned,
 never a starting state. The one intentional exception concerns the un-draft,
-not the open: a **probe** (`skills/gap-revealing-build/SKILL.md`; chapter 6,
-§ 6.6) opens draft and is meant to *stay* draft, delivering a gap report on a tentative
+not the open: a **probe** (`skills/gap-revealing-build/SKILL.md`; [chapter 6](#ch6-chapter-6-skills-reference),
+[§ 6.6](#ch6-66-planning-and-design-intake)) opens draft and is meant to *stay* draft, delivering a gap report on a tentative
 design rather than a mergeable change.
 
 Every fork-side PR also targets a **frozen base branch**, `<base>-<short-sha>`
 (for example `master-abc1234`), a snapshot pushed to the fork at open time.
 Concurrent PRs therefore never see each other's rebases. Moving that base
-later is the **weave** verb (`skills/frozen-base-branch/SKILL.md`; chapter 6,
-§ 6.3).
+later is the **weave** verb (`skills/frozen-base-branch/SKILL.md`; [chapter 6](#ch6-chapter-6-skills-reference),
+[§ 6.3](#ch6-63-branch-hygiene-worktrees-bases-rebases-and-commit-shape)).
 
 ### 7.2.2 What triggers the chain
 
@@ -203,7 +203,7 @@ once did damage:
 - It **never changes PR state.**
 
 For about two weeks the garden ran with no automatic edge at all.
-`designs/manual-gauntlet-trigger.md` made `run the gauntlet #N` the sole
+[`designs/manual-gauntlet-trigger.md`](../../designs/manual-gauntlet-trigger.md) made `run the gauntlet #N` the sole
 ordinary trigger, separating two decisions the automatic edge had conflated:
 *a worker has produced a reviewable artifact*, and *the maintainer wants to
 spend a full gauntlet on it now*. The automatic edge came back, in the narrow
@@ -238,22 +238,22 @@ Three guardrails enforce it:
 **`run the gauntlet #N`** remains the explicit trigger. The comment watcher
 recognizes it in imperative position on a watched PR and records the gauntlet
 before it acknowledges the comment; the liaison calls the same primitive for a
-chat directive (chapter 3, § 3.5 walks through one). It serves a draft PR that
+chat directive ([chapter 3](#ch3-chapter-3-using-the-garden), [§ 3.5](#ch3-35-worked-examples) walks through one). It serves a draft PR that
 has no producing job, or a direct request for review. It is idempotent: an
 active or completed record under the same base makes it a no-op.
 
 One scoped exception is the **Ironhorse autopilot**, a maintainer-authorized
-controller that advances the Ironhorse engine port (chapter 1, § 1.1) one
+controller that advances the Ironhorse engine port ([chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis), [§ 1.1](#ch1-11-what-the-garden-is)) one
 pull request at a time. It may stage and advance its own pull requests'
-gauntlets (`skills/orchestration/SKILL.md` § Authorized Ironhorse ratchet).
+gauntlets ([`skills/orchestration/SKILL.md` § Authorized Ironhorse ratchet](../../skills/orchestration/SKILL.md#authorized-ironhorse-ratchet)).
 The exception applies to no other orchestration.
 
 ### 7.2.3 The staged driver
 
 The gauntlet used to be **one** claimed job whose wall-clock time was the sum
 of every stage, every fix-loop iteration, and every CI wait. That sum fits no
-handler budget (chapter 8, § 8.5). On 2026-07-28, nine gauntlet jobs doomed on deadline overrun,
-one of them already at a 14000-second budget. `designs/staged-gauntlet.md`
+handler budget ([chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.5](#ch8-85-per-job-budgets-wall-clock-and-tokens)). On 2026-07-28, nine gauntlet jobs doomed on deadline overrun,
+one of them already at a 14000-second budget. [`designs/staged-gauntlet.md`](../../designs/staged-gauntlet.md)
 split it up.
 
 `scripts/jobs/post-gauntlet.sh` writes a **record**, `jobs/gauntlet/<g>.md`,
@@ -266,7 +266,7 @@ scripts/jobs/post-gauntlet.sh [--build-job <base>] [--probe] \
 ```
 
 `scripts/jobs/gauntlet.sh` is the driver: a leader-only timer, **no
-`claude -p`**, the per-PR analog of the orchestration watcher (§ 7.4). Each tick
+`claude -p`**, the per-PR analog of the orchestration watcher ([§ 7.4](#ch7-74-orchestration)). Each tick
 it reads the current stage job's board state. If the stage is still in
 `todo/` or `doin/`, it waits. If the stage failed, it retries or halts. If the
 stage is in `tada/`, it reads the job's **stage-result marker**, a line of the
@@ -293,7 +293,7 @@ and applies the transition table from the script's header:
 
 Each stage is an ordinary `role: gardener` job with its own fresh handler
 budget and its own per-job worktree, so peers working the same PR never share
-a working tree (chapter 2, § 2.3). The driver generates each stage's brief:
+a working tree ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.3](#ch2-23-the-gardener-fleet)). The driver generates each stage's brief:
 
 - **viability** asks whether the PR is still open and whether its premise
   still holds. A merged or closed PR, or one whose premise has been overtaken,
@@ -344,7 +344,7 @@ record. No one hand-edits the journal.
   Endo fork, designs target the bots' `llm` integration branch. Work bound
   for upstream is reviewed against a frozen `master-<sha>` snapshot of
   upstream's `master`; the fork has no `master` to merge into, so the ferry
-  carries that work upstream instead (chapter 1, § 1.1). Historically the
+  carries that work upstream instead ([chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis), [§ 1.1](#ch1-11-what-the-garden-is)). Historically the
   maintainer put it as "The designs should be based on llm. The
   implementations should be based on master, for those designs"; the fork
   later dropped its own `master`, so today "master" means upstream's. Keeping
@@ -357,7 +357,7 @@ record. No one hand-edits the journal.
 - **After maintainer review.** A maintainer's `CHANGES_REQUESTED` starts a
   fixer → CI-green → re-request loop, **not** a new cleaner or panel by default.
   The PR stays out of draft; the maintainer's review queue is now the venue.
-  A new commit does make the old panel coverage stale (§ 7.2.2), and the
+  A new commit does make the old panel coverage stale ([§ 7.2.2](#ch7-722-what-triggers-the-chain)), and the
   maintainer decides whether to spend another gauntlet.
 - **Garden designs with open questions.** On the garden's own repo, a design
   carrying a non-empty `## Open questions` section is opened as a PR for inline
@@ -399,7 +399,7 @@ surfaces it on the bus instead of guessing.
 The panel is `scripts/jobs/gardening/panel.sh <worktree> <pr> [base-ref]`. It
 is the v2 translation of v1's judicial workflow, in which three judge roles
 (solicitor, barrister, justice) and an appellate each fanned out a jury and
-aggregated by hand (chapter 5, § 5.4 describes those roles). The judges
+aggregated by hand ([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.4](#ch5-54-judicial-and-panel-adjacent-roles) describes those roles). The judges
 differed only in their briefing (design panel, first code round, delta
 re-review); the seat prompt and the diff base now carry that difference, and
 the three roles collapsed into one loop.
@@ -415,7 +415,7 @@ and safer choice, matching `sense.sh`'s bias toward over-reviewing.
 
 Before dispatching anyone, the script asks whether the diff is **empty**. A
 diagnostic baseline PR whose head is an empty commit
-(`endojs/endo-but-for-bots#847`) once dispatched every code seat to review zero
+([`endojs/endo-but-for-bots#847`](https://github.com/endojs/endo-but-for-bots/pull/847)) once dispatched every code seat to review zero
 lines. An empty diff now passes after zero rounds and zero `claude -p` calls.
 The gate is narrow and fails closed: it fires only when git *confirms* there
 is nothing to review.
@@ -423,7 +423,7 @@ is nothing to review.
 ### 7.3.2 The seats
 
 Each seat is a juror with its own brief, `roles/jurors/<seat>/AGENT.md`;
-chapter 5 (§ 5.4.7) describes every seat. This section covers only what the
+[chapter 5](#ch5-chapter-5-roles-reference) ([§ 5.4.7](#ch5-547-juror-seats)) describes every seat. This section covers only what the
 procedure needs: which seats sit on which panel, which are cost-gated, and how
 they run.
 
@@ -475,7 +475,7 @@ bounded by `GARDEN_PANEL_SEAT_TIMEOUT` (default 1200 s). After the join, blocks
 are appended in seat-list order, so the aggregate is byte-identical however the
 seats interleaved. Seat models come from
 `scripts/jobs/gardening/seat-model-tiers.tsv`, which only ever **downshifts**
-from the fleet ceiling (tiers: chapter 10). Every seat runs from inside the job's worktree, so its
+from the fleet ceiling (tiers: [chapter 10](#ch10-chapter-10-inference-tiers-reference)). Every seat runs from inside the job's worktree, so its
 tokens are metered to the panel job.
 
 ### 7.3.3 What a seat returns
@@ -580,7 +580,7 @@ One compact record survives: `panel-runs/<owner>-<repo>-<pr>/<run-id>.md` on
 the panel kind, the rounds, a verdict class per seat (never the seat's prose),
 must-fix counts and truncated titles, whether the appellate ran, and the full
 `reviewed_head`. This record lets the garden audit its own evaluator, and
-`reviewed_head` is the anchor the freshness sensor (§ 7.2.2) compares against.
+`reviewed_head` is the anchor the freshness sensor ([§ 7.2.2](#ch7-722-what-triggers-the-chain)) compares against.
 
 ## 7.4 Orchestration
 
@@ -589,8 +589,8 @@ job.** A loose pile of sub-jobs depends on
 someone remembering the follow-ups, and the garden, like any system with
 amnesiac workers, forgets. An orchestration writes the sequence down and has a
 deterministic watcher carry it out. Skill: `skills/orchestration/SKILL.md`.
-Design: `designs/orchestration-jobs.md`. Role: the orchestrator (chapter 5,
-§ 5.3.6).
+Design: [`designs/orchestration-jobs.md`](../../designs/orchestration-jobs.md). Role: the orchestrator ([chapter 5](#ch5-chapter-5-roles-reference),
+[§ 5.3.6](#ch5-536-orchestrator)).
 
 ### 7.4.1 When to reach for it
 
@@ -614,7 +614,7 @@ uses an orchestration.
 ### 7.4.2 The pieces
 
 - **Children** are parked in `jobs/plan/` with gate `orchestrated` (the plan
-  gates are in chapter 2, § 2.2). The foreman promotes only `deferred` jobs
+  gates are in [chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.2](#ch2-22-the-job-lifecycle)). The foreman promotes only `deferred` jobs
   and the unblock watcher only `blocked` ones, so this gate is invisible to
   both, and **only** the orchestration watcher ever
   promotes an orchestrated child.
@@ -637,8 +637,8 @@ watcher read can never promote N+1 while N is still parked. A serial
 orchestration may carry a **token budget**. Before each promotion the watcher
 sums billable tokens from the children's ledgers, and at or over the cap it
 finishes `budget-exhausted` and leaves the rest parked. Budgets gate
-admission, never execution: a running child is never killed. Chapter 8
-(§ 8.6) covers budgeted campaigns in detail.
+admission, never execution: a running child is never killed. [Chapter 8](#ch8-chapter-8-cybernetics-and-budgeting)
+([§ 8.6](#ch8-86-per-orchestration-budgets-a-bounded-pie)) covers budgeted campaigns in detail.
 
 **Parallel** promotes every child at once and watches them all. It cannot carry
 a budget, because it admits every child before any spend exists.
@@ -750,10 +750,10 @@ Its life, step by step:
 
 A budget-stopped serial campaign continues as a **new** campaign, with a new
 budget, that adopts the parked remainder (`post-orchestration.sh --serial
---budget-tokens <cap> --resume-from <old> <new> <children...>`; chapter 8,
-§ 8.6).
+--budget-tokens <cap> --resume-from <old> <new> <children...>`; [chapter 8](#ch8-chapter-8-cybernetics-and-budgeting),
+[§ 8.6](#ch8-86-per-orchestration-budgets-a-bounded-pie)).
 
-The staged gauntlet (§ 7.2.3) is the same pattern specialized to a single PR:
+The staged gauntlet ([§ 7.2.3](#ch7-723-the-staged-driver)) is the same pattern specialized to a single PR:
 a record outside the claim lifecycle, a leader-only no-LLM driver, one step
 per tick, and fail-closed markers. The orchestration watcher is the general
 case.
@@ -762,7 +762,7 @@ case.
 
 Both `blocked_on` and orchestration anchor on a **board base reaching
 `tada/`**. Some follow-ups depend on an event the board never records. The
-motivating case was a review on minion.town (chapter 1, § 1.1) that asked the
+motivating case was a review on minion.town ([chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis), [§ 1.1](#ch1-11-what-the-garden-is)) that asked the
 garden to "post a job to design X, and a follow-up to act on that
 implementation here, triggered when it lands." Blocking the follow-up on the
 design job fires it as soon as the design is *written*, long before anything is
@@ -819,12 +819,12 @@ ordinary primitives take over.
 
 Everything above runs under the **bot** identity (`kriscendobot`), on forks
 the garden owns. **Ferrying** carries an approved change from a garden fork to
-the upstream governance repo (for example from `endojs/endo-but-for-bots` to
-`endojs/endo`) under the **maintainer's** identity. Every commit is authored by
+the upstream governance repo (for example from [`endojs/endo-but-for-bots`](https://github.com/endojs/endo-but-for-bots) to
+[`endojs/endo`](https://github.com/endojs/endo)) under the **maintainer's** identity. Every commit is authored by
 the human, and the human's account opens the upstream PR. That is an
 identity-crossing act, and the garden treats it as a separate, permissioned
-surface with its own dispatch (`designs/dedicated-ferry-dispatch.md`) and its
-own role, the boatman (chapter 5, § 5.3.8).
+surface with its own dispatch ([`designs/dedicated-ferry-dispatch.md`](../../designs/dedicated-ferry-dispatch.md)) and its
+own role, the boatman ([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.3.8](#ch5-538-boatman)).
 
 ### 7.6.1 Why not the board
 
@@ -858,7 +858,7 @@ The directive's frontmatter carries `downstream`, `downstream_branch`,
 name and email for attribution), an optional `convention`, and
 **`identity_switch_authorized: true`**. **No agent may originate that flag;
 only the maintainer writes it.** The garden ferries only "when authorized"
-(CLAUDE.md § The ferry). If any required field is missing, the boatman stops
+([`CLAUDE.md` § The ferry](../../CLAUDE.md#the-ferry-and-host-preconditions)). If any required field is missing, the boatman stops
 with a blocked report and no completion marker.
 
 Authorization is necessary but not sufficient. The boatman re-checks its **host preconditions** before acting: `gh auth status` must show
@@ -892,8 +892,8 @@ Following `skills/pr-handoff/SKILL.md` and `skills/pr-formation/SKILL.md`:
   `garden-mirror-closer` service can close the fork PR when the upstream one
   closes. This step is required to complete the ferry.
 
-`CLAUDE.md` mentions compound idioms such as *retcon and ferry #N* (chapter 3,
-§ 3.2). However such a phrase is worded, the two halves stay on separate
+`CLAUDE.md` mentions compound idioms such as *retcon and ferry #N* ([chapter 3](#ch3-chapter-3-using-the-garden),
+[§ 3.2](#ch3-32-the-vocabulary)). However such a phrase is worded, the two halves stay on separate
 surfaces. The retcon
 is an ordinary board job that runs under the bot. The ferry is a directive
 that waits for the maintainer's script.

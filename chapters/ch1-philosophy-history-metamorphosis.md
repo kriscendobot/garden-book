@@ -70,7 +70,7 @@ Read together, the two descriptions give the garden three parts:
    deliberately not named `CLAUDE.md`, which Claude Code would load
    automatically: "They are loaded explicitly by the gardener whose role or job
    names them," so each worker's context holds only what its job requires.
-   Chapters 5 and 6 catalog the roles and skills; chapter 9 covers the
+   [Chapters 5](#ch5-chapter-5-roles-reference) and [6](#ch6-chapter-6-skills-reference) catalog the roles and skills; [chapter 9](#ch9-chapter-9-the-library-and-how-it-spends-context) covers the
    separate reference library a worker consults while it works.
 
 2. **A journal-backed coordination substrate.** *The journal* is the git
@@ -80,7 +80,7 @@ Read together, the two descriptions give the garden three parts:
    bus** (`inbox/<doer>/`, where agents send each other directed messages).
    There is no database and no lock server: a `git push` to
    `origin/journal2` is the only point where concurrent workers are serialized
-   (see chapter 2, § 2.1).
+   (see [chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.1](#ch2-21-the-journal-as-job-board-and-message-bus)).
 
 3. **A fleet of workers.** A *gardener* is the shared worker role that claims
    a job from the board, takes on the role the job names, and does the work in
@@ -88,7 +88,7 @@ Read together, the two descriptions give the garden three parts:
    hosts can share one journal. The name refers to the shared role and code
    path, not to a particular kind of worker process: today the workers that
    run Anthropic models are *monks*, and those that run OpenAI models are
-   *clerics* (chapter 10 lists every worker kind).
+   *clerics* ([chapter 10](#ch10-chapter-10-inference-tiers-reference) lists every worker kind).
 
 Between the human and the fleet sits the **liaison**, the agent a user talks
 to on opening a terminal in the garden root. The liaison does not do the
@@ -97,7 +97,7 @@ build pull request #N, fix, rebase, merge), the liaison posts a job to the
 board under a short, deterministic name, and a gardener claims it. In
 `CLAUDE.md`'s words: "The per-job substance never enters the liaison's
 context, so a re-issued ask is idempotent and the board survives a `/clear`."
-Chapter 3 covers working with the liaison.
+[Chapter 3](#ch3-chapter-3-using-the-garden) covers working with the liaison.
 
 The garden treats its own code differently from the code it works on. Its own
 repository has no pull-request workflow: `main2` and `journal2` are pushed
@@ -108,9 +108,9 @@ to."
 Most of this book's examples come from the projects the original instance
 works on, so a few names recur. The largest is **Endo**, a JavaScript
 framework for running mutually suspicious code safely. The garden works on a
-bot-writable fork of it, `endojs/endo-but-for-bots`, whose `llm` branch
+bot-writable fork of it, [`endojs/endo-but-for-bots`](https://github.com/endojs/endo-but-for-bots), whose `llm` branch
 is the integration trunk that collects the bots' work. The fork keeps no
-`master` of its own: work bound for upstream `endojs/endo` is reviewed on a
+`master` of its own: work bound for upstream [`endojs/endo`](https://github.com/endojs/endo) is reviewed on a
 frozen `master-<sha>` snapshot of upstream's `master` and then carried
 upstream by the ferry, never merged into the fork. **Ironhorse** is a Rust port of the XS JavaScript engine under way
 inside that fork, measured against test262, the standard JavaScript
@@ -155,7 +155,7 @@ from military strategy.) The garden aims to finish everything it can before
 the maintainer sees the work, and two roles guard the edges of that loop. The
 **appellate** runs after the review panel passes a pull request: it
 reconsiders the panel's deferred findings and folds small, in-context fixes
-back into the same change (chapter 7, § 7.3.6). The **proxy** answers routine
+back into the same change ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.3.6](#ch7-736-the-appellate-pass)). The **proxy** answers routine
 judgment questions, such as "keep going?" or "which direction first?", on the
 maintainer's behalf, with heuristics that "favor progress over efficiency,
 tolerate throw-away work, pick a direction and mark it provisional." Questions
@@ -165,13 +165,13 @@ That leaves the maintainer the job the README calls weeding: "review what
 surfaces, answer the questions only you can answer, and say what you want
 next."
 
-The three parts named in § 1.1 carry this loop. Producers (the pull-request
+The three parts named in [§ 1.1](#ch1-11-what-the-garden-is) carry this loop. Producers (the pull-request
 comment and CI watchers, the scheduler, the liaison, and the *foreman*, which
 posts the next step when the board runs empty) post jobs to the board, and
 gardeners race to claim them. The message bus lets a job wait on the
 maintainer or a peer without holding a process busy. Each gardener calls a
 language model only where judgment is needed and files a completion report
-when it is done. Chapter 2 describes each mechanism in detail. `HISTORY.md`
+when it is done. [Chapter 2](#ch2-chapter-2-architecture-and-operation) describes each mechanism in detail. `HISTORY.md`
 shows that this structure was not designed in one step: it is the fourth
 rebuild.
 
@@ -197,7 +197,7 @@ does the same.
 **What it was.** The garden's first capability was narrow: "drive a single
 pull request's continuous-integration run back to green." The agent that did
 this was the **shepherd**, and it predates the garden's repository. It first
-appeared in an earlier garden built for the `endojs/endo-but-for-bots`
+appeared in an earlier garden built for the [`endojs/endo-but-for-bots`](https://github.com/endojs/endo-but-for-bots)
 project, which described it in one line: "keep CI healthy across many
 in-flight PRs." The current repository was created by `garden: initial
 scaffold` (`741e1519`, 2026-05-12), and its record of the shepherd begins the
@@ -228,7 +228,7 @@ gave it an identity separate from the maintainer's.
   entrypoint, and the `garden` launcher script (`bdac01f7`). The launcher
   bind-mounts the host's garden directory into the container and pins the
   container's hostname, so each instance has a stable logical identity
-  (chapter 4, § 4.2 and § 4.3). In the same week, each subagent began running
+  ([chapter 4](#ch4-chapter-4-creating-your-own-instance), [§ 4.2](#ch4-42-the-container-model) and [§ 4.3](#ch4-43-identity)). In the same week, each subagent began running
   in its own throwaway set of checkouts (one each of the garden, the journal,
   and the project), torn down afterward (`2f434611`), so no subagent could
   modify the orchestrator's checkout.
@@ -263,7 +263,7 @@ identical inside and outside the container, so it is easy to operate on the
 host by mistake, where commands run under the maintainer's identity. The ferry
 has also moved further from the fleet. It is now a dedicated script the
 maintainer runs on a credentialed host outside the container, and the
-ordinary job board rejects it mechanically (chapter 7, § 7.6).
+ordinary job board rejects it mechanically ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.6](#ch7-76-the-ferry)).
 
 ### Stage three: supervision, many sessions on an always-online host
 
@@ -335,7 +335,7 @@ common ancestor with `main`** (`acb97c7f`), and `journal2` was seeded the same
 day (`63816e45`). The migration was framed as "translation, not blind copy":
 every juror seat on the review panels was carried over verbatim, the judicial
 roles (the agents that convened review panels and acted on their verdicts)
-were rewritten as a scripted panel and fix-loop (chapter 7, § 7.3), and the
+were rewritten as a scripted panel and fix-loop ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.3](#ch7-73-the-panel)), and the
 steward and the general-contractor were left behind.
 
 **The three bands.** `HISTORY.md` describes the result as three layers:
@@ -345,13 +345,13 @@ steward and the general-contractor were left behind.
   following a checklist itself. The script "shells out to `claude -p`
   subagents only for *decisions* (how to proceed, whether to loop)" and is
   written to "write essentially nothing when it is working well," which
-  protects the supervising agent's context (chapter 7, § 7.1).
+  protects the supervising agent's context ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.1](#ch7-71-the-supervised-script-principle)).
 - **The coordination substrate** is the job board and message bus on the
   journal, with no separate lock service: "The real serialization point is
   the `git push` to `origin/journal2`, accepted only as a fast-forward, first
   pusher wins ... That rejection *is* the compare-and-swap." (A
   compare-and-swap is an atomic operation that succeeds only if the state has
-  not changed since it was read; chapter 2, § 2.1 shows how the garden uses
+  not changed since it was read; [chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.1](#ch2-21-the-journal-as-job-board-and-message-bus) shows how the garden uses
   it.)
 - **The outer self-improvement layer** makes the system self-healing. The
   **mentor** reads the journal for "ways to make scripted automation more
@@ -386,33 +386,33 @@ additions:
 - **A scripted review gauntlet.** The panel (`skills/panel/SKILL.md`) sends a
   pull request to about forty specialized jury seats. Its findings feed a
   fix-loop, and the pull request is un-drafted only at the end. Successful
-  build jobs start the gauntlet automatically (chapter 7, § 7.2 and § 7.3).
+  build jobs start the gauntlet automatically ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.2](#ch7-72-the-gauntlet-end-to-end) and [§ 7.3](#ch7-73-the-panel)).
 - **Several worker kinds and model tiers.** Monks (Anthropic models) and
   clerics (OpenAI models) share one factored worker spine. Each job carries a
   *tier* saying how much model capability it deserves: **mentat**,
   **mentor**, **minion**, or **myrmidon**. Automatic work never goes above
-  mentor, and mentat work is posted only by hand (chapter 10).
+  mentor, and mentat work is posted only by hand ([chapter 10](#ch10-chapter-10-inference-tiers-reference)).
 - **Leader and follower hosts.** Several hosts share one journal. Gardeners
   run on every host and compete safely for claims, while singleton services
   such as the foreman, the scheduler, and the watchers run only on the leader,
   the host named in the journal's `leader` file. A deterministic per-host
   **sysop** daemon runs a closed set of host operations delivered over the
-  bus, so an unattended host can still be throttled or drained (chapter 2,
-  § 2.5).
+  bus, so an unattended host can still be throttled or drained ([chapter 2](#ch2-chapter-2-architecture-and-operation),
+  [§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop)).
 - **Deliberate deployment.** The root checkout is a *deployed version*, no
   longer a working tree. It advances only through a drained, rolling
   deployment that updates follower hosts first, as canaries, and the leader
-  last, and never past a failed canary (chapter 2, § 2.6).
+  last, and never past a failed canary ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.6](#ch2-26-the-deliberate-deploy)).
 - **Orchestration jobs.** Multi-part work is split into parked child jobs
   plus one orchestration job. A deterministic watcher releases the children in
   order and alerts the maintainer on failure instead of stalling silently
-  (chapter 7, § 7.4). This book was produced that way: each chapter is a
+  ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration)). This book was produced that way: each chapter is a
   child of the orchestration `garden-book-orch`.
 - **Pool sizing tied to budget.** The fourth stage imagined "around 100"
   gardeners per host, most of them idle. Today each host's declared capacity
   is "reconciled against backend health and budget limits," and the guidance
-  is explicitly "not a fixed twenty-worker starting target" (chapter 8,
-  § 8.3).
+  is explicitly "not a fixed twenty-worker starting target" ([chapter 8](#ch8-chapter-8-cybernetics-and-budgeting),
+  [§ 8.3](#ch8-83-worker-count-leveling-and-derotation)).
 
 Each addition follows the stage-four pattern: a responsibility that used to
 depend on an agent's judgment or a person's attention becomes a script, a
@@ -427,7 +427,7 @@ metamorphosis":
 > [`HISTORY.md`](HISTORY.md) traces four metamorphoses — shepherd, container,
 > supervision, and the current shape: deterministic scripts between two layers
 > of cognition. The fifth is designed and tracking
-> ([#15](https://github.com/kriskowal/garden/issues/15)): replace the
+> ([#15](https://github.com/kriscendobot/garden/issues/15)): replace the
 > first-to-claim race with a **bid/accept market**.
 
 **What is wrong with the race.** Today any eligible gardener can claim any
@@ -481,7 +481,7 @@ provider, model, and tier being scored.) The auction is still opt-in, and on
 some hosts quota constraints have temporarily routed it back to the plain
 race. The fifth metamorphosis has begun, then, but has not displaced the
 stage-four shape: the race remains the default, and the market grows
-alongside it (chapter 2, § 2.2 shows where the two meet in the claim path).
+alongside it ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.2](#ch2-22-the-job-lifecycle) shows where the two meet in the claim path).
 
 The bid-market design also sketches, without specifying, two further
 directions: gardeners subcontracting to other gardeners, and a
@@ -511,7 +511,7 @@ A few points from this history explain most of the rest of the book:
   inside the market. Each metamorphosis generalized the one before rather
   than deleting it.
 
-Chapter 2 explains how stage four runs in practice: the board, the job
+[Chapter 2](#ch2-chapter-2-architecture-and-operation) explains how stage four runs in practice: the board, the job
 lifecycle, the bus, and the services around them.
 
 [readme]: https://github.com/kriscendobot/garden/blob/main2/README.md

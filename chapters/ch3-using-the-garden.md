@@ -10,15 +10,15 @@ This chapter is for the person at the terminal: you have opened `claude` in
 the garden root and want to know what to type and what each phrase makes
 happen. It is grounded in the liaison's operating brief,
 [`roles/liaison/AGENT.md`][liaison], the verb table in
-[`CLAUDE.md`][claude-md] § Orchestrator vocabulary, and the authoritative
-table in [`README.md`][readme] § Key vocabulary. Where this chapter and those
+[`CLAUDE.md` § Orchestrator vocabulary](../../CLAUDE.md#orchestrator-vocabulary), and the authoritative
+table in [`README.md` § Key vocabulary](../../README.md#key-vocabulary-for-the-liaison). Where this chapter and those
 files disagree, the files win.
 
 The chapter is written as a how-to for someone at the liaison's terminal, so
 where it speaks of approvals, the inbox, or the ferry, "you" means the
 **maintainer** of the instance at hand: the person whose inbox the workers
 write to and whose approval gates merges. On an instance you stand up
-yourself (chapter 4), that is you. On an instance someone else maintains,
+yourself ([chapter 4](#ch4-chapter-4-creating-your-own-instance)), that is you. On an instance someone else maintains,
 read those passages as a description of the maintainer's part.
 
 The vocabulary is optional. Plain language always works: "rebase #96 and get
@@ -57,7 +57,7 @@ Every liaison session begins with two checks, in fixed order:
    the garden container and warns loudly on the host, where commands run
    under the operator's own identity against the wrong fleet and journal. If
    you see the warning, you forgot `./garden`: exit and start the session
-   through the launcher (see chapter 4, § 4.2).
+   through the launcher (see [chapter 4](#ch4-chapter-4-creating-your-own-instance), [§ 4.2](#ch4-42-the-container-model)).
 2. **The virgin-instance probe.** If `~/.config/systemd/user/` holds no
    rendered `garden-*` units, the instance has never been set up, and the
    liaison greets you with: "this garden isn't set up yet: say **help** for
@@ -81,7 +81,7 @@ scripts/jobs/post-job.sh <base> [body-file]
 
 That writes `jobs/todo/<base>.md` onto the **job board**: the journal, which
 is the `journal2` branch of the garden's own repository, checked out at
-`journal/` (see chapter 2, § 2.1). A gardener on some host races to claim it.
+`journal/` (see [chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.1](#ch2-21-the-journal-as-job-board-and-message-bus)). A gardener on some host races to claim it.
 The substance of the job never enters the liaison's context.
 
 Two properties follow, and they shape how you use it:
@@ -101,7 +101,7 @@ with the earlier, completed job and be silently swallowed. So the liaison
 adds an ISO date suffix (`pr340-weave-20260930`) to the recurring verbs:
 weave, shepherd, conduct, restack, retcon. `post-job.sh` also warns loudly
 when a post collides with a completed job, so the swallow is visible
-([job-board][job-board] § Basename shape).
+([job-board § Basename shape](../../skills/job-board/SKILL.md#basename-shape-bare-for-one-shot-work-disambiguated-for-recurring-actions)).
 
 ### What the liaison does handle in-session
 
@@ -119,7 +119,7 @@ The exceptions to "post, don't do" are narrow:
 
 Workers ask questions too. A gardener that needs a decision runs
 `message-user.sh`, which drops a message in the **maintainer inbox** (see
-chapter 2, § 2.4). On the leader host, the liaison runs a Claude Code Monitor
+[chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.4](#ch2-24-the-message-bus)). On the leader host, the liaison runs a Claude Code Monitor
 over `scripts/jobs/maintainer-watch.sh` and surfaces each message in your
 session. Answer in plain words ("tell it to target the frozen base") and the
 liaison runs `maintainer-reply.sh <msgid>`, which delivers the reply into the
@@ -167,8 +167,8 @@ the Claude Code built-in `/help`, which is untouched; bare `help` typed as a
 message is the garden verb.
 
 While driving *help* or *start the garden*, the liaison follows an
-**ask-before-acting contract** ([first-run README][first-run] § Interaction
-norms):
+**ask-before-acting contract** ([first-run README § Interaction
+norms](../../context/first-run/README.md#interaction-norms-binding-on-the-liaison-driving-the-track)):
 
 - Every mutating step is proposed in one sentence with the exact command
   shown, then run **by the liaison** on your yes. You are never handed a
@@ -188,12 +188,12 @@ norms):
 | **start the garden** | Jumps straight to the tutorial's starting stage, for someone who wants motion rather than a tour. The liaison performs the whole bring-up itself from [`context/operations/starting.md`][starting], asking before each consequential step. Also liaison-session only. |
 | **start** / **resume** / **stand up** the garden | Brings the units up on this host. Same procedure; common after a deploy or a stop. |
 
-A stand-up, in the order the liaison runs it (chapter 4, § 4.5 gives the
+A stand-up, in the order the liaison runs it ([chapter 4](#ch4-chapter-4-creating-your-own-instance), [§ 4.5](#ch4-45-bring-up-step-by-step) gives the
 command-level detail):
 
 1. **Confirm this host's `GARDEN` identity is unique** across running
    instances. The identity derives from the checkout's location
-   (`<hostname>-<basename>-<hash8>`; see chapter 4, § 4.3), so in practice
+   (`<hostname>-<basename>-<hash8>`; see [chapter 4](#ch4-chapter-4-creating-your-own-instance), [§ 4.3](#ch4-43-identity)), so in practice
    this means confirming that hosts have unique short hostnames. It is the
    one precondition only the human can answer.
 2. Install and enable the systemd user units, and size the worker pool.
@@ -220,21 +220,21 @@ free description.
 | **design X** / propose X / spec X | a [designer][designer] job | The designer drafts a design document and opens it as a DRAFT PR on the project's roadmap branch. Completion automatically stages the design gauntlet (a 7-seat design panel, fix-loop, un-draft). On the garden's own repo, a design lands directly on `main2` unless it carries open questions for the maintainer, in which case it becomes a review PR. |
 | **build #N** / build X | a [builder][builder] job | The builder implements the approved design and opens a DRAFT code PR through `ensure-pr.sh`. Successful completion automatically records the staged **gauntlet** for that PR (clean, panel, fix-loop, un-draft), so you need not ask for review separately. |
 | **probe #N** | a builder job under [gap-revealing-build][gap-build] | A deliberate exception: the DRAFT PR **stays draft** and delivers a structured gap report on a tentative design. No gauntlet follows. |
-| **run the gauntlet #N** ★ | a staged-gauntlet **record**, not a single job | For an existing draft PR with no producing job, or to request review directly. The deterministic driver walks the PR through the stages one claim-sized job at a time (chapter 7, § 7.2). See also [the worked example](#example-2-run-the-gauntlet-56). |
+| **run the gauntlet #N** ★ | a staged-gauntlet **record**, not a single job | For an existing draft PR with no producing job, or to request review directly. The deterministic driver walks the PR through the stages one claim-sized job at a time ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.2](#ch7-72-the-gauntlet-end-to-end)). See also [the worked example](#example-2-run-the-gauntlet-56). |
 | **fix #N** | a [fixer][fixer] job | The fixer addresses review feedback with follow-up commits and thread replies, then posts a top-level summary comment. |
 | **rebase #N** ★ | a job stamped `role: weaver` | Rebases the PR branch onto its base. |
 | **refresh #N** ★ | a job with no fixed role | Re-syncs the branch and regenerates derived artifacts; the claiming gardener picks the role from the body. |
 | **retcon #N** ★ | a fixer job under [retcon][retcon] | Resets the branch and restages its changes as per-package commits, with a separate `chore: Update yarn.lock` commit. The net diff is invariant: the final tree is byte-identical to the starting tree; only history changes. |
 | **americanize #N** ★ | an [americanizer][americanizer] job (`myrmidon` tier) | **Search-gated.** The triager (the per-repository watcher that turns PR events into jobs) first runs `orthographer-divergence-grep.sh`; the job is posted only if the grep finds a British spelling. The americanizer then runs a deterministic apply-then-re-grep loop until zero candidates remain. |
-| **deslop #N** ★ | a [deslopper][deslopper] job (`myrmidon` tier) | **Search-gated** the same way, on `thesaurus-cliche-grep.sh`. Rewrites flagged AI-cliché phrases ("load-bearing invariant", "seam where") into plain prose, looping to a fixpoint. The dual of americanize: the thesaurus jury seat (one of the panel's reviewers, chapter 7, § 7.3) detects, the deslopper fixes. |
+| **deslop #N** ★ | a [deslopper][deslopper] job (`myrmidon` tier) | **Search-gated** the same way, on `thesaurus-cliche-grep.sh`. Rewrites flagged AI-cliché phrases ("load-bearing invariant", "seam where") into plain prose, looping to a fixpoint. The dual of americanize: the thesaurus jury seat (one of the panel's reviewers, [chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.3](#ch7-73-the-panel)) detects, the deslopper fixes. |
 | **weave #N** / **pin the merge base #N** ★ | a [weaver][weaver] job | Snapshots the base branch's current tip as a new frozen `<base>-<short-sha>` branch, rebases the PR head onto it, resolves conflicts, force-pushes the head, and moves the PR's `base` field. Both refs move together. See below on the alias. |
 | **shepherd #N** ★ | a [shepherd][shepherd] job | Drives CI back to green: classifies each failure, applies the fix itself when the root cause is in the PR's own diff, and documents and re-runs flakes. It never deletes or skips a failing test to get green. |
 | **merge #N** ★ (also *conduct*) | a [conductor][conductor] job | Conducts the merge onto the right branch. Requires an effective APPROVED review from a journal maintainer. A rebase or push does not stale an approval; a dismissal or a later CHANGES_REQUESTED does. |
-| **ferry #N** | **no board job** | See [The ferry is different](#the-ferry-is-different) below, and chapter 7, § 7.6. |
+| **ferry #N** | **no board job** | See [The ferry is different](#the-ferry-is-different) below, and [chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.6](#ch7-76-the-ferry). |
 
 **Weave and its alias.** "Pin the merge base" is an alias for *weave*, not a
 third verb and not a combination of two. The maintainer coined it in a
-review on endojs/endo-but-for-bots#282 on 2026-08-16: "Please pin the merge
+review on [`endojs/endo-but-for-bots#282`](https://github.com/endojs/endo-but-for-bots/pull/282) on 2026-08-16: "Please pin the merge
 base to llm-xxxxx and rebase. I will hereafter call this 'pin the merge
 base', leaving the rebase and resolution of conflicts implicit." So "and
 rebase" never needs saying. Frozen bases exist because every garden PR on a
@@ -248,12 +248,12 @@ When you know a job will run longer (the paradigm case is a cold
 `docker build`), tell the liaison, and it adds a `handler-timeout:` header to
 the body, honored up to about 3.98 hours. A build that overruns without one
 is doomed after a single no-progress cycle and parked with a notice, so you
-can re-post it with the header (chapter 8, § 8.5).
+can re-post it with the header ([chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.5](#ch8-85-per-job-budgets-wall-clock-and-tokens)).
 
 **The mentat tier.** Ordinary posts are normalized to the `mentor` tier with
 `minion` fallback. If you explicitly ask for a top-tier job, the liaison uses
 `scripts/jobs/post-manual-job.sh <base> [body-file]`, which stamps
-`dispatch: manual`. Automatic producers cannot select that tier (chapter 10
+`dispatch: manual`. Automatic producers cannot select that tier ([chapter 10](#ch10-chapter-10-inference-tiers-reference)
 covers tiers and their selection).
 
 #### The ferry is different
@@ -275,7 +275,7 @@ the liaison **cannot cause a ferry to run**. Instead it:
 operator's own ambient git and gh session. The boatman is mechanically locked
 out of the ordinary board: `post-job.sh`, `claim-job.sh`, and `gardener.sh`
 all refuse a `role: boatman` job, so a ferry can never be race-claimed and
-pushed under the bot. Chapter 7, § 7.6 covers the procedure in full.
+pushed under the bot. [Chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.6](#ch7-76-the-ferry) covers the procedure in full.
 
 ### Managing the queue
 
@@ -298,7 +298,7 @@ liaison does not post a loose pile of jobs and hope the follow-ups happen. It pa
 <child>...`). The deterministic `garden-orchestrate` watcher promotes the
 children one at a time (serial, the default) or all at once (parallel),
 watches each to completion, and on a child failure either halts and
-surfaces it or continues, per the policy (chapter 7, § 7.4). This book is
+surfaces it or continues, per the policy ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration)). This book is
 itself one such orchestration, `garden-book-orch`: eight chapters in
 parallel, halt on failure. For a plain two-step dependency, `post-plan.sh
 --blocked --blocked-on <predecessor>` is the lighter tool.
@@ -316,11 +316,11 @@ them directly.
 | **halt the garden** | Drain, then additionally stop and disable the units. |
 | **restore** / **recover the fleet** / **we're back, clean up the wreckage** | Runs the [restore][restore] engagement after a fleet-wide interruption, typically an API or quota outage. Four idempotent steps: (1) clear failed units so gardeners resume polling; (2) run the reaper once to requeue orphaned in-flight claims, keeping the basename so the re-claiming gardener resumes the interrupted session; (3) run deadmail once to forward dead letters into jobs; (4) acknowledge and redispatch doomed jobs from the inbox. A restore that finds nothing is a clean no-op, so it is safe whenever you suspect an outage. After a long stop you often stand up, then restore. |
 | **run N monks here** / **scale down to 50** | `set-workers.sh <kind> <N>` on this host. It refuses to write another host's record. |
-| **throttle petunia to 2**, **drain petunia**, **restore petunia** | Sends a benign host operation to that host's **sysop**, the deterministic per-host daemon, which applies it there (chapter 2, § 2.5). Useful for an unattended follower. Destructive ops (`deploy`, `unit`, `local-model`, `maintain`) additionally need a maintainer's `authorized_by:` attestation. |
-| **brake the foreman** / **release the foreman** | `brake-foreman.sh on\|off`: stops only the foreman's promotion of deferred work (chapter 8, § 8.4). |
+| **throttle petunia to 2**, **drain petunia**, **restore petunia** | Sends a benign host operation to that host's **sysop**, the deterministic per-host daemon, which applies it there ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop)). Useful for an unattended follower. Destructive ops (`deploy`, `unit`, `local-model`, `maintain`) additionally need a maintainer's `authorized_by:` attestation. |
+| **brake the foreman** / **release the foreman** | `brake-foreman.sh on\|off`: stops only the foreman's promotion of deferred work ([chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.4](#ch8-84-the-foreman-as-pacing-actuator)). |
 | **make this host the leader** / **designate petunia the leader** | `set-main-host.sh [<host>]` writes the journal `leader` marker. Designation **is** raising: the new host's standing marker watch sees it and stands itself up. There is no automatic failover. |
 | **hand off leadership to petunia** | A confirmed five-step handshake: the incoming leader signals, the outgoing stands down its two Monitors and confirms, only then does the marker move, and the incoming arms its Monitors. At no point are two maintainer-inbox Monitors live. |
-| **deploy the garden now** | Forces `deploy-garden.sh` by hand. Normally unnecessary: the fleet self-deploys through a leader-orchestrated rolling deploy, followers first as canaries, the leader last (chapter 2, § 2.6). The liaison's deploy Monitor is an observer and kill-switch, not the trigger. |
+| **deploy the garden now** | Forces `deploy-garden.sh` by hand. Normally unnecessary: the fleet self-deploys through a leader-orchestrated rolling deploy, followers first as canaries, the leader last ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.6](#ch2-26-the-deliberate-deploy)). The liaison's deploy Monitor is an observer and kill-switch, not the trigger. |
 
 A word on drain, the lever people reach for most, which reaches less than
 it sounds. Draining is a process, a board emptying because inflow stopped;
@@ -329,8 +329,8 @@ the garden's own docs insist it is not a fixture to be "plugged" or
 sysop still runs (so a drained host can always receive its own `drain off`),
 and some repair producers still post. The README's
 [§ Lever semantics][levers] table lists exactly what each control does not
-reach and is the first place to look when something seems stuck (chapter 8,
-§ 8.4 contrasts brake, drain, and the foreman's target).
+reach and is the first place to look when something seems stuck ([chapter 8](#ch8-chapter-8-cybernetics-and-budgeting),
+[§ 8.4](#ch8-84-the-foreman-as-pacing-actuator) contrasts brake, drain, and the foreman's target).
 
 ### Negation and teaching
 
@@ -384,8 +384,7 @@ pilot**. It sends the messages to TypeSafe, an external, paid service that
 returns small typed AI judgments (a label, a yes-or-no with a probability)
 that ordinary code can consume directly, and gets back advisory labels: which
 messages can be compacted, which belong to a recurring pattern, and which
-class each falls in ([typesafe-jev-classification][typesafe-design]
-§ Addendum). Three things to know about it:
+class each falls in ([typesafe-jev-classification § Addendum](../../designs/typesafe-jev-classification.md#addendum--second-accepted-decision-point-foreign-content-pre-classification-2026-09-28)). Three things to know about it:
 
 - Its labels are **advisory grouping hints**. The pilot never disposes of a
   message; the liaison still verifies current state before archiving or
@@ -459,7 +458,7 @@ release it. In user terms:
 | `blocked` | Waiting on a `blocked_on:` condition (a PR merging, a job completing). The `garden-unblock` watcher releases it automatically. |
 | `orchestrated` | A child of an orchestration. The `garden-orchestrate` watcher releases it, in sequence. |
 
-Chapter 2, § 2.2 covers the gate mechanics and the full set of producer-side
+[Chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.2](#ch2-22-the-job-lifecycle) covers the gate mechanics and the full set of producer-side
 primitives. The three you invoke by voice:
 
 - **Park** (`scripts/jobs/post-plan.sh --deferred | --go-ahead |
@@ -491,7 +490,7 @@ sed -n '1,/^---$/p' journal/jobs/plan/<job>.md
 ```
 
 The bulletin (the garden's status page, published to GitHub Pages from the
-journal; chapter 4, § 4.5) has a **Plan queue** section that lists go-ahead jobs awaiting a
+journal; [chapter 4](#ch4-chapter-4-creating-your-own-instance), [§ 4.5](#ch4-45-bring-up-step-by-step)) has a **Plan queue** section that lists go-ahead jobs awaiting a
 decision, answerable awaiting-maintainer questions with their links, and the
 top of the deferred queue, each with its gate reason. Procedure and recovery:
 [`context/operations/plan-queue.md`][plan-queue].
@@ -500,7 +499,7 @@ top of the deferred queue, each with its gate reason. Procedure and recovery:
 
 ### Example 1: "build #1234"
 
-Suppose #1234 is an issue on `endojs/endo-but-for-bots` describing an
+Suppose #1234 is an issue on [`endojs/endo-but-for-bots`](https://github.com/endojs/endo-but-for-bots) describing an
 approved design, and you type **build #1234**.
 
 1. **The liaison derives a basename and a body.** It picks a short name tied
@@ -522,12 +521,12 @@ approved design, and you type **build #1234**.
    metadata (host, worker, kind, model, time), create `work/<base>` and
    `inbox/<base>/`, commit, push. **The accepted push is the claim.** If two
    workers race, one push lands and the other is rejected; the loser backs off
-   to a different job and never blind-retries (chapter 2, § 2.1 and § 2.3).
+   to a different job and never blind-retries ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.1](#ch2-21-the-journal-as-job-board-and-message-bus) and [§ 2.3](#ch2-23-the-gardener-fleet)).
 4. **The gardener does the work in isolation.** It reads
    `roles/COMMON.md` and `roles/builder/AGENT.md`, then gets a project
    checkout keyed by its own job base, a per-job worktree, with
    `ensure-project-worktree.sh ebfb-1234-build endojs/endo-but-for-bots
-   <branch>`, so no peer on the same PR shares its working tree. It
+   <branch>` for the [`endojs/endo-but-for-bots`](https://github.com/endojs/endo-but-for-bots) repository, so no peer on the same PR shares its working tree. It
    implements, commits, pushes a head branch,
    and opens the PR only through `ensure-pr.sh`, which embeds a
    `<!-- garden-job: ebfb-1234-build -->` marker and adopts an existing PR
@@ -554,7 +553,7 @@ approved design, and you type **build #1234**.
 Suppose #56 is an existing draft PR that no job produced (perhaps it was
 hand-opened), and you want it reviewed and made ready. You type **run the
 gauntlet #56**, or write "run the gauntlet" as a comment on the PR itself.
-This example follows the PR from your side; chapter 7, § 7.2 defines the
+This example follows the PR from your side; [chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.2](#ch7-72-the-gauntlet-end-to-end) defines the
 stages and their transitions.
 
 1. **A record, not a job.** The gauntlet was once a single claimed job
@@ -576,7 +575,7 @@ stages and their transitions.
    Example 1.
 3. **Each stage reports a result the driver reads.** The stage's completion
    report carries a marker like `<!-- gauntlet-stage-result: panel-1=must-fix
-   -->`, and the driver applies a fixed transition (chapter 7, § 7.2.3). For
+   -->`, and the driver applies a fixed transition ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.2.3](#ch7-723-the-staged-driver)). For
    #56 that means: a viability check that the PR is still worth reviewing
    (an `overtaken` result offers close-as-superseded instead); a clean pass
    that waits for CI; a panel of jury seats; on `must-fix`, a fix-loop round

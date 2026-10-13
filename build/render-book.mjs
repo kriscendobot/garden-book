@@ -229,7 +229,9 @@ const equilibriumExhibit = (chart, source) => {
   ]
     .map((note) => `<p class="eq-note">${cellHtml(note)}</p>`)
     .join("");
-  return `<div class="eq-exhibit" data-chart="${chart.id}"><figure class="eq-figure">${source.trim()}<figcaption>${escapeHtml(
+  const chapterPrefix = chart.anchor.split("-", 1)[0];
+  const figureId = `${chapterPrefix}-figure-${chart.id.toLowerCase()}`;
+  return `<div class="eq-exhibit" data-chart="${chart.id}"><figure id="${figureId}" class="eq-figure">${source.trim()}<figcaption>${escapeHtml(
     chart.caption,
   )}</figcaption></figure><details class="eq-values"><summary>Exact values: ${title}</summary>${tables}${notes}</details></div>`;
 };
@@ -298,6 +300,12 @@ export const makeHrefResolver =
   ({ roleAnchors, skillAnchors }) =>
   (href, prefix) => {
     if (href.startsWith("#")) {
+      // A chapter-prefixed fragment already names an anchor in the assembled
+      // book. Ordinary source-local fragments still need this chapter's
+      // prefix.
+      if (/^#ch\d+(?:p\d+)?-/.test(href)) {
+        return href;
+      }
       return `#${prefix}-${href.slice(1)}`;
     }
     if (/^[a-z]+:/.test(href)) {

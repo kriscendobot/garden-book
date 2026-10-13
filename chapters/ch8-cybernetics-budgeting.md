@@ -136,7 +136,7 @@ There is no single global reset time; an early version hardcoded one
 times.
 
 The same `budget/live` snapshot serves as a **heartbeat**: a host that stops
-publishing it is treated as offline, which worker derotation (§ 8.3) relies
+publishing it is treated as offline, which worker derotation ([§ 8.3](#ch8-83-worker-count-leveling-and-derotation)) relies
 on.
 
 ### Calibration: why a pool must be metered *and* calibrated
@@ -169,12 +169,12 @@ of four verdicts:
 
 Each asymmetry here comes from a specific incident. An **unmetered or
 uncalibrated** pool fails closed because a ceiling nobody trusts bounds nothing;
-the code comment cites the $1,090 overspend from § 8.1. An **absent** pool row means
+the code comment cites the $1,090 overspend from [§ 8.1](#ch8-81-why-cybernetics). An **absent** pool row means
 budgeting is deliberately off for that provider. A **blind sensor** fails open
 because wedging the fleet on a broken meter would turn a monitoring fault into
 an outage. The fail-closed halt is loud and explicit so that it never looks
 mysterious. The leveler handles a sensor failure differently: it **holds** the
-current allocation and does not treat unreadable spend as zero (§ 8.3).
+current allocation and does not treat unreadable spend as zero ([§ 8.3](#ch8-83-worker-count-leveling-and-derotation)).
 
 The high-water mark is the pool cap multiplied by `GARDEN_TOKEN_BACKOFF_FRACTION`.
 The code default is 0.85; when the environment does not set the fraction,
@@ -184,7 +184,7 @@ can run as a one-shot schedule preflight hook so a change takes effect at a
 chosen time (exit 2 means "written, no job needed").
 
 A cruder ceiling sits under all of this. `claude_call_budget_usd` gives every
-single `claude -p` invocation a hard per-call USD cap by tier (chapter 10): $4
+single `claude -p` invocation a hard per-call USD cap by tier ([chapter 10](#ch10-chapter-10-inference-tiers-reference)): $4
 for myrmidon, $10 for minion, $20 for mentor, $40 for mentat. The cap shrinks (never grows)
 as the provider's seven-day headroom shrinks, down to a $0.50 floor. It is a
 seat belt for a runaway call, not a planning tool.
@@ -194,7 +194,7 @@ seat belt for a runaway call, not a planning tool.
 ### Declared counts, effective counts
 
 Each host's `hosts/<host>` journal file declares `monks:` (native Anthropic,
-Claude Code) and `clerics:` (OpenAI, Codex) counts (worker kinds: chapter 10). The per-host
+Claude Code) and `clerics:` (OpenAI, Codex) counts (worker kinds: [chapter 10](#ch10-chapter-10-inference-tiers-reference)). The per-host
 `garden-gardener-scaler` reconciles the declaration into running
 `garden-monk@N` / `garden-cleric@N` systemd units. A backend-health probe then
 gates the declared count: after one passing probe the effective count ramps up
@@ -204,7 +204,7 @@ count is therefore only an upper bound.
 An operator sets counts with `scripts/jobs/set-workers.sh monk|cleric <count>`
 (or `set-monks.sh` / `set-clerics.sh`). The setter is **local-only**: its
 optional `[host]` argument must equal this host's `GARDEN` identity. Another
-host changes only through its sysop (below).
+host changes only through its sysop ([below](#remote-operations-the-sysop)).
 
 ### The leveler
 
@@ -276,7 +276,7 @@ predicate in `common.sh`, which it shares with the rolling-deploy canary.
 5. Each episode posts one notice and one recovery.
 
 The oros row above is a live example. On 2026-09-30 the liaison's muster
-(chapter 3, § 3.3) handled the derotation notices by hand, and at the time of
+([chapter 3](#ch3-chapter-3-using-the-garden), [§ 3.3](#ch3-33-muster-working-the-maintainer-inbox)) handled the derotation notices by hand, and at the time of
 writing the marker still stood:
 
 ```text
@@ -315,7 +315,7 @@ solve this. Allocation tracks heartbeat-live capacity, not claiming capacity.
 
 Leveling across hosts needs an actuator that can act *on* a follower when no
 human is sitting at it. That actuator is the **sysop**, the deterministic,
-no-LLM per-host daemon described in chapter 2, § 2.5 (its closed op
+no-LLM per-host daemon described in [chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop) (its closed op
 vocabulary, its every-host deployment, and its authorization rules live
 there). Three of its properties matter to the control loops:
 
@@ -337,8 +337,8 @@ there). Three of its properties matter to the control loops:
 The leveler, derotation, foreman, scheduler, and watchers are **singletons**:
 two levelers would fight over count lines, two foremen would double-pump, and
 two schedulers would double-dispatch. They run only on the **leader**, gated by
-`scripts/jobs/is-main-host.sh` against the journal's `leader` marker (chapter
-2, § 2.5). Gardeners (monks and clerics) run on
+`scripts/jobs/is-main-host.sh` against the journal's `leader` marker
+([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop)). Gardeners (monks and clerics) run on
 every host and race-claim safely through the job-board push compare-and-swap.
 Moving the marker with `set-main-host.sh` moves every budget controller with it.
 The journal-backed foreman brake (`config/foreman-brake`) moves with it too,
@@ -399,7 +399,7 @@ file is authoritative.)
 
 ### Brake, drain, and target: three different levers
 
-This section is the canonical home for these three controls; chapter 2, § 2.5
+This section is the canonical home for these three controls; [chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop)
 only summarizes them.
 
 | Lever | Scope | Stops |
@@ -417,7 +417,7 @@ stop only autonomous generation, the brake is the right lever.
 
 Each claimed job carries two separate budgets, both resolved from the same
 role in the same place, `common.sh`, so the gardener that runs the handler, the
-reaper that judges staleness (chapter 2, § 2.2), and the deadline nudger that
+reaper that judges staleness ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.2](#ch2-22-the-job-lifecycle)), and the deadline nudger that
 warns the worker cannot disagree.
 
 ### The handler wall (`handler-timeout:`)
@@ -463,7 +463,7 @@ that `budget + kill_after < TTL` still holds.
 
 Only `handler-timeout:` sets the wall. A frequent mistake is writing
 `tier: builder`: that is an invalid tier, not a role, so the job silently
-receives the default budget. `role:` is the separate field (chapter 10).
+receives the default budget. `role:` is the separate field ([chapter 10](#ch10-chapter-10-inference-tiers-reference)).
 
 ### The notional token budget (`token-budget:`)
 
@@ -491,22 +491,22 @@ decides where the job goes after it hits the wall:
 
 ### Tier is part of cost
 
-The other axis of per-job cost is which model runs the job. Chapter 10 is the
+The other axis of per-job cost is which model runs the job. [Chapter 10](#ch10-chapter-10-inference-tiers-reference) is the
 reference for tiers, the models in each, role floors, and provider fallback
 (source: `skills/model-selection/SKILL.md`). Two facts matter for budgeting.
 Automatic producers stamp every job `tier: mentor`, and mentor is
 multi-provider, so a job runs on whichever pool has live capacity and the
 claim gate charges that pool. **Mentat**, the most expensive tier, is
 manual-only (`post-manual-job.sh`). Its one automatic exception, a
-maintainer-authorized watcher that drives the Ironhorse engine port (chapter
-1, § 1.1) one pull request at a time, is still gated at foreman admission by
+maintainer-authorized watcher that drives the Ironhorse engine port
+([chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis), [§ 1.1](#ch1-11-what-the-garden-is)) one pull request at a time, is still gated at foreman admission by
 a rolling token budget for that line of work.
 
 ## 8.6 Per-orchestration budgets: a bounded pie
 
 The garden's most direct form of "a bounded budget a scheduler draws down"
 already exists at the scope of one **orchestration** (the mechanism itself is in
-chapter 7, § 7.4). See
+[chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration)). See
 [`skills/orchestration/SKILL.md`](../../skills/orchestration/SKILL.md) and
 [`designs/budgeted-campaign-dispatch.md`](../../designs/budgeted-campaign-dispatch.md).
 
@@ -562,7 +562,7 @@ the motivation this way:
 > foreman can draw from to make progress on prioritized work in the planned jobs.
 
 That request has since been designed and built. The design is
-`designs/accountant-arc-apportionment.md`, the role brief is
+[`designs/accountant-arc-apportionment.md`](../../designs/accountant-arc-apportionment.md), the role brief is
 `roles/accountant/AGENT.md`, and the commands are in
 `context/operations/accountant.md`. What follows describes the shipped
 shape; the design document remains the place to look for the reasoning.
@@ -638,9 +638,9 @@ metadata fetched seven minutes later. The sources:
 - **Panel-run records** (`panel-runs/`): 869 runs of the review panel on
   `endo-but-for-bots`, recorded from 2026-09-23 onward.
 - **The review-miss store** (`review-misses/`): 534 maintainer review comments
-  that the prosecutor role classified after the fact (§ Does review teach?).
+  that the prosecutor role classified after the fact ([§ Does review teach?](#does-review-teach)).
 - **GitHub**: all 761 pull requests the bot opened on `endo-but-for-bots`,
-  with their human reviews, and the 19 upstream `endojs/endo` pull requests
+  with their human reviews, and the 19 upstream [`endojs/endo`](https://github.com/endojs/endo) pull requests
   that the boatman ferried in May.
 
 The analysis script, the GitHub fetch script, and the committed aggregates
@@ -675,20 +675,20 @@ The garden works under three quite different review regimes:
 | --- | --- | --- | --- |
 | The garden itself (`main2`) | Pushed directly, no pull request | None formally; the liaison and the maintainer read some of it after the fact | 1,276 events, ledger lines |
 | `endo-but-for-bots` | Draft pull request, gauntlet, then a human merge | Clean pass, panel, fix loop, then maintainer review | 4,703 events, panel runs, GitHub reviews |
-| Upstream `endojs/endo` | Ferried by the boatman under the maintainer's identity | The upstream project's own reviewers, the highest bar | 19 ferried pull requests on GitHub; no cost records |
+| Upstream [`endojs/endo`](https://github.com/endojs/endo) | Ferried by the boatman under the maintainer's identity | The upstream project's own reviewers, the highest bar | 19 ferried pull requests on GitHub; no cost records |
 
 The upstream row is thin by necessity. Ferries run from the maintainer's host,
-outside the job board (chapter 7, § 7.6), and the ones in the record predate
+outside the job board ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.6](#ch7-76-the-ferry)), and the ones in the record predate
 the cost ledger, so for upstream work the garden can measure review and
 latency but not machine cost. Five board jobs that link first to
-`endojs/endo` are in the event data; they are not ferries and are left out
+[`endojs/endo`](https://github.com/endojs/endo) are in the event data; they are not ferries and are left out
 of the comparison.
 
 ### Two price tags on one pull request
 
 **Machine cost.** For Claude work, the ledger's `total_cost_usd` is what the
 tokens would have cost at API list price. The garden does not pay that price:
-it pays flat subscription fees, which § 8.2 meters as quota rather than
+it pays flat subscription fees, which [§ 8.2](#ch8-82-subscription-accounting) meters as quota rather than
 dollars. Over the window, the ledger's list-price total is $14,139, while the
 two $200 Max subscriptions the maintainer has stated the fleet runs on come
 to $889 for the same span. The list price overstates the actual outlay
@@ -700,7 +700,7 @@ two figures agree once their circumstances are accounted for. When that study
 ran, the ledger had metered only 357 of 4,128 completed jobs (8.6%), and the
 fleet ran well below its quota. A flat fee divided over more metered work gives a larger ratio, and
 the ratio is expected to keep rising as utilization rises. One sensitivity
-matters: § 8.2 lists a third Claude pool, `claude-oros`, from 2026-09-17,
+matters: [§ 8.2](#ch8-82-subscription-accounting) lists a third Claude pool, `claude-oros`, from 2026-09-17,
 whose price is not in the sources used here. If it is a third $200 plan, the
 window ratio falls from 16× to about 14×, the window's allocated dollars
 rise by about 13%, and work done after mid-September is allocated between a
@@ -856,7 +856,7 @@ word counts.
 ### The equilibrium
 
 These observations suggest a way to think about how much review to buy. The
-model below is a **scenario**, not an estimate. The garden's records support
+[model below](#figure-e8) is a **scenario**, not an estimate. The garden's records support
 its shape and some of its inputs, but not its most important parameter, so
 it explains the trade-off rather than locating an optimum.
 

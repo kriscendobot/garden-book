@@ -70,6 +70,10 @@ test("makeHrefResolver resolves every link shape", () => {
   });
   assert.equal(resolve("#intro", "ch2"), "#ch2-intro");
   assert.equal(
+    resolve("#ch7-72-the-gauntlet-end-to-end", "ch2"),
+    "#ch7-72-the-gauntlet-end-to-end",
+  );
+  assert.equal(
     resolve("https://example.com/x", "ch2"),
     "https://example.com/x",
   );

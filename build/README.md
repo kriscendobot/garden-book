@@ -4,12 +4,12 @@ Assembles `../chapters/ch*.md` into one static HTML book (`index.html` +
 sibling `styles.css`, since the clip CSP is `style-src 'self'`) and publishes
 it as a minion.town clip.
 
-As of 2026-10-01 this repo (`kriscendobot/garden-book`) is the source of
+As of 2026-10-01 this repo ([`kriscendobot/garden-book`](https://github.com/kriscendobot/garden-book)) is the source of
 record for ongoing editorial work — chapters, art, and this build tooling
 all live here now, not in the garden's `journal2`. Land changes the normal
 way for a garden-maintained project: a draft PR, gauntlet review, then
-merge, per the garden's standard PR-creation flow. Earlier editions were
-assembled directly from `journal/projects/garden-book/` before this repo
+merge, per the garden's standard [PR-creation flow](https://github.com/kriscendobot/garden/blob/main2/skills/pr-creation-flow/SKILL.md). Earlier editions were
+assembled directly from [`journal/projects/garden-book/`](https://github.com/kriscendobot/garden/tree/journal2/projects/garden-book) before this repo
 existed; that history is preserved in the garden journal but is no longer
 the live source.
 
@@ -22,64 +22,63 @@ The build command writes both `index.html` and `styles.css` into the output
 directory (`out/` above). They are build artifacts, not committed: the
 publish step uploads them as the clip, and a rebuild overwrites them.
 
-Design hooks in `render-book.mjs`: `PARTS` maps chapter numbers to the book's five
+Design hooks in [`render-book.mjs`](render-book.mjs): `PARTS` maps chapter numbers to the book's five
 parts (update it when chapters are added or renumbered; a chapter outside
 every part is listed after them); `GLYPHS` holds each part's inline SVG
 growth stage (presentation attributes only, since the CSP forbids inline
 style). Margin notes are `.marginnote` elements: chapter provenance, each
 catalog entry's `Source:` line (hoisted beside its heading and linked to
-`main2`), and the chapter's own `Contents` list. `illuminations.mjs` places
+`main2`), and the chapter's own `Contents` list. [`illuminations.mjs`](illuminations.mjs) places
 the plates from `art/`: each entry names an image, the heading anchor it was
 drawn for, an optional later heading inside that section (`at`), how many body
 blocks to pass before the figure (margin notes don't count), and its caption.
 A placement whose heading is gone, which would leave its section, or which
 names missing art fails the build instead of moving silently.
-`equilibrium-charts.mjs` does the same for the nine review-economics charts
-(`art/equilibrium-e*.svg`) in section 8.8: each entry names the chart, the
+[`equilibrium-charts.mjs`](equilibrium-charts.mjs) does the same for the nine review-economics charts
+(`art/equilibrium-e*.svg`) in [section 8.8](../chapters/ch8-cybernetics-budgeting.md#88-review-economics-an-equilibrium): each entry names the chart, the
 subsection the spec places it under (which must stay inside 8.8), the body
 blocks to pass (margin notes and charts already placed don't count), its
 caption, and the exact values a reader can open in a `details` disclosure
-directly after it. `tools/equilibrium/integration-check.mjs` checks those
+directly after it. [`tools/equilibrium/integration-check.mjs`](../tools/equilibrium/integration-check.mjs) checks those
 nine placements in a built edition in the browser.
-`tools/browser-check.mjs` loads a built edition in headless Chromium at phone
+[`tools/browser-check.mjs`](../tools/browser-check.mjs) loads a built edition in headless Chromium at phone
 and desktop widths in both color schemes and reports overflow, clipped or
 overlapping figures, and caption contrast (Playwright is not a dependency;
-point `PLAYWRIGHT_CORE` at an installed `playwright-core`). `publish.mjs` publishes with
+point `PLAYWRIGHT_CORE` at an installed `playwright-core`). [`publish.mjs`](publish.mjs) publishes with
 an inert empty-text pet name as `powers`, never `sites`, because `powers`
-becomes every visitor's bootstrap (see `skills/minion-town-clip-publishing`
-on `kriscendobot/garden`); it refuses any `GARDEN_BOOK_POWERS` that is not
+becomes every visitor's bootstrap (see [`skills/minion-town-clip-publishing`](https://github.com/kriscendobot/garden/blob/main2/skills/minion-town-clip-publishing/SKILL.md)
+on [`kriscendobot/garden`](https://github.com/kriscendobot/garden)); it refuses any `GARDEN_BOOK_POWERS` that is not
 `garden-book-<name>`, so `sites`, `@agent`, and the other reserved names are
 never overwritten.
 
-Chapter 8's review-economics section (8.8) is computed, not hand-written:
-`tools/equilibrium/analyze.mjs` reads one fixed `journal2` commit plus GitHub
-metadata saved by `tools/equilibrium/fetch-github.sh` and writes
-`data/equilibrium/aggregates.json`; `tools/equilibrium/scenario.mjs` derives
-the illustrative curves in `data/equilibrium/scenario.json`. The chart brief,
+[Chapter 8's review-economics section (8.8)](../chapters/ch8-cybernetics-budgeting.md#88-review-economics-an-equilibrium) is computed, not hand-written:
+[`tools/equilibrium/analyze.mjs`](../tools/equilibrium/analyze.mjs) reads one fixed `journal2` commit plus GitHub
+metadata saved by [`tools/equilibrium/fetch-github.sh`](../tools/equilibrium/fetch-github.sh) and writes
+[`data/equilibrium/aggregates.json`](../data/equilibrium/aggregates.json); [`tools/equilibrium/scenario.mjs`](../tools/equilibrium/scenario.mjs) derives
+the illustrative curves in [`data/equilibrium/scenario.json`](../data/equilibrium/scenario.json). The chart brief,
 including every classification rule and the exact commands, is
-`art/equilibrium-data-spec.md`. Only aggregates are committed, never journal
+[`art/equilibrium-data-spec.md`](../art/equilibrium-data-spec.md). Only aggregates are committed, never journal
 or review text.
 
-`build.mjs` reads `intro.html` (the title page; update its edition note) from
+[`build.mjs`](build.mjs) reads [`intro.html`](intro.html) (the title page; update its edition note) from
 the build directory. It prefixes heading ids per chapter, rewrites relative
-role/skill links to the in-book chapter 5/6 entries, and sends other repo
-paths to `main2` on GitHub (`kriscendobot/garden`, where the roles/skills
+role/skill links to the in-book [chapter 5](../chapters/ch5-roles-reference.md)/[6](../chapters/ch6-skills-reference.md) entries, and sends other repo
+paths to `main2` on GitHub ([`kriscendobot/garden`](https://github.com/kriscendobot/garden), where the roles/skills
 this book documents actually live).
 
 Current edition, 2026-10-04, review economics (jobs
 `book-equilibrium-data-draft-20261004`,
 `book-equilibrium-visualize-20261004`,
 `book-equilibrium-stylize-20261004`, and
-`book-equilibrium-integrate-20261004`): chapter 8 now includes section 8.8,
+`book-equilibrium-integrate-20261004`): [chapter 8 now includes section 8.8](../chapters/ch8-cybernetics-budgeting.md#88-review-economics-an-equilibrium),
 "The equilibrium price of review," with nine illuminated charts and accessible
 exact-value tables. The analysis is an explicitly tentative, observational
 snapshot of one fleet: 8,623 reputation events and 11,418 usage rows at fixed
 garden journal commit `6485a3b8a9617af8177bfac8432d90e42026797c`, plus frozen
 GitHub metadata for 869 fork panel runs, 534 review comments, 761 bot pull
-requests, and 19 upstream ferries:
-https://xddmohl7mf56oiaps45dm6vtoouoxhxkkpocwzuskmwg6mhzggea.ocap.site/
+requests, and 19 upstream ferries: [published edition](https://xddmohl7mf56oiaps45dm6vtoouoxhxkkpocwzuskmwg6mhzggea.ocap.site/).
 
-- PR #12 (https://github.com/kriscendobot/garden-book/pull/12), head
+- [PR #12](https://github.com/kriscendobot/garden-book/pull/12), head
   `c7ff0a85a099ca69865f1b84e7a26e7c51711805`, merged as
   `c7e579ffc7fcc7a6a2ad4d8f1318e70dadfb2405`; published from that merge.
 - Headline observations: median subscription-attributed machine cost is about
@@ -106,12 +105,11 @@ Previous edition, 2026-10-04, illuminated (jobs
 `book-illumination-supervisor-after-integrate-20261004`): the 25 plates in
 `art/illumination-*.svg` are inlined at the places `build/illuminations.mjs`
 names, each as a `figure` with a caption, and the title-page garden scene and
-the chapter 2 garden-bed figure are retired:
-https://dnl43y7ksqqrkfzkzsiyzhfoqks7tnxpedzi7gfymzviqo7uvkda.ocap.site/
+the [chapter 2](../chapters/ch2-architecture-operation.md) garden-bed figure are retired: [published edition](https://dnl43y7ksqqrkfzkzsiyzhfoqks7tnxpedzi7gfymzviqo7uvkda.ocap.site/).
 
-- Art: PR #9 (https://github.com/kriscendobot/garden-book/pull/9), merged as
+- Art: [PR #9](https://github.com/kriscendobot/garden-book/pull/9), merged as
   `32cf2348503fa8f9e13c7c7be9ebb3ff5db3702f`.
-- Integration: PR #11 (https://github.com/kriscendobot/garden-book/pull/11),
+- Integration: [PR #11](https://github.com/kriscendobot/garden-book/pull/11),
   head `b716cab73d6dbeaf4caf0631ba75ae23888c1e2c`, merged as
   `636a80f05ae1a185afcebf84e15c0c54cf4a21cf`; published from that commit.
 - Build: `npm ci && npm test && node build/build.mjs chapters out` (30/30
@@ -126,16 +124,16 @@ https://dnl43y7ksqqrkfzkzsiyzhfoqks7tnxpedzi7gfymzviqo7uvkda.ocap.site/
 
 Prior editions:
 
-- 2026-10-03, illustrated, redesigned, and retitled (portable JavaScript build, PR #6):
-  https://g2d5d5z6x25qmf43fhv5tm4zmv4ozbxgk5gtke3mkrydrojehaea.ocap.site/
+- 2026-10-03, illustrated, redesigned, and retitled (portable JavaScript build, [PR #6](https://github.com/kriscendobot/garden-book/pull/6)):
+  [published edition](https://g2d5d5z6x25qmf43fhv5tm4zmv4ozbxgk5gtke3mkrydrojehaea.ocap.site/)
 
 - 2026-10-03, illustrated (job `book-illustrations-integrate-after-pr4`,
-PR #5: the `art/` title garden scene inlined behind the title page, the
-garden-bed figure beside chapter 2, and a faint paper texture behind the
+[PR #5](https://github.com/kriscendobot/garden-book/pull/5): the `art/` title garden scene inlined behind the title page, the
+garden-bed figure beside [chapter 2](../chapters/ch2-architecture-operation.md), and a faint paper texture behind the
 reading surface; the three dividers and the trellis, seed-packet, and
 potted-plant figures are left unused so they don't compete with the five
 growth-stage glyphs):
-https://xwo4jjai3z3lqwmls3tqlxnn6fqzawktp6lskvmyywdox52c272a.ocap.site/
+[published edition](https://xwo4jjai3z3lqwmls3tqlxnn6fqzawktp6lskvmyywdox52c272a.ocap.site/)
 
 - 2026-10-03, redesigned and retitled *Better Code and Gardens* (design
   pass, job `book-design-pass`: Tufte-style text column with a margin for
@@ -143,23 +141,23 @@ https://xwo4jjai3z3lqwmls3tqlxnn6fqzawktp6lskvmyywdox52c272a.ocap.site/
   the chapters grouped into five parts marked by line-drawn growth stages;
   serif/sans system font stacks and an earth-and-leaf palette with a matching
   dark scheme):
-  https://5f7jjhj4sbxaxdbej5t7oxgarnzhmb7wq45ds3nxqnq4wtthotsq.ocap.site/
+  [published edition](https://5f7jjhj4sbxaxdbej5t7oxgarnzhmb7wq45ds3nxqnq4wtthotsq.ocap.site/)
 - 2026-10-03 (copy-edit pass, job `book-copyedit`: terminology normalized
   across chapters, tense/voice/audience made consistent, cross-references added
-  between chapters including into chapters 9 and 10, repeated explanations
-  collapsed to one home, house style applied; chapters 8-10 gained Contents
-  lists and chapters 9-10 numbered sections; published from PR branch
+  between chapters including into [chapters 9](../chapters/ch9-library-structure.md) and [10](../chapters/ch10-inference-tiers-reference.md), repeated explanations
+  collapsed to one home, house style applied; [chapters 8](../chapters/ch8-cybernetics-budgeting.md)-[10](../chapters/ch10-inference-tiers-reference.md) gained Contents
+  lists and [chapters 9](../chapters/ch9-library-structure.md)-[10](../chapters/ch10-inference-tiers-reference.md) numbered sections; published from [PR #1](https://github.com/kriscendobot/garden-book/pull/1) branch
   `book-copyedit` ahead of merge, as the job requested):
-  https://7uzjtuxvwf7m6dcqjhrvdxuv7wr43245b5pgypkvrtqqudpoepsa.ocap.site/
-- 2026-10-01 (migrated into `kriscendobot/garden-book`; content unchanged from
+  [published edition](https://7uzjtuxvwf7m6dcqjhrvdxuv7wr43245b5pgypkvrtqqudpoepsa.ocap.site/)
+- 2026-10-01 (migrated into [`kriscendobot/garden-book`](https://github.com/kriscendobot/garden-book); content unchanged from
   the prior journal-sourced edition):
-  https://dajt26qwtcxayo7bbm5sfokdhosqznrmwm7uahtuyxofbggo5nza.ocap.site/
+  [published edition](https://dajt26qwtcxayo7bbm5sfokdhosqznrmwm7uahtuyxofbggo5nza.ocap.site/)
 
 Assembled from `journal/projects/garden-book/` before this repo existed:
 
-- 2026-09-30 (revised: title *The Garden That Tends Code*; chapters 9 and 10
+- 2026-09-30 (revised: title *The Garden That Tends Code*; [chapters 9](../chapters/ch9-library-structure.md) and [10](../chapters/ch10-inference-tiers-reference.md)
   added; the title is set in `intro.html` and in `render-book.mjs`'s `TITLE`
   — update both together if the title changes again):
-  https://dajt26qwtcxayo7bbm5sfokdhosqznrmwm7uahtuyxofbggo5nza.ocap.site/
+  [published edition](https://dajt26qwtcxayo7bbm5sfokdhosqznrmwm7uahtuyxofbggo5nza.ocap.site/)
 - 2026-09-30 (first edition, 8 chapters):
-  https://qxx6onyv2lkrchlytrmh2dos4xndfz5erojrkwfplor65h2ipgrq.ocap.site/
+  [published edition](https://qxx6onyv2lkrchlytrmh2dos4xndfz5erojrkwfplor65h2ipgrq.ocap.site/)

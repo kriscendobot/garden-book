@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { assembleBook } from "../build/assemble-book.mjs";
+import { makeNodeReadableTree } from "../build/node-tree.mjs";
 import { encodeBase64, publishBook } from "../build/publish-book.mjs";
 import { renderBook } from "../build/render-book.mjs";
 
@@ -117,6 +118,35 @@ test("assembleBook uses tree capabilities and writes the complete clip", async (
   assert.equal(result.chapterCount, 1);
   assert.match(output["index.html"], /<!DOCTYPE html>/);
   assert.equal(output["styles.css"], "body { color: green; }\n");
+});
+
+test("every internal link in the assembled book resolves to an id", async () => {
+  const output = {};
+  await assembleBook({
+    chaptersTree: makeNodeReadableTree(
+      new URL("../chapters/", import.meta.url),
+    ),
+    buildTree: makeNodeReadableTree(new URL("../build/", import.meta.url)),
+    artworkTree: makeNodeReadableTree(new URL("../art/", import.meta.url)),
+    outputTree: {
+      async writeText(name, content) {
+        output[name] = content;
+      },
+    },
+  });
+
+  const ids = new Set(
+    [...output["index.html"].matchAll(/\bid="([^"]+)"/g)].map(
+      ([, id]) => id,
+    ),
+  );
+  const fragments = [
+    ...output["index.html"].matchAll(/\bhref="#([^"]+)"/g),
+  ].map(([, fragment]) => fragment);
+  const missing = [
+    ...new Set(fragments.filter((fragment) => !ids.has(fragment))),
+  ];
+  assert.deepEqual(missing, []);
 });
 
 test("encodeBase64 matches the standard encoding at every padding boundary", () => {

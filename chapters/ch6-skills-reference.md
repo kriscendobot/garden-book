@@ -15,9 +15,10 @@ script under `scripts/jobs/`; there the skill is the human- and
 agent-readable contract, and the script is the deterministic mechanism.
 
 `skills/` holds 98 skill directories (plus a `README.md`) as of `main2`
-`3d65d01cc06`, one more than the inventory in `CLAUDE.md` § Current
-inventory, which omits `pty-context-introspection`. This chapter covers
-all 98, grouped by subject into sections 6.1 through 6.17. Each entry is
+`3d65d01cc06`, one more than the inventory in [`CLAUDE.md` § Current
+inventory](../../CLAUDE.md#current-inventory), which omits
+`pty-context-introspection`. This chapter covers
+all 98, grouped by subject into [sections 6.1](#ch6-61-the-pr-spine-opening-describing-and-gating-a-pr) through [6.17](#ch6-617-web-and-css). Each entry is
 built from reading the skill's `SKILL.md` in full and has four fields:
 
 - **Purpose**, in the skill's own terms.
@@ -158,13 +159,13 @@ to its source.
 These five skills cover the path from "a build job was claimed" to "a
 draft PR is ready for the maintainer." `pr-creation-flow` is the map;
 the other four are what a worker does before and at every push. The
-gauntlet as a whole is told end to end in chapter 7, § 7.2.
+gauntlet as a whole is told end to end in [chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.2](#ch7-72-the-gauntlet-end-to-end).
 
 ### `pr-creation-flow`
 
 Source: [`skills/pr-creation-flow/SKILL.md`](../../skills/pr-creation-flow/SKILL.md)
 
-**Purpose.** The canonical procedure tying a PR's lifecycle stages together: which stage opens the PR, which stages touch it before the maintainer sees it, and which stage decides it is ready for review. The skill calls itself "the spine of the gauntlet," the chain the gardening state machine (`scripts/jobs/gardening/garden-pr.sh`) drives (see chapter 7, § 7.2).
+**Purpose.** The canonical procedure tying a PR's lifecycle stages together: which stage opens the PR, which stages touch it before the maintainer sees it, and which stage decides it is ready for review. The skill calls itself "the spine of the gauntlet," the chain the gardening state machine (`scripts/jobs/gardening/garden-pr.sh`) drives (see [chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.2](#ch7-72-the-gauntlet-end-to-end)).
 
 **When it's used.** A gardener claims a `build` or `run the gauntlet #N` job and runs `garden-pr.sh`, reacting only to its terminal line or to a failure or loop signal. The triager maps a maintainer's "run the gauntlet #N" PR comment to this job. `scripts/jobs/gardening/ensure-pr.sh` implements the find-or-create PR step this flow specifies. Every jury seat's `AGENT.md` cross-references this skill for the surrounding chain.
 
@@ -175,7 +176,7 @@ Source: [`skills/pr-creation-flow/SKILL.md`](../../skills/pr-creation-flow/SKILL
 - A "next-stage-owed heuristic" lets a gardener resume a stalled PR from live GitHub state (draft flag, mergeable state, panel verdicts) rather than from journal entries.
 
 **Gotchas.**
-- "A second PR for one job" is a documented failure mode: a re-claimed job that calls `gh pr create` by hand rather than `ensure-pr.sh` can open a duplicate (grounding incident: `endojs/endo-but-for-bots#865` and `#871`, from one job claimed four times).
+- "A second PR for one job" is a documented failure mode: a re-claimed job that calls `gh pr create` by hand rather than `ensure-pr.sh` can open a duplicate (grounding incident: [`endojs/endo-but-for-bots#865`](https://github.com/endojs/endo-but-for-bots/pull/865) and [`#871`](https://github.com/endojs/endo-but-for-bots/pull/871), from one job claimed four times).
 - Never force-push a PR head with plain `git push --force`, which can rewind a peer's newer commits. Head pushes go through `safe-push-pr-head.sh`.
 - A maintainer's `CHANGES_REQUESTED` does not reactivate draft state; the fix-loop after maintainer review runs the fixer to CI-green, by default without a re-clean or re-panel.
 - The fix-loop exits on "no in-scope must-fix," not "all complaints addressed."
@@ -265,13 +266,13 @@ A PR is reviewed by a scripted jury panel. These three skills read
 together: `panel` is the state machine, `panel-review` is what each seat
 and the aggregator do inside it, and `panel-hints` chooses which seats to
 fire. The seats themselves are the juror briefs in `roles/jurors/`
-(chapter 5, § 5.4.7); the panel as a procedure is chapter 7, § 7.3.
+([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.4.7](#ch5-547-juror-seats)); the panel as a procedure is [chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.3](#ch7-73-the-panel).
 
 ### `panel`
 
 Source: [`skills/panel/SKILL.md`](../../skills/panel/SKILL.md)
 
-**Purpose.** The scripted jury-panel workflow: a gardener-supervised shell state machine (`scripts/jobs/gardening/panel.sh`) that runs a jury over a PR, collects each seat's verdict, decides the round's disposition, loops to a fixer stage while changes are required, and ends by un-drafting when the panel passes. It is the v2 translation of v1's judicial workflow (the retired solicitor, barrister, justice, and appellate roles): a script that calls `claude -p` only for genuine judgments. Chapter 7, § 7.3 walks through it as a procedure.
+**Purpose.** The scripted jury-panel workflow: a gardener-supervised shell state machine (`scripts/jobs/gardening/panel.sh`) that runs a jury over a PR, collects each seat's verdict, decides the round's disposition, loops to a fixer stage while changes are required, and ends by un-drafting when the panel passes. It is the v2 translation of v1's judicial workflow (the retired solicitor, barrister, justice, and appellate roles): a script that calls `claude -p` only for genuine judgments. [Chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.3](#ch7-73-the-panel) walks through it as a procedure.
 
 **When it's used.** As a stage of [`pr-creation-flow`](#pr-creation-flow) whenever a draft PR reaches its review point, and for a maintainer-requested standalone panel pass on a stale PR. `garden-pr.sh` and `scripts/jobs/gauntlet.sh` drive it; it is referenced from `roles/COMMON.md`, the builder, fixer, cleaner, assayer, conductor, and designer briefs, and every juror seat.
 
@@ -291,7 +292,7 @@ Source: [`skills/panel/SKILL.md`](../../skills/panel/SKILL.md)
 
 Source: [`skills/panel-review/SKILL.md`](../../skills/panel-review/SKILL.md)
 
-**Purpose.** The per-seat review procedure and disposition rubric a panel run delegates to: how each seat produces its block, how findings cite or propose a standing rule, how findings sort into five dispositions, and how the aggregate becomes a posted GitHub review. It is the content of the `seat_review` and `decide_disposition` hooks that [`panel`](#panel) describes (dispositions in depth: chapter 7, § 7.3.4).
+**Purpose.** The per-seat review procedure and disposition rubric a panel run delegates to: how each seat produces its block, how findings cite or propose a standing rule, how findings sort into five dispositions, and how the aggregate becomes a posted GitHub review. It is the content of the `seat_review` and `decide_disposition` hooks that [`panel`](#panel) describes (dispositions in depth: [chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.3.4](#ch7-734-dispositions)).
 
 **When it's used.** Every panel round, on either panel kind, by the seat and decide hooks inside `panel.sh`. Every juror brief links here for the block shape and rubric, and `scripts/jobs/assert-panel-head-fresh.sh` and `gardener.sh` reference its freshness and posting contract.
 
@@ -337,14 +338,14 @@ The weaver, fixer, and conductor roles lean on them most.
 
 Source: [`skills/worktree-per-pr/SKILL.md`](../../skills/worktree-per-pr/SKILL.md)
 
-**Purpose.** How a gardener or subagent gets an isolated working tree for a PR: never the orchestrator's own checkout, always a per-job (or per-dispatch) checkout, so concurrent work on one PR never shares a tree. Chapter 2, § 2.3 explains why per-job worktrees never touch the deployed root.
+**Purpose.** How a gardener or subagent gets an isolated working tree for a PR: never the orchestrator's own checkout, always a per-job (or per-dispatch) checkout, so concurrent work on one PR never shares a tree. [Chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.3](#ch2-23-the-gardener-fleet) explains why per-job worktrees never touch the deployed root.
 
 **When it's used.** Every mutating role (builder, fixer, weaver, shepherd, conductor, designer, cleaner, americanizer, deslopper, botanist, assayer) references it, and so do the jury seats for read-only diff review. In the v2 path, a gardener's handler starts in a per-job garden worktree and calls `scripts/jobs/ensure-project-worktree.sh <base> <owner/repo> <branch>` for its project checkout.
 
 **Key mechanics.**
 - Three lanes: mutating workers edit a project worktree; read-only jury seats get a detached, never-committed project worktree; API-only work gets none.
 - All worktrees are detached HEAD. Commits go to `HEAD` and push with `git push origin HEAD:<branch>` (or, for a fork PR head, fetch and reset to the fork remote, then push with `--force-with-lease`).
-- The checkout is keyed by the job's unique base, not by repo and branch or PR number. That key is the mechanical guarantee against two gardeners sharing a tree, as happened in the `endojs/endo-but-for-bots#58` incident ("two jobs sharing one ... tree, edits bleeding across").
+- The checkout is keyed by the job's unique base, not by repo and branch or PR number. That key is the mechanical guarantee against two gardeners sharing a tree, as happened in the [`endojs/endo-but-for-bots#58`](https://github.com/endojs/endo-but-for-bots/pull/58) incident ("two jobs sharing one ... tree, edits bleeding across").
 
 **Gotchas.**
 - "Fork PR heads are not branches of the base repo": resolve `headRepositoryOwner` and `headRefName` with `gh pr view` and pass the head fork's owner/repo to `ensure-project-worktree.sh`.
@@ -363,13 +364,13 @@ Source: [`skills/frozen-base-branch/SKILL.md`](../../skills/frozen-base-branch/S
 **Key mechanics.**
 - The name is `<base>-<7-char sha>` (`master-abc1234`, `llm-abc1234`), captured once from `origin/<base>` and reused for every later operation in that step.
 - PR-open pushes the captured SHA to the new branch and branches the head from it. A weave mints a new frozen base at the current upstream tip, rebases with `git rebase --onto`, force-pushes, and moves the PR with `gh pr edit --base`.
-- Before any `gh pr merge`, the base must be restored to the live trunk ("unfreeze before merge"). The exception is `endojs/endo-but-for-bots` `master`, which has no live counterpart and ferries upstream instead.
+- Before any `gh pr merge`, the base must be restored to the live trunk ("unfreeze before merge"). The exception is [`endojs/endo-but-for-bots`](https://github.com/endojs/endo-but-for-bots) `master`, which has no live counterpart and ferries upstream instead.
 - In a stack, each PR gets its own frozen base; the dependent PR's snapshot comes from the parent's head, and rebasing the parent does not move the child.
 - `sweep-frozen-bases.sh` re-checks the authoritative PR list immediately before each ref deletion and repairs a lost race, because GitHub ref deletion has no compare-and-swap.
 
 **Gotchas.**
 - "There is no floating-base exception for designs." `GARDEN_ALLOW_FLOATING_BASE=1` is a rare, individually justified escape, not a routine path.
-- Rebasing onto a moving branch can entrain dozens of unrelated commits ("79 commits entrained, many irrelevant," #831). Rebase onto the pinned snapshot with `--onto`, and before pushing check that `git diff --stat <frozen-base>..HEAD` shows only the PR's own files.
+- Rebasing onto a moving branch can entrain dozens of unrelated commits ("79 commits entrained, many irrelevant," [PR #831](https://github.com/endojs/endo-but-for-bots/pull/831)). Rebase onto the pinned snapshot with `--onto`, and before pushing check that `git diff --stat <frozen-base>..HEAD` shows only the PR's own files.
 - Two PRs sharing one frozen base is normally harmless, but not for a garden open-questions review PR: merging one advances the shared base under the other.
 - CI workflows keyed on a bare `master` may need a pattern that also matches `master-[0-9a-f]{7}`.
 
@@ -541,7 +542,7 @@ Source: [`skills/review-feedback-followup-commits/SKILL.md`](../../skills/review
 - Close out with [`pr-review-thread-replies`](#pr-review-thread-replies) and a top-level summary ([`pr-completion-summary-comment`](#pr-completion-summary-comment)) mapping each item to its commit.
 
 **Gotchas.**
-- A PR can merge between the fixer's preflight and its push. If the reviewed branch is gone, rebase onto the live base and open a follow-up PR; never recreate or force-push the deleted merged branch (`kriscendobot/minion.town#40` and `#46`).
+- A PR can merge between the fixer's preflight and its push. If the reviewed branch is gone, rebase onto the live base and open a follow-up PR; never recreate or force-push the deleted merged branch ([`kriscendobot/minion.town#40`](https://github.com/kriscendobot/minion.town/pull/40) and [`#46`](https://github.com/kriscendobot/minion.town/pull/46)).
 - A job's line-number citation is authoritative but can be off; check it against the actual file before editing.
 
 ### `pr-review-thread-replies`
@@ -559,7 +560,7 @@ Source: [`skills/pr-review-thread-replies/SKILL.md`](../../skills/pr-review-thre
 - Pass the body as a file (`--field body=@file`), never as a `-f` value or inline shell text. Then post the top-level summary with `gh pr comment <N>`.
 
 **Gotchas.**
-- `-f body="@/tmp/reply.md"` does not dereference the file; it posts the literal string. Body text with backticks or `$(...)` on the command line gets command-substituted by the shell, which stripped inline code on `endojs/endo-but-for-bots#475`.
+- `-f body="@/tmp/reply.md"` does not dereference the file; it posts the literal string. Body text with backticks or `$(...)` on the command line gets command-substituted by the shell, which stripped inline code on [`endojs/endo-but-for-bots#475`](https://github.com/endojs/endo-but-for-bots/pull/475).
 - Inline comments visible on the PR page but missing from the REST index (pending review state) need a top-level fallback comment mapping each comment id to its outcome.
 - Posting on someone else's repository requires explicit per-action authorization in the job; without it, stop and ask over the message bus.
 
@@ -577,10 +578,10 @@ Source: [`skills/pr-completion-summary-comment/SKILL.md`](../../skills/pr-comple
 - When a summary aggregates sections from different roles or models, each section gets its own provenance footnote from `comment-provenance.sh` (`provenance_footnote`, `provenance_footnote_for_kind`), in addition to the fleet's single whole-body footer.
 
 **Gotchas.**
-- Inline replies alone are not enough; the rule comes from maintainer feedback on PR #474 ("I expect feedback on the PR in general").
+- Inline replies alone are not enough; the rule comes from maintainer feedback on [PR #474](https://github.com/endojs/endo-but-for-bots/pull/474) ("I expect feedback on the PR in general").
 - A silent push with no comment is never acceptable in response to a directive.
 - Leaving out declined items "hides the decision the maintainer most needs to see."
-- On a repo other than `endojs/endo-but-for-bots` (which has standing comment authorization), without the job's comment authorization the summary goes in the completion report instead.
+- On a repo other than [`endojs/endo-but-for-bots`](https://github.com/endojs/endo-but-for-bots) (which has standing comment authorization), without the job's comment authorization the summary goes in the completion report instead.
 
 ### `pr-ci-watch`
 
@@ -597,7 +598,7 @@ Source: [`skills/pr-ci-watch/SKILL.md`](../../skills/pr-ci-watch/SKILL.md)
 - `check_run` and `check_suite` events never appear on the repo events feed, so the rollup, not the activity feed, is the source of truth.
 
 **Gotchas.**
-- "Waiting for CI is NOT a terminal state." A merge job that completes while CI is merely pending strands a green, unmerged PR (`endojs/endo-but-for-bots#178`, which "bit the same PR twice").
+- "Waiting for CI is NOT a terminal state." A merge job that completes while CI is merely pending strands a green, unmerged PR ([`endojs/endo-but-for-bots#178`](https://github.com/endojs/endo-but-for-bots/pull/178), which "bit the same PR twice").
 - `mergeStateStatus: BLOCKED` with `REVIEW_REQUIRED` and an all-green rollup is a normal "waiting for human review" end state, not a CI failure.
 - An empty rollup long after a push often means the PR is `CONFLICTING` or `DIRTY`, so GitHub never created the merge ref to run workflows on. It needs a rebase, not a re-run.
 - A CANCELLED check next to a FAILURE on the same matrix is fail-fast fallout, not a separate bug.
@@ -608,7 +609,7 @@ Source: [`skills/pr-handoff/SKILL.md`](../../skills/pr-handoff/SKILL.md)
 
 **Purpose.** How to carry a finished garden-side PR to its upstream repository: the three shapes a ferry takes (first-time, re-ferry with recompute, fast-forward append), the attribution rewrite from bot author to the named human, the trailer-strip and body-edit disciplines, and the line between a ferry and a rebase or conflict resolution.
 
-**When it's used.** It is the procedure the boatman runs for a ferry (the boatman brief calls it "the rebase-and-rewrite-and-push procedure"). A ferry is staged as a `journal/jobs/ferry/<name>.md` directive and executed by the maintainer's `scripts/ferry.sh` on the credentialed host (chapter 5, § 5.3.8; the procedure is chapter 7, § 7.6). It also feeds `scripts/jobs/record-mirror.sh` and `mirror-closer.sh`, which record and later act on the upstream-to-mirror PR mapping.
+**When it's used.** It is the procedure the boatman runs for a ferry (the boatman brief calls it "the rebase-and-rewrite-and-push procedure"). A ferry is staged as a `journal/jobs/ferry/<name>.md` directive and executed by the maintainer's `scripts/ferry.sh` on the credentialed host ([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.3.8](#ch5-538-boatman); the procedure is [chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.6](#ch7-76-the-ferry)). It also feeds `scripts/jobs/record-mirror.sh` and `mirror-closer.sh`, which record and later act on the upstream-to-mirror PR mapping.
 
 **Key mechanics.**
 - It requires `gh auth status` to show the maintainer's identity and the directive to carry `identity_switch_authorized: true`. The bot identity never pushes to a primary upstream repo.
@@ -618,7 +619,7 @@ Source: [`skills/pr-handoff/SKILL.md`](../../skills/pr-handoff/SKILL.md)
 
 **Gotchas.**
 - "A ferry must be issued from the host that holds the kriskowal credentials"; on the wrong host, stop rather than push as the bot.
-- The trailer strip runs on every ferry: an eyeball check once missed a trailer further down a commit body (PR #73).
+- The trailer strip runs on every ferry: an eyeball check once missed a trailer further down a commit body ([PR #73](https://github.com/endojs/endo-but-for-bots/pull/73)).
 - Never plain `--force`. The re-ferry shape uses `--force-with-lease`; the append shape requires a `git merge-base --is-ancestor` check before pushing.
 - No comments on primary upstream repos under the maintainer's identity; explanations go to the liaison over the message bus.
 
@@ -627,20 +628,20 @@ Source: [`skills/pr-handoff/SKILL.md`](../../skills/pr-handoff/SKILL.md)
 These skills are the substrate the fleet runs on: how work is posted,
 claimed, sequenced, scheduled, priced, and routed to a model, and how
 workers talk to each other and to the maintainer. The architecture behind
-them is chapter 2.
+them is [chapter 2](#ch2-chapter-2-architecture-and-operation).
 
 ### `job-board`
 
 Source: [`skills/job-board/SKILL.md`](../../skills/job-board/SKILL.md)
 
-**Purpose.** Coordinate many gardeners across many hosts on one shared queue with no lock service, using the `git push` to `origin/journal2` as the compare-and-swap. It defines how producers post jobs, how concurrent consumers claim them safely, and how jobs complete, all under `journal/` (`jobs/{todo,doin,tada}/`, `jobs/plan/`, `work/<base>`, `inbox/<base>/`). Chapter 2 covers the design: § 2.1 for the board and its CAS, § 2.2 for the job lifecycle, the reaper, and plan gates.
+**Purpose.** Coordinate many gardeners across many hosts on one shared queue with no lock service, using the `git push` to `origin/journal2` as the compare-and-swap. It defines how producers post jobs, how concurrent consumers claim them safely, and how jobs complete, all under `journal/` (`jobs/{todo,doin,tada}/`, `jobs/plan/`, `work/<base>`, `inbox/<base>/`). [Chapter 2](#ch2-chapter-2-architecture-and-operation) covers the design: [§ 2.1](#ch2-21-the-journal-as-job-board-and-message-bus) for the board and its CAS, [§ 2.2](#ch2-22-the-job-lifecycle) for the job lifecycle, the reaper, and plan gates.
 
 **When it's used.** Nearly every role touches it: the liaison posts work, gardeners claim and complete, the foreman posts next steps, and the triager, scheduler, and watchman post from their sources. `post-job.sh`, `post-plan.sh`, `claim-job.sh`, `complete-job.sh`, and `reaper.sh` implement the protocol, with shared helpers in `common.sh`.
 
 **Key mechanics.**
 - The basename is the reservation: bare and idempotent for one-shot work (`design-X`, `build-X`), but a recurring verb against the same target (`weave`, `shepherd`, `retcon`) needs an ISO-date suffix, or an earlier completed job silently swallows the new one.
 - `jobs/plan/` holds parked work outside the claim lifecycle, gated `go-ahead`, `deferred`, `awaiting-maintainer`, `blocked`, or `orchestrated`, each with its own promotion path (`promote-plan.sh`, `unblock.sh`, the orchestrate watcher).
-- A per-job `handler-timeout:` (default 2400 seconds, larger for builder, fixer, shepherd, conductor, panel, and botanist work) bounds the handler before SIGTERM; a long job without a budget dies on every requeue (chapter 8, § 8.5).
+- A per-job `handler-timeout:` (default 2400 seconds, larger for builder, fixer, shepherd, conductor, panel, and botanist work) bounds the handler before SIGTERM; a long job without a budget dies on every requeue ([chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.5](#ch8-85-per-job-budgets-wall-clock-and-tokens)).
 - Claims back off on contention while posts and completions retry, because a retried claim could steal a job but a completion only fast-forwards its own files.
 
 **Gotchas.**
@@ -652,7 +653,7 @@ Source: [`skills/job-board/SKILL.md`](../../skills/job-board/SKILL.md)
 
 Source: [`skills/message-bus/SKILL.md`](../../skills/message-bus/SKILL.md)
 
-**Purpose.** Agent-to-agent and agent-to-maintainer messaging over `journal2`, used even between workers on one host because the garden may span many (chapter 2, § 2.4). It has two mechanisms: topic fan-out (`msgs/role/<r>`, `msgs/broadcast`, and `msgs/host/<GARDEN>` for the sysop) and a directed per-doer inbox (`inbox/<doer>/{unread,read}`) that lives only as long as the claimed job.
+**Purpose.** Agent-to-agent and agent-to-maintainer messaging over `journal2`, used even between workers on one host because the garden may span many ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.4](#ch2-24-the-message-bus)). It has two mechanisms: topic fan-out (`msgs/role/<r>`, `msgs/broadcast`, and `msgs/host/<GARDEN>` for the sysop) and a directed per-doer inbox (`inbox/<doer>/{unread,read}`) that lives only as long as the claimed job.
 
 **When it's used.** Every working gardener polls `role/gardener` and `broadcast` (gardener brief, `roles/COMMON.md`). The liaison watches the maintainer inbox with `maintainer-watch.sh` under a Monitor and answers with `maintainer-reply.sh` or `maintainer-archive.sh`. The watchman, foreman, researcher, scholar, librarian, and proxy use it for their own coordination.
 
@@ -671,7 +672,7 @@ Source: [`skills/message-bus/SKILL.md`](../../skills/message-bus/SKILL.md)
 
 Source: [`skills/orchestration/SKILL.md`](../../skills/orchestration/SKILL.md)
 
-**Purpose.** Split a multi-part job into parked child jobs plus one orchestration record that promotes the children into `todo/` (serially by default, or in parallel) and watches them to completion, so a follow-up step is never forgotten. It implements the maintainer's standing directive (2026-07-01): for a multi-part job, always make an orchestration job. Chapter 7, § 7.4 describes the procedure in depth.
+**Purpose.** Split a multi-part job into parked child jobs plus one orchestration record that promotes the children into `todo/` (serially by default, or in parallel) and watches them to completion, so a follow-up step is never forgotten. It implements the maintainer's standing directive (2026-07-01): for a multi-part job, always make an orchestration job. [Chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration) describes the procedure in depth.
 
 **When it's used.** The orchestrator role is built on it; the gardener brief invokes it whenever a job decomposes into ordered parts ("orchestrate it, don't pile up loose posts"); the liaison uses it for multi-part asks. Any producer sets one up with `post-plan.sh --orchestrated --orchestrated-by <orch>` per child and then `post-orchestration.sh`.
 
@@ -691,9 +692,9 @@ Source: [`skills/orchestration/SKILL.md`](../../skills/orchestration/SKILL.md)
 
 Source: [`skills/chained-followup/SKILL.md`](../../skills/chained-followup/SKILL.md)
 
-**Purpose.** Wire a follow-up that must run only after a design advances to a build, possibly across a repo boundary, on an event no single job's completion names. It adds a notice job as a level of indirection instead of posting a blind follow-up that would fire against nothing (chapter 7, § 7.5).
+**Purpose.** Wire a follow-up that must run only after a design advances to a build, possibly across a repo boundary, on an event no single job's completion names. It adds a notice job as a level of indirection instead of posting a blind follow-up that would fire against nothing ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.5](#ch7-75-chained-follow-ups)).
 
-**When it's used.** For the maintainer's standing ask "post a job to design X, and a follow-up triggered when it lands" (kriscendobot/minion.town#41). `scripts/jobs/handlers/follow-up-claude.sh` names it for the mechanical design-build recheck.
+**When it's used.** For the maintainer's standing ask "post a job to design X, and a follow-up triggered when it lands" ([`kriscendobot/minion.town#41`](https://github.com/kriscendobot/minion.town/pull/41)). `scripts/jobs/handlers/follow-up-claude.sh` names it for the mechanical design-build recheck.
 
 **Key mechanics.**
 - Three jobs: D (the design, posted normally), N (a notice job parked with `post-plan.sh --blocked --blocked-on D`), and F (the real follow-up, posted by N only after it confirms the design reached a build).
@@ -729,7 +730,7 @@ Source: [`skills/schedule/SKILL.md`](../../skills/schedule/SKILL.md)
 
 Source: [`skills/bid-auction/SKILL.md`](../../skills/bid-auction/SKILL.md)
 
-**Purpose.** A decentralized auction and dollar-normalized reputation system that picks which worker arm runs an opted-in job, choosing the combination cheapest *to merge* in true aggregate dollars rather than cheapest per token, with no central auctioneer. It rides the same push CAS as an ordinary claim. Chapter 1, § 1.5 places it in the garden's evolution toward a bidding market.
+**Purpose.** A decentralized auction and dollar-normalized reputation system that picks which worker arm runs an opted-in job, choosing the combination cheapest *to merge* in true aggregate dollars rather than cheapest per token, with no central auctioneer. It rides the same push CAS as an ordinary claim. [Chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis), [§ 1.5](#ch1-15-the-next-metamorphosis-the-bidding-market) places it in the garden's evolution toward a bidding market.
 
 **When it's used.** No role brief invokes it; it is machinery inside the worker spine (`claim-job.sh`, `gardener.sh`, `cleric-codex.sh`, `worker-common.sh`, `auction.sh`, `reputation.sh`). A producer opts a job in with `market: bid` frontmatter; everything else stays on the ordinary race.
 
@@ -748,13 +749,13 @@ Source: [`skills/bid-auction/SKILL.md`](../../skills/bid-auction/SKILL.md)
 
 Source: [`skills/model-selection/SKILL.md`](../../skills/model-selection/SKILL.md)
 
-**Purpose.** Define the fleet's closed dispatch vocabulary, the four tiers in descending thoughtfulness (mentat, mentor, minion, myrmidon), and map it onto the executable model inventory in `scripts/jobs/model-tier-inventory.tsv`. The inventory is closed: every enabled model has exactly one row, and an unknown model cannot get an automatic route. The tiers themselves, the models in each, worker kinds, role floors, and provider fallback are chapter 10's subject; this entry covers only the skill's mechanics.
+**Purpose.** Define the fleet's closed dispatch vocabulary, the four tiers in descending thoughtfulness (mentat, mentor, minion, myrmidon), and map it onto the executable model inventory in `scripts/jobs/model-tier-inventory.tsv`. The inventory is closed: every enabled model has exactly one row, and an unknown model cannot get an automatic route. The tiers themselves, the models in each, worker kinds, role floors, and provider fallback are [chapter 10](#ch10-chapter-10-inference-tiers-reference)'s subject; this entry covers only the skill's mechanics.
 
 **When it's used.** `CLAUDE.md` names it as the canonical map the fleet reads through `role_default_model` and `resolve_model_tier` in `common.sh`. The liaison uses it to route manual `mentat` work through `post-manual-job.sh`, and `post-job.sh` and `post-plan.sh` apply it to automatic producers, rewriting each automatic body to `tier: mentor`, `fallback-tier: minion`.
 
 **Key mechanics.**
 - Mentat is manual-only (`post-manual-job.sh`, stamping `dispatch: manual`), with one scoped exception: a maintainer-authorized Ironhorse test262 watcher may emit a canonical mentat task under an explicit journal authorization that is revalidated at every promotion.
-- Mentor is the default ceiling for automatic work; a per-role floor (`role_tier_floor`) stops the reaper's reroute from demoting a job below its role's minimum (chapter 10 lists the floors).
+- Mentor is the default ceiling for automatic work; a per-role floor (`role_tier_floor`) stops the reaper's reroute from demoting a job below its role's minimum ([chapter 10](#ch10-chapter-10-inference-tiers-reference) lists the floors).
 - Several provider lanes are explicit-pin only or inert by default; no automatic or unpinned job can reach them.
 
 **Gotchas.**
@@ -812,7 +813,7 @@ Source: [`skills/pr-dependency-graph/SKILL.md`](../../skills/pr-dependency-graph
 
 Source: [`skills/pr-dependency-topo-sort/SKILL.md`](../../skills/pr-dependency-topo-sort/SKILL.md)
 
-**Purpose.** A stable topological sort of a list of PRs against the dependency graph, with a fixed tie-break and an explicit rule for cycles. It replaced a hand-written `depends on #160` parenthetical in a bulletin after the maintainer asked, on `endojs/endo-but-for-bots#128`, for PRs sorted by their dependency graph.
+**Purpose.** A stable topological sort of a list of PRs against the dependency graph, with a fixed tie-break and an explicit rule for cycles. It replaced a hand-written [`depends on #160`](https://github.com/endojs/endo-but-for-bots/pull/160) parenthetical in a bulletin after the maintainer asked, on [`endojs/endo-but-for-bots#128`](https://github.com/endojs/endo-but-for-bots/pull/128), for PRs sorted by their dependency graph.
 
 **When it's used.** By any producer that renders PRs in dependency order within a bin (the roadmap or pending-review bulletin), and by the groom and foreman when they reason about ordering. It consumes the output of [`pr-dependency-graph`](#pr-dependency-graph).
 
@@ -843,7 +844,7 @@ Source: [`skills/design-dependency-walk/SKILL.md`](../../skills/design-dependenc
 
 **Gotchas.**
 - Relatedness is declared, never invented: only PRs the seed's `## Related` or `## See also` sections or the job body name are checked, and a changes-requested review later approved or dismissed does not block.
-- The gate exists because of `kriscendobot/minion.town#48`, whose build asserted independence from a sibling design based on the document alone while that sibling's live review had already replaced the seam; the maintainer closed the PR.
+- The gate exists because of [`kriscendobot/minion.town#48`](https://github.com/kriscendobot/minion.town/pull/48), whose build asserted independence from a sibling design based on the document alone while that sibling's live review had already replaced the seam; the maintainer closed the PR.
 - A dependency already being built by another job (per the job board) must not get a second build; the walk stacks on that job's PR or leaves the slot empty.
 - Closed-without-merge PRs are not evidence a dependency shipped, and cross-repo dependency references are unsupported (treated as a missing design).
 - A job may name a seed PR that was closed and reconstructed as a replacement stack; follow the closing comments to the live PRs.
@@ -900,7 +901,7 @@ Source: [`skills/ownership-map/SKILL.md`](../../skills/ownership-map/SKILL.md)
 - The map stays in the design after merge as the durable statement of the boundary.
 
 **Gotchas.**
-- The grounding is the `architectural-boundary-ownership` review-miss cluster (`endojs/endo-but-for-bots#1018`): six design-panel rounds checked local consistency but nobody assembled the map that would have shown the engine layer claiming a supervisor concept.
+- The grounding is the `architectural-boundary-ownership` review-miss cluster ([`endojs/endo-but-for-bots#1018`](https://github.com/endojs/endo-but-for-bots/pull/1018)): six design-panel rounds checked local consistency but nobody assembled the map that would have shown the engine layer claiming a supervisor concept.
 - Keep it to one screen. A map that needs many rows means the design should split.
 - When in doubt, write it; a design with an explicit, coherent map is not penalized for naming several layers.
 
@@ -918,7 +919,7 @@ Source: [`skills/sibling-family-sweep/SKILL.md`](../../skills/sibling-family-swe
 - Prefer converging divergent twins in the same PR so a reviewer need not hold both in mind.
 
 **Gotchas.**
-- The worked examples are from `endojs/endo-but-for-bots#1099` and `#475`: `hex` and `base64` encoders gating on different predicates, two copies of `make-hardener.js` refactored unevenly (caught only when the maintainer asked for a scan), and two emulation constructors where only one established a shared buffer-map invariant.
+- The worked examples are from [`endojs/endo-but-for-bots#1099`](https://github.com/endojs/endo-but-for-bots/pull/1099) and [`#475`](https://github.com/endojs/endo-but-for-bots/pull/475): `hex` and `base64` encoders gating on different predicates, two copies of `make-hardener.js` refactored unevenly (caught only when the maintainer asked for a scan), and two emulation constructors where only one established a shared buffer-map invariant.
 - "I forgot it existed" is the failure; "I decided not to touch it because X" is fine.
 - A field note from garden code: when adding a shared caching helper, follow a caller's `fresh` flag through every intermediate wrapper; six watcher paths accepted the flag but did not forward it.
 
@@ -926,7 +927,7 @@ Source: [`skills/sibling-family-sweep/SKILL.md`](../../skills/sibling-family-swe
 
 Source: [`skills/build-vs-buy/SKILL.md`](../../skills/build-vs-buy/SKILL.md)
 
-**Purpose.** The single home for "don't re-author what a package already exports": when a change adds a local function whose name and body match an export of another workspace or provider package, import the export instead. It originated in a maintainer comment on `endojs/endo-but-for-bots#1336` flagging a hand-copied promise-kit helper.
+**Purpose.** The single home for "don't re-author what a package already exports": when a change adds a local function whose name and body match an export of another workspace or provider package, import the export instead. It originated in a maintainer comment on [`endojs/endo-but-for-bots#1336`](https://github.com/endojs/endo-but-for-bots/pull/1336) flagging a hand-copied promise-kit helper.
 
 **When it's used.** One deterministic detector (`detect.cjs`) has three callers: the pre-push probes `pre-push-gates/probes/build-vs-buy.sh` and `prefer-endo-primitives.sh`, and `seat-gate-procurer.sh`, the cost gate for the procurer jury seat. The builder brief sends every code author to grep the export library first. The index is built by `scripts/jobs/export-index/` and published daily by the leader-only `garden-export-index` timer.
 
@@ -1003,7 +1004,7 @@ Source: [`skills/coverage-driven-testing/SKILL.md`](../../skills/coverage-driven
 
 **Gotchas.**
 - Never delete across a public-API line; ask the maintainer.
-- Tests must not assert a shim-only shape without a native-detection guard, or they fail the day an engine ships the feature (fixed that way on `endojs/endo-but-for-bots#475`).
+- Tests must not assert a shim-only shape without a native-detection guard, or they fail the day an engine ships the feature (fixed that way on [`endojs/endo-but-for-bots#475`](https://github.com/endojs/endo-but-for-bots/pull/475)).
 - A `test:xs` that is an `exit 0` stub means zero XS coverage.
 - Monkey-patching `Promise.resolve` or intercepting the runner's unhandled-rejection handling to cover a path is contortion; leave the path uncovered with a note instead.
 - Report percentages, not absolute line counts; a refactor that merges duplicate paths lowers the count while raising coverage.
@@ -1024,7 +1025,7 @@ Source: [`skills/regression-evidence/SKILL.md`](../../skills/regression-evidence
 **Gotchas.**
 - "An existing test already covers this area" is not evidence. Async iterators, for example, have several teardown shapes, and a test of one does not catch a regression in another.
 - Property-based tests need a seeded or shrunk generator to demonstrate the failure deterministically.
-- Running the probe only on the new version proves the new version works, not that behavior is unchanged. On `endojs/endo-but-for-bots#870` (a two-major `openai` jump) the two-version probe caught a wire detail a changelog read would have gotten wrong.
+- Running the probe only on the new version proves the new version works, not that behavior is unchanged. On [`endojs/endo-but-for-bots#870`](https://github.com/endojs/endo-but-for-bots/pull/870) (a two-major `openai` jump) the two-version probe caught a wire detail a changelog read would have gotten wrong.
 
 ### `review-retrospective`
 
@@ -1032,7 +1033,7 @@ Source: [`skills/review-retrospective/SKILL.md`](../../skills/review-retrospecti
 
 **Purpose.** The second loop of a double loop: every maintainer comment on a garden PR is first fixed as written, and then, through this skill, treated as evidence that the review process failed to anticipate it. Misses are recorded, clustered, and past a threshold turned into an improvement job that both prevents the error and adds a review check.
 
-**When it's used.** The prosecutor (chapter 5, § 5.4.5) wears it after claiming a `<primary-base>-retro` job, which `comment-watcher.sh` mints alongside a `review` or directive-`attention` primary. The store writer is `scripts/jobs/review-miss-record.sh`. The mentor brief cites it to draw the boundary between the two loops.
+**When it's used.** The prosecutor ([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.4.5](#ch5-545-prosecutor)) wears it after claiming a `<primary-base>-retro` job, which `comment-watcher.sh` mints alongside a `review` or directive-`attention` primary. The store writer is `scripts/jobs/review-miss-record.sh`. The mentor brief cites it to draw the boundary between the two loops.
 
 **Key mechanics.**
 - Discriminate first: should the review have caught this? A miss violates something the panel demonstrably knows (a seat brief, a skill, a standing instruction), or is a PR that skipped a panel it should have run. New direction, taste, and first-stated requirements are `not-a-miss`. Both verdicts are recorded durably, so a comment is never re-judged.
@@ -1069,9 +1070,9 @@ Source: [`skills/review-queue-poll/SKILL.md`](../../skills/review-queue-poll/SKI
 
 Source: [`skills/ci-failure-classification-loop/SKILL.md`](../../skills/ci-failure-classification-loop/SKILL.md)
 
-**Purpose.** The supervising gardener's observe, orient, decide, act loop for driving a red-CI PR to green, or to a clean impasse, without the maintainer re-prompting each cycle. It was written after the v1 steward needed re-prompting three times on `kriscendobot/agoric-sdk#5`.
+**Purpose.** The supervising gardener's observe, orient, decide, act loop for driving a red-CI PR to green, or to a clean impasse, without the maintainer re-prompting each cycle. It was written after the v1 steward needed re-prompting three times on [`kriscendobot/agoric-sdk#5`](https://github.com/kriscendobot/agoric-sdk/pull/5).
 
-**When it's used.** On a garden-owned PR (a claimed job, or one running the gauntlet) with failing checks after a fixer or shepherd push, when the maintainer has asked to drive it to green. The gardening state machine emits a `loop` signal that the supervisor reacts to. `roles/COMMON.md` § Reporting cites it for the parity follow-up.
+**When it's used.** On a garden-owned PR (a claimed job, or one running the gauntlet) with failing checks after a fixer or shepherd push, when the maintainer has asked to drive it to green. The gardening state machine emits a `loop` signal that the supervisor reacts to. [`roles/COMMON.md` § Reporting](../../roles/COMMON.md#reporting) cites it for the parity follow-up.
 
 **Key mechanics.**
 - Observe with [`pr-ci-watch`](#pr-ci-watch) and do not classify while checks are pending. Orient by putting each failing job in exactly one class: A, expected (requires an explicit maintainer authorization); B, structural impasse needing a maintainer decision (surface, never queue a fixer); C, real and tractable (queue a fixer on the largest coherent subset); D, regression (a previously green or expected check now red, fixed first, with the latest diff as prime suspect).
@@ -1090,14 +1091,14 @@ These six skills cover how the garden's written memory is organized,
 found, grown, and reported from: the context-tree discipline, the
 library's concept lookup, the journal reader's manual, the end-of-job
 self-improvement pass, the liaison's report catalog, and a check that
-keeps diagrams renderable. Chapter 9 describes the library these skills
+keeps diagrams renderable. [Chapter 9](#ch9-chapter-9-the-library-and-how-it-spends-context) describes the library these skills
 serve, and why it is shaped to spend context sparingly.
 
 ### `context-library`
 
 Source: [`skills/context-library/SKILL.md`](../../skills/context-library/SKILL.md)
 
-**Purpose.** How to author agent-optimized hierarchical documentation: directories with prose `README.md` indexes, documents that open with an abstract precise enough to serve as a stop condition, and children that partition their parent's topic cleanly. It governs the journal's context trees (`journal/projects/`, `journal/agents/`, and similar) and the `context/` operator manual on `main2`. Chapter 9 (the authoring discipline, under the context economy) explains what the discipline buys.
+**Purpose.** How to author agent-optimized hierarchical documentation: directories with prose `README.md` indexes, documents that open with an abstract precise enough to serve as a stop condition, and children that partition their parent's topic cleanly. It governs the journal's context trees (`journal/projects/`, `journal/agents/`, and similar) and the `context/` operator manual on `main2`. [Chapter 9](#ch9-chapter-9-the-library-and-how-it-spends-context) (the authoring discipline, under the context economy) explains what the discipline buys.
 
 **When it's used.** Whenever a context tree gains a directory or document, a long document is split, or abstracts are audited. The scholar brief cites it, and [`journalism`](#journalism) defers to it for the shape of the curated trees. A posted `librarian` job is the job-time form of the walk it describes. Role and skill files are written for the same reader but keep the layout the library README fixes.
 
@@ -1116,7 +1117,7 @@ Source: [`skills/context-library/SKILL.md`](../../skills/context-library/SKILL.m
 
 Source: [`skills/library-lookup/SKILL.md`](../../skills/library-lookup/SKILL.md)
 
-**Purpose.** Look up a domain term in the garden's library through its concepts axis (`journal/library/keywords.md` pointing at `journal/library/concepts/<id>.md`), and index on the fly so the next reader's search succeeds faster. Chapter 9 walks through a hit, a miss, and the writeback in detail.
+**Purpose.** Look up a domain term in the garden's library through its concepts axis (`journal/library/keywords.md` pointing at `journal/library/concepts/<id>.md`), and index on the fly so the next reader's search succeeds faster. [Chapter 9](#ch9-chapter-9-the-library-and-how-it-spends-context) walks through a hit, a miss, and the writeback in detail.
 
 **When it's used.** Designers, builders, and jurors reach for it whenever a domain term's canonical material lives elsewhere in the library. `roles/COMMON.md` cites it fleet-wide, and the librarian, groom, and scholar briefs name it. `scripts/jobs/library-link-scan.sh` checks the link integrity it depends on.
 
@@ -1154,7 +1155,7 @@ Source: [`skills/journalism/SKILL.md`](../../skills/journalism/SKILL.md)
 
 Source: [`skills/self-improvement/SKILL.md`](../../skills/self-improvement/SKILL.md)
 
-**Purpose.** The last step of every engagement: scan the run while it is fresh and turn surprises, derived techniques, missing citations, stale examples, and contradictions into durable role or skill content. `roles/COMMON.md` § Improving your role and skills defers to it.
+**Purpose.** The last step of every engagement: scan the run while it is fresh and turn surprises, derived techniques, missing citations, stale examples, and contradictions into durable role or skill content. [`roles/COMMON.md` § Improving your role and skills](../../roles/COMMON.md#improving-your-role-and-skills) defers to it.
 
 **When it's used.** At the end of every job, including the liaison's turns. `roles/COMMON.md`, the mentor, scholar, journalist, and americanizer briefs, and nearly every jury seat cite it.
 
@@ -1191,7 +1192,7 @@ Source: [`skills/liaison-reports/SKILL.md`](../../skills/liaison-reports/SKILL.m
 
 Source: [`skills/mermaid-validation/SKILL.md`](../../skills/mermaid-validation/SKILL.md)
 
-**Purpose.** Confirm that every mermaid fence in a document parses before committing, without a browser. An invalid diagram renders as an error box on GitHub and once cost a dedicated fix PR (`kriscendobot/minion.town#5`).
+**Purpose.** Confirm that every mermaid fence in a document parses before committing, without a browser. An invalid diagram renders as an error box on GitHub and once cost a dedicated fix PR ([`kriscendobot/minion.town#5`](https://github.com/kriscendobot/minion.town/pull/5)).
 
 **When it's used.** The designer brief mandates mermaid for diagrams and cites this skill; the groom brief cites it too. A completion report that claims "diagrams validated" should cite the checker's output.
 
@@ -1241,7 +1242,7 @@ Source: [`skills/no-latin-shorthand/SKILL.md`](../../skills/no-latin-shorthand/S
 
 **Purpose.** Use English instead of Latin shorthand in bot-authored prose: "see" or "compare with" for `cf.`, "that is," "for example," "and so on" (or an actual enumeration), "and others," "versus," "namely," and "improvised" or "case-by-case" for `ad hoc`.
 
-**When it's used.** In code comments, design documents, PR bodies and replies, commit messages, and journal and inbox bodies. `roles/COMMON.md` indexes it in the house style, and the scholar and journalist briefs name it. It was encoded after the maintainer wrote "Please avoid Latin" on a `cf.` in `endojs/endo-but-for-bots#351`.
+**When it's used.** In code comments, design documents, PR bodies and replies, commit messages, and journal and inbox bodies. `roles/COMMON.md` indexes it in the house style, and the scholar and journalist briefs name it. It was encoded after the maintainer wrote "Please avoid Latin" on a `cf.` in [`endojs/endo-but-for-bots#351`](https://github.com/endojs/endo-but-for-bots/pull/351).
 
 **Key mechanics.**
 - Restructure rather than swap token for token; the replacement often wants different punctuation around it, such as a parenthetical "(for example, bar)."
@@ -1257,7 +1258,7 @@ Source: [`skills/no-latin-shorthand/SKILL.md`](../../skills/no-latin-shorthand/S
 
 Source: [`skills/no-comment-banners/SKILL.md`](../../skills/no-comment-banners/SKILL.md)
 
-**Purpose.** No decorative horizontal-rule banners in code comments: a comment line made only of four or more repeated `- = * ~ _` characters, or a title bracketed by runs of two or more on both sides (`// --- Title ---`). Keep the title as a plain comment and delete the rules. The maintainer's reason (`endojs/endo-but-for-bots#503`) is that such decoration drifts the moment a human edits the file and reads as machine noise.
+**Purpose.** No decorative horizontal-rule banners in code comments: a comment line made only of four or more repeated `- = * ~ _` characters, or a title bracketed by runs of two or more on both sides (`// --- Title ---`). Keep the title as a plain comment and delete the rules. The maintainer's reason ([`endojs/endo-but-for-bots#503`](https://github.com/endojs/endo-but-for-bots/pull/503)) is that such decoration drifts the moment a human edits the file and reads as machine noise.
 
 **When it's used.** It is a project code-style rule for the repos the garden builds for, not a garden-document rule. At review, `scripts/jobs/gardening/detect-banners.sh` runs as a deterministic panel pre-pass, and on any added banner line `panel.sh` force-adds the archivist seat (even to a trimmed panel) with the matching lines as evidence. The pedant design-panel seat applies the same rule to code blocks inside design documents.
 
@@ -1303,7 +1304,7 @@ Source: [`skills/rename-discipline/SKILL.md`](../../skills/rename-discipline/SKI
 
 **Gotchas.**
 - The burden is on the renamer: a name's prior life on the base branch is itself an argument for keeping it.
-- It came from two comments on `endojs/endo#3232`, one of which read "Ditto. Gratuitous rename."
+- It came from two comments on [`endojs/endo#3232`](https://github.com/endojs/endo/pull/3232), one of which read "Ditto. Gratuitous rename."
 
 ### `typist-friendly-code-points`
 
@@ -1311,7 +1312,7 @@ Source: [`skills/typist-friendly-code-points/SKILL.md`](../../skills/typist-frie
 
 **Purpose.** Avoid symbol and punctuation code points a typist cannot easily produce (arrows, the ellipsis, curly quotes, comparison and multiplication signs, the minus sign, and the no-break space) and write the ASCII spelling (`->`, `...`, straight quotes, `<=`, and so on) from the start. Accented letters in names and loanwords are spelling, not typography, and are out of scope.
 
-**When it's used.** At three levels: guidance (indexed in `roles/COMMON.md` § House style); the jury (the always-on typist seat in every code panel, the copyeditor on design panels and markdown-heavy code PRs, and the pedant); and a gate, the pre-push probe `scripts/jobs/gardening/pre-push-gates/probes/typist-friendly-code-points.sh`, which with `--fix` rewrites substitutable glyphs in changed markdown and re-stages them. The source was a maintainer instruction on `endojs/endo-but-for-bots#124`.
+**When it's used.** At three levels: guidance (indexed in [`roles/COMMON.md` § House style](../../roles/COMMON.md#house-style)); the jury (the always-on typist seat in every code panel, the copyeditor on design panels and markdown-heavy code PRs, and the pedant); and a gate, the pre-push probe `scripts/jobs/gardening/pre-push-gates/probes/typist-friendly-code-points.sh`, which with `--fix` rewrites substitutable glyphs in changed markdown and re-stages them. The source was a maintainer instruction on [`endojs/endo-but-for-bots#124`](https://github.com/endojs/endo-but-for-bots/pull/124).
 
 **Key mechanics.**
 - Fourteen glyphs have a mechanical substitution. Bullets, check marks, and ballot marks need reading, so the probe fails on them with a suggestion instead of rewriting them.
@@ -1348,7 +1349,7 @@ Source: [`skills/changeset-discipline/SKILL.md`](../../skills/changeset-discipli
 
 Source: [`skills/american-english-normalization/SKILL.md`](../../skills/american-english-normalization/SKILL.md)
 
-**Purpose.** The single home of the British-to-American spelling rule set the garden normalizes toward: an auditable word list, the exclusion discipline, and the data file `skills/american-english-normalization/divergences.tsv` that both the detecting seat and the fixing role read. It answers the maintainer's request on `endojs/endo-but-for-bots#282` for a jury that greps for British spellings and a dedicated role that fixes them.
+**Purpose.** The single home of the British-to-American spelling rule set the garden normalizes toward: an auditable word list, the exclusion discipline, and the data file `skills/american-english-normalization/divergences.tsv` that both the detecting seat and the fixing role read. It answers the maintainer's request on [`endojs/endo-but-for-bots#282`](https://github.com/endojs/endo-but-for-bots/pull/282) for a jury that greps for British spellings and a dedicated role that fixes them.
 
 **When it's used.** Three consumers share the data file: the deterministic grep `scripts/jobs/gardening/orthographer-divergence-grep.sh`, the orthographer jury seat (behind `seat-gate-orthographer.sh`, which spends a model call only on a grep hit), and the americanizer role, which applies vetted replacements. The grep's exit status also gates the *americanize #N* verb: the triager posts the job only on a hit.
 
@@ -1367,7 +1368,7 @@ Source: [`skills/american-english-normalization/SKILL.md`](../../skills/american
 
 Source: [`skills/botese-normalization/SKILL.md`](../../skills/botese-normalization/SKILL.md)
 
-**Purpose.** The rule set the garden normalizes away from: "Botese," the maintainer's name for reflexive AI-slop clichés used in place of saying the thing plainly. It is a structural port of [`american-english-normalization`](#american-english-normalization), with a curated phrase list (`skills/botese-normalization/cliches.tsv`) instead of a word list. It came from a maintainer comment on `endojs/endo-but-for-bots#1281` asking for a thesaurus jury seat that knows the words of Botese.
+**Purpose.** The rule set the garden normalizes away from: "Botese," the maintainer's name for reflexive AI-slop clichés used in place of saying the thing plainly. It is a structural port of [`american-english-normalization`](#american-english-normalization), with a curated phrase list (`skills/botese-normalization/cliches.tsv`) instead of a word list. It came from a maintainer comment on [`endojs/endo-but-for-bots#1281`](https://github.com/endojs/endo-but-for-bots/pull/1281) asking for a thesaurus jury seat that knows the words of Botese.
 
 **When it's used.** By the grep `scripts/jobs/gardening/thesaurus-cliche-grep.sh`, the thesaurus jury seat (behind `seat-gate-thesaurus.sh`), and the deslopper role. The *deslop #N* verb is search-gated the same way *americanize* is.
 
@@ -1387,13 +1388,13 @@ Source: [`skills/gricean-maxims/SKILL.md`](../../skills/gricean-maxims/SKILL.md)
 
 **Purpose.** The fleet's standing norm for every communication, "be concise; optimize for the reader's attention," made operational through Grice's four maxims. Quantity forbids padding, Quality forbids unevidenced claims, Relation forbids irrelevant asides, and Manner forbids burying the decision. It covers reports, PR and review comments, journal and bus messages, juror findings, and the code comments, designs, and commit bodies the fleet lands in project repos, which are reread longest.
 
-**When it's used.** `roles/COMMON.md` indexes it in the house style, and the liaison brief points to it separately because the liaison does not read `COMMON.md`. The builder and fixer briefs and the pruner jury seat cite it. The maintainer adopted it for all communications on 2026-07-28, and a reviewer's "what do those words contribute?" on `endojs/endo-but-for-bots#825` extended it to code comments.
+**When it's used.** `roles/COMMON.md` indexes it in the house style, and the liaison brief points to it separately because the liaison does not read `COMMON.md`. The builder and fixer briefs and the pruner jury seat cite it. The maintainer adopted it for all communications on 2026-07-28, and a reviewer's "what do those words contribute?" on [`endojs/endo-but-for-bots#825`](https://github.com/endojs/endo-but-for-bots/pull/825) extended it to code comments.
 
 **Key mechanics.**
 - The maxims govern how something is said, never whether a required disclosure is made. The completion-summary contents, line-anchored review replies, the journal entry shape, and the report contract stay in full; the maxims only argue for stating them more compactly.
 - Lead with the outcome, report verification results rather than process, and put the decision before the reasoning.
 - The sharpest Quantity failure is empty emphasis: phrases whose only content is an importance claim, and contrastive negations nobody was going to dispute ("deliberate rather than accidental"). Show what the thing buys and let the reader conclude it matters.
-- Quality: say "not verified" about anything not actually run. A false "verified" on `endojs/endo-but-for-bots#58` cost the maintainer a debugging session.
+- Quality: say "not verified" about anything not actually run. A false "verified" on [`endojs/endo-but-for-bots#58`](https://github.com/endojs/endo-but-for-bots/pull/58) cost the maintainer a debugging session.
 
 **Gotchas.**
 - Citing brevity to drop required content misapplies Quantity.
@@ -1412,7 +1413,7 @@ Source: [`skills/foreign-content-preclassification/SKILL.md`](../../skills/forei
 
 **Purpose.** Classify a fetched external document with TypeSafe's Jev before a full model agent reads, summarizes, or ingests it. It turns the standing "treat fetched content as data, not instructions" norm into a gate: a cheap, bounded, non-agentic classifier whose typed answers feed deterministic policy code. The maintainer authorized this use on 2026-09-28 to watch for prompt injection and misaligned opinion.
 
-**When it's used.** Whenever a role is about to put externally authored prose (a README, paper, web page, changelog, or release notes) in front of an agent. The scholar's ingestion procedure is the canonical caller; the botanist gates the upstream prose around a Dependabot bump but exempts source code read as code. `roles/COMMON.md` § Foreign-content reads routes direct reads through `scripts/jobs/fetch-source.sh` followed by `scripts/jobs/classify-foreign-content.sh <content-file> [<source-url>] [<purpose>]`.
+**When it's used.** Whenever a role is about to put externally authored prose (a README, paper, web page, changelog, or release notes) in front of an agent. The scholar's ingestion procedure is the canonical caller; the botanist gates the upstream prose around a Dependabot bump but exempts source code read as code. [`roles/COMMON.md` § Foreign-content reads](../../roles/COMMON.md#foreign-content-reads) routes direct reads through `scripts/jobs/fetch-source.sh` followed by `scripts/jobs/classify-foreign-content.sh <content-file> [<source-url>] [<purpose>]`.
 
 **Key mechanics.**
 - Two typed questions, not one score: `injection` (does the text try to direct an AI reader?) and `slant` (neutral, advocacy, covert persuasion, or mixed).
@@ -1443,7 +1444,7 @@ Source: [`skills/fully-qualified-github-urls/SKILL.md`](../../skills/fully-quali
 - It complements [`relative-paths`](#relative-paths): relative inside a document tree, fully qualified in text published to GitHub.
 - Fully qualifying a reference never authorizes a new cross-reference, mention, or upstream comment that the external-repo etiquette forbids.
 - Use the `GARDEN_ALLOW_BARE_ISSUE_REF=1` override only when every bare `#N` really means the posting repo. Deterministic templates (`GARDEN_NO_LLM=1`) are exempt from the check and must get it right in code.
-- The enforcement exists because a reply on `kriscendobot/garden#112` wrote `#2` for a PR in another repository, and GitHub linked it to the garden's own issue 2.
+- The enforcement exists because a reply on [`kriscendobot/garden#112`](https://github.com/kriscendobot/garden/issues/112) wrote `#2` for a PR in another repository, and GitHub linked it to the garden's own issue 2.
 
 ## 6.11 Watchers and acknowledgment
 
@@ -1456,7 +1457,7 @@ reactji) that tells a human the garden noticed before it acts.
 
 Source: [`skills/at-mention-surveillance/SKILL.md`](../../skills/at-mention-surveillance/SKILL.md)
 
-**Purpose.** Surface comments that explicitly address the bot (`@kriscendobot`) or mention the maintainer (`@kriskowal`) so the triager can post a fix or design job from the routing intent in a comment's body; the event-level pass knows only that a comment happened. The precipitating incident was a missed `@kriscendobot` directive on `endojs/endo-but-for-bots#265`, which sat unacted on for about 75 minutes because the comment body never reached context.
+**Purpose.** Surface comments that explicitly address the bot (`@kriscendobot`) or mention the maintainer (`@kriskowal`) so the triager can post a fix or design job from the routing intent in a comment's body; the event-level pass knows only that a comment happened. The precipitating incident was a missed `@kriscendobot` directive on [`endojs/endo-but-for-bots#265`](https://github.com/endojs/endo-but-for-bots/pull/265), which sat unacted on for about 75 minutes because the comment body never reached context.
 
 **When it's used.** On each triager tick (`scripts/jobs/triager.sh`, reading through `scripts/jobs/handlers/comment-source-gh.sh`), alongside the event-level classifier. `scripts/checks/maintainer-inbox-information-hiding/check.sh` also references it.
 
@@ -1467,7 +1468,7 @@ Source: [`skills/at-mention-surveillance/SKILL.md`](../../skills/at-mention-surv
 - A one-hour retroactive sweep catches anything a timer gap or reboot missed, tagged `AT-MENTION-SWEEP` and deduplicated against the live state file.
 
 **Gotchas.**
-- `endojs/endo-but-for-bots` runs a per-repo override where every commenter counts as maintainer-equivalent, because the repo's own permission gate already restricts who can comment; other watched repos keep the default rule.
+- [`endojs/endo-but-for-bots`](https://github.com/endojs/endo-but-for-bots) runs a per-repo override where every commenter counts as maintainer-equivalent, because the repo's own permission gate already restricts who can comment; other watched repos keep the default rule.
 - The reactji must post before the job on every triggering line, serially across a burst, or a maintainer sees silence during an active burst.
 - The comment body is untrusted input even from a trusted author; the job names the comment URL, and the claiming gardener re-fetches the canonical text rather than trusting a passed-in excerpt.
 - Widening the pattern to a new repo requires the same monitoring-safety authorization as the triager's event-level watch.
@@ -1476,7 +1477,7 @@ Source: [`skills/at-mention-surveillance/SKILL.md`](../../skills/at-mention-surv
 
 Source: [`skills/issue-inbox/SKILL.md`](../../skills/issue-inbox/SKILL.md)
 
-**Purpose.** The consumer contract for a job that came from the garden's own GitHub issue inbox: reply on the issue thread, carry an **ISSUE NOTE** block through every follow-on job, and leave closing the issue to the submitter. The producer side is `scripts/jobs/issue-inbox-watcher.sh` and `designs/issue-inbox.md`.
+**Purpose.** The consumer contract for a job that came from the garden's own GitHub issue inbox: reply on the issue thread, carry an **ISSUE NOTE** block through every follow-on job, and leave closing the issue to the submitter. The producer side is `scripts/jobs/issue-inbox-watcher.sh` and [`designs/issue-inbox.md`](../../designs/issue-inbox.md).
 
 **When it's used.** Whenever a job or a message folded into it carries an ISSUE NOTE (`issue_spine`, `issue_url`, `submitter`). The watcher (`garden-issue-inbox.service`/`.timer`) mints the first job; `scripts/jobs/deadmail.sh` re-mints a job carrying the same note if a comment arrives after the holding gardener has finished; `scripts/jobs/comment-watcher.sh` and its handlers (`comment-reply-gh.sh`, `comment-reactji-gh.sh`, `issue-source-gh.sh`) implement the reply and reaction mechanics it depends on.
 
@@ -1521,7 +1522,7 @@ Source: [`skills/activity-feed-watcher/SKILL.md`](../../skills/activity-feed-wat
 
 **Key mechanics.**
 - A fixed classifier keys on the feed's event-type field (comment, review, push, ci-status, label, assigned-issue, issue-mention, or `other`, which is logged and dropped) with no LLM involved.
-- A fixed directive-to-job table turns an imperative PR comment (rebase, retcon, refresh, shepherd, run the gauntlet) into the matching job; this is the standing vocabulary from the top-level `CLAUDE.md` (chapter 3, § 3.2).
+- A fixed directive-to-job table turns an imperative PR comment (rebase, retcon, refresh, shepherd, run the gauntlet) into the matching job; this is the standing vocabulary from the top-level `CLAUDE.md` ([chapter 3](#ch3-chapter-3-using-the-garden), [§ 3.2](#ch3-32-the-vocabulary)).
 - Each job's basename is derived deterministically from the change identity, so a re-triaged event collides with the existing board entry and is skipped rather than duplicated.
 - The last-seen marker (or ETag cache) advances only after the tick's jobs are posted, so a mid-tick failure re-surfaces the same events on the next tick instead of silently dropping them.
 
@@ -1680,7 +1681,7 @@ Source: [`skills/restore/SKILL.md`](../../skills/restore/SKILL.md)
 
 **Purpose.** Recover the fleet after a fleet-wide interruption (an API or quota outage, a long network partition, any window where `claude -p` calls failed en masse) once service is back. It is the immediate, in-session, human-triggered form of the recovery that the garden's cadenced singletons (the reaper, deadmail, the proxy) otherwise perform slowly, and only on the leader.
 
-**When it's used.** As a liaison operation, run directly rather than posted as a job: `roles/liaison/AGENT.md` maps the maintainer phrases "restore," "recover the fleet," "we're back, clean up the wreckage," and "reactivate the hung agents" to it. `roles/sysop/AGENT.md` describes the sysop's `restore` op as the same reset-failed, `reaper.sh`, and `deadmail.sh` sequence on a single host (chapter 2, § 2.5). Several briefs (conductor, shepherd, designer, and the releaser seat) reference the recovery posture it restores.
+**When it's used.** As a liaison operation, run directly rather than posted as a job: `roles/liaison/AGENT.md` maps the maintainer phrases "restore," "recover the fleet," "we're back, clean up the wreckage," and "reactivate the hung agents" to it. `roles/sysop/AGENT.md` describes the sysop's `restore` op as the same reset-failed, `reaper.sh`, and `deadmail.sh` sequence on a single host ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop)). Several briefs (conductor, shepherd, designer, and the releaser seat) reference the recovery posture it restores.
 
 **Key mechanics.**
 - Reactivate the worker pool with `systemctl --user reset-failed 'garden-*'`, so systemd stops throttling gardeners the outage left crash-looping.
@@ -1718,7 +1719,7 @@ Source: [`skills/aws-administration/SKILL.md`](../../skills/aws-administration/S
 
 **Purpose.** Administer AWS for the garden fleet: install the CLI without root, manage the single IAM credential the fleet uses, propagate that credential into every container home by hard link, and verify the resulting identity. It encodes the setup already live on host `endolin` (one IAM user, `garden-fleet`, one access key), so a fresh host or a credential rotation follows the same shape instead of being reconstructed by hand.
 
-**When it's used.** Through host-administration scripts under `scripts/aws/`, run from a shell on the host rather than off the job board. `scripts/aws/turnkey/lib.sh` and `designs/turnkey-garden-host.md` reference it as the credential source a turnkey host build seeds from (chapter 4, § 4.6), distinct from the turnkey scripts' own AWS-resource provisioning.
+**When it's used.** Through host-administration scripts under `scripts/aws/`, run from a shell on the host rather than off the job board. `scripts/aws/turnkey/lib.sh` and [`designs/turnkey-garden-host.md`](../../designs/turnkey-garden-host.md) reference it as the credential source a turnkey host build seeds from ([chapter 4](#ch4-chapter-4-creating-your-own-instance), [§ 4.6](#ch4-46-the-turnkey-path-a-disposable-aws-host)), distinct from the turnkey scripts' own AWS-resource provisioning.
 
 **Key mechanics.**
 - Four scripts: `install-aws-cli.sh` (user-local CLI install), `relink-aws-creds.sh` (hard-links `~/.aws/{credentials,config}` into every discovered checkout home), `verify.sh` (asserts the expected identity, account, and region everywhere), and `rotate-key.sh` (create-new-before-delete-old key rotation).
@@ -1735,7 +1736,7 @@ Source: [`skills/aws-administration/SKILL.md`](../../skills/aws-administration/S
 
 Source: [`skills/claude-usage-dashboard-scrape/SKILL.md`](../../skills/claude-usage-dashboard-scrape/SKILL.md)
 
-**Purpose.** Read the Claude.ai usage dashboard through an authenticated headless browser on the host and hand the two limit percentages, their reset times, and the temporary-boost banner to the garden as one JSON line appended to a staging file, replacing hand-typed quota checkpoints with an automated, meter-paired read. It feeds downstream ratio fitting and reset-bracket detection (chapter 8, § 8.2) but does neither itself.
+**Purpose.** Read the Claude.ai usage dashboard through an authenticated headless browser on the host and hand the two limit percentages, their reset times, and the temporary-boost banner to the garden as one JSON line appended to a staging file, replacing hand-typed quota checkpoints with an automated, meter-paired read. It feeds downstream ratio fitting and reset-bracket detection ([chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.2](#ch8-82-subscription-accounting)) but does neither itself.
 
 **When it's used.** Only on the host, never inside the garden container and never as a gardener job, because its session credential is a live bearer token for the maintainer's own Claude account. `scripts/host/README.md` lists its deliverable script, `scripts/host/scrape-claude-usage.mjs`, among the host-only programs that communicate results back to the garden only by appending derived, non-sensitive data to a staging file.
 
@@ -1814,7 +1815,7 @@ Source: [`skills/re-export-deprecation-policy/SKILL.md`](../../skills/re-export-
 **Gotchas.**
 - There is no auto-fixer role for this rule: complying means migrating importers and choosing a deprecation message, which is judgment, not a mechanical swap, so the ordinary fixer does it.
 - The probe fails the push gate outright rather than auto-fixing.
-- It originated when @erights asked that the garden not just follow the project's re-export policy but prevent every future violation; @kriskowal approved the resulting design in PR #95.
+- It originated when @erights asked that the garden not just follow the project's re-export policy but prevent every future violation; @kriskowal approved the resulting design in [PR #95](https://github.com/kriscendobot/garden/pull/95).
 
 ### `xs-debugging`
 
@@ -1834,11 +1835,11 @@ Source: [`skills/xs-debugging/SKILL.md`](../../skills/xs-debugging/SKILL.md)
 - A targeted loop rewrite removes the immediate spike but leaves the baseline closure count in place, so a future module-scope widening can re-trip the same ceiling.
 - The coarse remedy's cost is determinism, not snapshot incompatibility: the XS snapshot read path does not gate on `stackCount`.
 - Reproducing against real chain state goes through [`agoric-chain-snapshot`](#agoric-chain-snapshot); reading the delivery-level record goes through [`slog-debugging`](#slog-debugging).
-- Scope is read-only analysis and on-host runs of the open-source worker and public bundles, bot forks only, with no upstream `agoric/agoric-sdk` or `endojs/endo` interaction.
+- Scope is read-only analysis and on-host runs of the open-source worker and public bundles, bot forks only, with no upstream [`agoric/agoric-sdk`](https://github.com/Agoric/agoric-sdk) or [`endojs/endo`](https://github.com/endojs/endo) interaction.
 
 ## 6.14 Ironhorse and test262
 
-Ironhorse is the Rust port of the XS engine introduced in chapter 1, § 1.1,
+Ironhorse is the Rust port of the XS engine introduced in [chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis), [§ 1.1](#ch1-11-what-the-garden-is),
 and test262 is the conformance suite it is measured against. Two small,
 mechanical disciplines for writing a test262-format test:
 spell every spec-defined surface the way the specification does, and
@@ -1861,7 +1862,7 @@ Source: [`skills/test262-independent-assertions/SKILL.md`](../../skills/test262-
 **Gotchas.**
 - A joined-string assertion fails opaquely: one drifted property produces a whole-blob mismatch that the reader must diff by eye, which is worse across several hosts, where the point is to name which surface diverged.
 - The discipline costs a few extra lines per test and buys precise failure attribution and a grep target per fact.
-- It is grounded in a maintainer directive on `endojs/endo-but-for-bots#1078` ("please consider this a rule in general for test262 construction going forward"); the four `%Map/Set/WeakMap/WeakSet.prototype%` intrinsic-metadata tests were split accordingly.
+- It is grounded in a maintainer directive on [`endojs/endo-but-for-bots#1078`](https://github.com/endojs/endo-but-for-bots/pull/1078) ("please consider this a rule in general for test262 construction going forward"); the four `%Map/Set/WeakMap/WeakSet.prototype%` intrinsic-metadata tests were split accordingly.
 - It applies together with [`test-title-spec-spelling`](#test-title-spec-spelling) on the same test262 tests: the title names which spec surface is covered, and the independent assertions localize which fact of that surface broke.
 
 ### `test-title-spec-spelling`
@@ -1879,7 +1880,7 @@ Source: [`skills/test-title-spec-spelling/SKILL.md`](../../skills/test-title-spe
 
 **Gotchas.**
 - A title that diverges from spec spelling also suggests the bot did not read the spec before writing the test; correct spelling is cheap evidence that the coverage is grounded in the standard.
-- It is grounded in a 2026-06-03 panel finding on `endojs/endo-but-for-bots#417` (twin misspellings, `subArray` for `subarray` and `TypeArray` for `TypedArray`), which the justice forwarded as a proposed rule per the panel's cite-or-propose discipline.
+- It is grounded in a 2026-06-03 panel finding on [`endojs/endo-but-for-bots#417`](https://github.com/endojs/endo-but-for-bots/pull/417) (twin misspellings, `subArray` for `subarray` and `TypeArray` for `TypedArray`), which the justice forwarded as a proposed rule per the panel's cite-or-propose discipline.
 - It composes with [`regression-evidence`](#regression-evidence) (what the test proves) and [`test262-independent-assertions`](#test262-independent-assertions) (how a multi-fact assertion is split); the title answers only which spec surface is covered.
 
 ## 6.15 Agoric
@@ -1893,7 +1894,7 @@ evidence that an XS worker's bare exit code does not show.
 
 Source: [`skills/agoric-chain-snapshot/SKILL.md`](../../skills/agoric-chain-snapshot/SKILL.md)
 
-**Purpose.** Obtain a real Agoric mainnet swing-store and feed it to inquisitor to reproduce, and verify a fix for, a contract-upgrade failure against real chain state rather than only a synthetic stock-worker check. Its case study is the ymax0 v320 XS value-stack overflow (`kriskowal/garden#9`): a wide `.flatMap(...)` building a decoding table tips the fixed-size XS value stack over its slot budget during a contract-bundle import.
+**Purpose.** Obtain a real Agoric mainnet swing-store and feed it to inquisitor to reproduce, and verify a fix for, a contract-upgrade failure against real chain state rather than only a synthetic stock-worker check. Its case study is the ymax0 v320 XS value-stack overflow ([`kriskowal/garden#9`](https://github.com/kriscendobot/garden/issues/9)): a wide `.flatMap(...)` building a decoding table tips the fixed-size XS value stack over its slot budget during a contract-bundle import.
 
 **When it's used.** From the fixer's `roles/fixer/subroles/agoric-sdk.md` debugging sub-role, cross-linked by `roles/fixer/AGENT.md` and `roles/fixer/subroles/README.md`. It is how `xs-debugging`'s remedies are verified against real state.
 
@@ -1904,7 +1905,7 @@ Source: [`skills/agoric-chain-snapshot/SKILL.md`](../../skills/agoric-chain-snap
 - Success or failure is read from the delivery-level slog error and the transcript span's full bounds, not from whether an upgrade span opened.
 
 **Gotchas.**
-- Scope is read-only analysis and on-host runs of the open-source worker and public bundles, bot forks only; no upstream `agoric/agoric-sdk` interaction, per `roles/COMMON.md` § External-repo etiquette.
+- Scope is read-only analysis and on-host runs of the open-source worker and public bundles, bot forks only; no upstream [`agoric/agoric-sdk`](https://github.com/Agoric/agoric-sdk) interaction, per [`roles/COMMON.md` § External-repo etiquette](../../roles/COMMON.md#external-repo-etiquette).
 - The faithful contract-control upgrade vector needs the live instance's admin facet reached through `getUpgradeKit`, not the stale bootstrap promise-space kit, which targets an already-terminated vat incarnation.
 - In scripted (non-REPL) mode, awaiting the injected upgrade call before cranking the controller deadlocks; send without awaiting, then run or poll.
 - The taller-`stackCount` coarse remedy does not break snapshot compatibility, but it does require every validator to cut over in lockstep at an agreed height.
@@ -1925,7 +1926,7 @@ Source: [`skills/slog-debugging/SKILL.md`](../../skills/slog-debugging/SKILL.md)
 
 **Gotchas.**
 - An upgrade span opening is not success, because a fresh span opens even on failure; use the upgrade promise's resolution (rejection means failure) plus the slog error as the outcome signal.
-- Scope is read-only analysis on bot forks and captured state, with no upstream `agoric/agoric-sdk` interaction.
+- Scope is read-only analysis on bot forks and captured state, with no upstream [`agoric/agoric-sdk`](https://github.com/Agoric/agoric-sdk) interaction.
 - Once a fault is confirmed as XS-shaped, hand off to `xs-debugging` to classify width versus depth and choose the remedy.
 
 ## 6.16 minion.town, OAuth, and AI tooling
@@ -1943,7 +1944,7 @@ Source: [`skills/typesafe-ai/SKILL.md`](../../skills/typesafe-ai/SKILL.md)
 
 **Purpose.** Call TypeSafe's System One API to get a small, typed, calibrated AI judgment (a `noul` probability, a `choice` among options, or a `score` on an ordered rubric) that surrounding deterministic code consumes directly, instead of hand-rolling a regex or a free-text prompt that then has to be re-parsed. The question and its possible answers live in one reviewable place; the policy over the answer stays in ordinary code.
 
-**When it's used.** `roles/liaison/AGENT.md` references it (the liaison's muster pilot is in chapter 3, § 3.3). The one wired, authorized caller is `scripts/jobs/classify-foreign-content.sh`, which implements the [`foreign-content-preclassification`](#foreign-content-preclassification) gate. It is inert until the maintainer provisions `TYPESAFE_API_KEY` through the standard credential-handoff path; a job must never originate or guess that key.
+**When it's used.** `roles/liaison/AGENT.md` references it (the liaison's muster pilot is in [chapter 3](#ch3-chapter-3-using-the-garden), [§ 3.3](#ch3-33-muster-working-the-maintainer-inbox)). The one wired, authorized caller is `scripts/jobs/classify-foreign-content.sh`, which implements the [`foreign-content-preclassification`](#foreign-content-preclassification) gate. It is inert until the maintainer provisions `TYPESAFE_API_KEY` through the standard credential-handoff path; a job must never originate or guess that key.
 
 **Key mechanics.**
 - There are three question types: `noul` (a yes-or-no probability), `choice` (pick one, with a probability distribution over the set), and `score` (an ordered rubric level).
@@ -1961,7 +1962,7 @@ Source: [`skills/typesafe-ai/SKILL.md`](../../skills/typesafe-ai/SKILL.md)
 
 Source: [`skills/oauth-use-case-patterns/SKILL.md`](../../skills/oauth-use-case-patterns/SKILL.md)
 
-**Purpose.** A playbook for OAuth 2.0 application-credential work: when a need calls for an OAuth app or client rather than a bare token, which grant to pick (client-credentials or authorization-code), and how to apply it with least-privilege scopes and short-lived-token rotation. The worked exemplar is Tailscale's OAuth surface, ingested into the library (chapter 9) as `web--tailscale-oauth-clients` and `web--tailscale-oauth-apps`.
+**Purpose.** A playbook for OAuth 2.0 application-credential work: when a need calls for an OAuth app or client rather than a bare token, which grant to pick (client-credentials or authorization-code), and how to apply it with least-privilege scopes and short-lived-token rotation. The worked exemplar is Tailscale's OAuth surface, ingested into the library ([chapter 9](#ch9-chapter-9-the-library-and-how-it-spends-context)) as `web--tailscale-oauth-clients` and `web--tailscale-oauth-apps`.
 
 **When it's used.** At design time, by any role proposing or reviewing how the garden authenticates to an external API; it does not itself stand up credentials. The scholar authored it on 2026-06-30, and it is the historical example behind `scripts/checks/claude-md-inventory-drift`: it was pushed to `main2` but left out of `CLAUDE.md`'s inventory for a time, which motivated that gate.
 
@@ -1983,7 +1984,7 @@ Source: [`skills/url-path-math/SKILL.md`](../../skills/url-path-math/SKILL.md)
 
 **Purpose.** In Endo JavaScript and TypeScript, prefer `new URL(...)` over Node's `path` module for path math rooted at a module URL. URL-relative resolution is portable and keeps a value in the URL domain until an API actually requires a native filename.
 
-**When it's used.** When authoring Endo code: `roles/COMMON.md` § House style indexes it and `roles/builder/AGENT.md` carries it. The [purist](../../roles/jurors/purist/AGENT.md) jury seat checks new `node:path` imports and `path.resolve`/`path.dirname` calls on URL-relative work during panel review.
+**When it's used.** When authoring Endo code: [`roles/COMMON.md` § House style](../../roles/COMMON.md#house-style) indexes it and `roles/builder/AGENT.md` carries it. The [purist](../../roles/jurors/purist/AGENT.md) jury seat checks new `node:path` imports and `path.resolve`/`path.dirname` calls on URL-relative work during panel review.
 
 **Key mechanics.**
 - Write `new URL('./worker.js', import.meta.url)` rather than `path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'worker.js')`.
@@ -1994,7 +1995,7 @@ Source: [`skills/url-path-math/SKILL.md`](../../skills/url-path-math/SKILL.md)
 **Gotchas.**
 - This is a review rule, not a blocking pre-push gate, because judging whether a URL form actually serves a particular API needs surrounding context.
 - Do not rewrite unrelated existing path code; apply the rule only when authoring or editing the path calculation itself.
-- It came from a review comment (kriskowal, `endojs/endo-but-for-bots#124`, 2026-08-06) asking that the convention be recorded rather than re-taught in each review.
+- It came from a review comment (kriskowal, [`endojs/endo-but-for-bots#124`](https://github.com/endojs/endo-but-for-bots/pull/124), 2026-08-06) asking that the convention be recorded rather than re-taught in each review.
 
 ### `minion-town-clip-publishing`
 
@@ -2011,7 +2012,7 @@ Source: [`skills/minion-town-clip-publishing/SKILL.md`](../../skills/minion-town
 - `evaluate`'s `values` entries must be existing pet names in the guest's store, not literal values, whatever the tool's own description suggests.
 
 **Gotchas.**
-- An `Invalid pet name "@main"` failure on every `publish` call was a real platform bug: the production daemon did not endow `@main`, and probing it with `has` threw instead of returning false. The fix, deployed 2026-09-01 (`kriscendobot/minion.town#71`), repairs legacy guests automatically, with no per-guest action needed.
+- An `Invalid pet name "@main"` failure on every `publish` call was a real platform bug: the production daemon did not endow `@main`, and probing it with `has` threw instead of returning false. The fix, deployed 2026-09-01 ([`kriscendobot/minion.town#71`](https://github.com/kriscendobot/minion.town/pull/71)), repairs legacy guests automatically, with no per-guest action needed.
 - No `playwright` package is preinstalled in garden containers; install it into a scratch directory, not the garden tree root.
 - Whatever a job spec asks for, the CSP forbids inline CSS; ship a linked stylesheet.
 

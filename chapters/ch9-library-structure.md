@@ -16,10 +16,10 @@ Three roles and two skills carry the library. The
 [scholar](../../roles/scholar/AGENT.md) writes it, the
 [librarian](../../roles/librarian/AGENT.md) searches it read-only, and the
 [researcher](../../roles/researcher/AGENT.md) turns it into grounding for
-design and build jobs; their full entries are in chapter 5, § 5.5. The
+design and build jobs; their full entries are in [chapter 5](#ch5-chapter-5-roles-reference), [§ 5.5](#ch5-55-design-research-and-library-roles). The
 [library-lookup](../../skills/library-lookup/SKILL.md) and
 [context-library](../../skills/context-library/SKILL.md) skills, catalogued in
-chapter 6, § 6.8, are the reading procedure and the authoring discipline. This
+[chapter 6](#ch6-chapter-6-skills-reference), [§ 6.8](#ch6-68-the-library-the-journal-and-documentation), are the reading procedure and the authoring discipline. This
 chapter explains how those pieces fit together.
 
 ## Contents
@@ -75,7 +75,7 @@ one-line abstracts rather than a filename listing.
 Almost all of the library's bytes are in `sections/`. A section file is one
 heading's worth of one upstream document, named
 `sections/<source-slug>--<section-slug>.md`. The source slug flattens the
-upstream path and prefixes the project, so `endojs/endo/docs/lockdown.md`
+upstream path and prefixes the project, so [`endojs/endo/docs/lockdown.md`](https://github.com/endojs/endo/blob/master/docs/lockdown.md)
 becomes `endo--docs-lockdown`. The section slug is the kebab-cased heading, or
 `overview` for text above the first sub-heading. The default cut is at H2; an
 author descends to H3 only when an H2 wraps several unrelated H3 topics.
@@ -164,7 +164,7 @@ ferries work upstream to endo" belongs in the project tree.
 
 ## 9.3 How content gets in: the scholar
 
-The library grows through one role, the scholar (chapter 5, § 5.5.3). The
+The library grows through one role, the scholar ([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.5.3](#ch5-553-scholar)). The
 scholar is job-driven, not a standing daemon. Work reaches it as a board job
 (`scholar-ingest-<repo>`, `scholar-ingest-source`, `scholar-library-refresh`,
 `scholar-review-writebacks`), as a recurring library-refresh schedule that the
@@ -248,13 +248,13 @@ short digest to the maintainer.
 ## 9.4 How content gets found: library-lookup
 
 The reading side is the [library-lookup](../../skills/library-lookup/SKILL.md)
-skill (chapter 6, § 6.8). Any role that touches the library uses it; the
+skill ([chapter 6](#ch6-chapter-6-skills-reference), [§ 6.8](#ch6-68-the-library-the-journal-and-documentation)). Any role that touches the library uses it; the
 researcher uses it most. The [librarian](../../roles/librarian/AGENT.md)
-(chapter 5, § 5.5.4) packages a read-only journal search as a job: a role that
+([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.5.4](#ch5-554-librarian)) packages a read-only journal search as a job: a role that
 would rather not spend its own context on the walk posts a `librarian` job and
 gets back a citation list. The librarian descends the README hierarchy by
-abstract rather than grepping first, so its procedure is the one in § 9.6, not
-the grep-first lookup below.
+abstract rather than grepping first, so its procedure is the one in [§ 9.6](#ch9-96-why-it-is-shaped-this-way-the-context-economy), not
+the grep-first lookup [below](#a-hit).
 
 ### A hit
 
@@ -333,7 +333,7 @@ author guessed they would use.
 
 ## 9.5 How research uses it: the researcher
 
-The researcher (chapter 5, § 5.5.2) is where the library meets design and
+The researcher ([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.5.2](#ch5-552-researcher)) is where the library meets design and
 build work. By default a research step runs before a design or build job's
 work stage, either as a preparation stage of the gardener-supervised job or as
 a posted `research` job whose result the design or build job inlines. It does
@@ -371,15 +371,15 @@ partial.
 
 Everything above follows from one constraint: a worker's context window is
 limited, and every token in it costs money and displaces something else. (For
-the money side of that sentence, see chapter 8, § 8.5.) The library is not
+the money side of that sentence, see [chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.5](#ch8-85-per-job-budgets-wall-clock-and-tokens).) The library is not
 built to be *complete*; at eight million tokens it could never be loaded whole
 anyway. It is built so that a worker with a specific question can load *only
 the part that answers it*.
 
 ### The authoring discipline
 
-The [context-library](../../skills/context-library/SKILL.md) skill (chapter 6,
-§ 6.8) states the rules the library's authors follow, as do the garden's
+The [context-library](../../skills/context-library/SKILL.md) skill ([chapter 6](#ch6-chapter-6-skills-reference),
+[§ 6.8](#ch6-68-the-library-the-journal-and-documentation)) states the rules the library's authors follow, as do the garden's
 `context/` operator manual and the project trees:
 
 - **Directory as hierarchy.** Every directory in a context tree has a
@@ -433,7 +433,7 @@ reader who lands on it pays only for the pointer and the definition.
 
 ### The same discipline, applied to writing
 
-The scholar's limits (§ 9.3) are the same economy applied on the writing side.
+The scholar's limits ([§ 9.3](#ch9-93-how-content-gets-in-the-scholar)) are the same economy applied on the writing side.
 The section budget keeps each ingest job's own context bounded: the scholar
 holds the source, the sections it is cutting, and the indexes it is updating,
 and nothing else. The idempotency check means an unchanged source costs a

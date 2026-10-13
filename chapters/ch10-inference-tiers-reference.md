@@ -8,8 +8,8 @@ grounded-on: main2 c63c16cad57, journal2 as of 2026-09-30
 
 This chapter is a lookup reference for how the garden decides which model runs
 a job. It answers three questions: what tier a given role gets, which worker
-can serve it, and what happens when that provider is unavailable. Chapter 5
-gives each role's brief, and chapter 8, § 8.5 treats tier as one axis of a
+can serve it, and what happens when that provider is unavailable. [Chapter 5](#ch5-chapter-5-roles-reference)
+gives each role's brief, and [chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.5](#ch8-85-per-job-budgets-wall-clock-and-tokens) treats tier as one axis of a
 job's cost; this chapter holds the routing detail both of them point to.
 
 The canonical source is the
@@ -38,7 +38,7 @@ for its own provider.
 
 | Tier | Rank | How jobs reach it | Role in routing |
 | --- | --- | --- | --- |
-| `mentat` | 0 | **Manual only**, through `scripts/jobs/post-manual-job.sh`, which stamps `dispatch: manual`. One scoped exception (§ 10.4). | The most capable models; never emitted by any automatic producer. |
+| `mentat` | 0 | **Manual only**, through `scripts/jobs/post-manual-job.sh`, which stamps `dispatch: manual`. One scoped exception ([§ 10.4](#ch10-104-how-a-job-gets-its-tier)). | The most capable models; never emitted by any automatic producer. |
 | `mentor` | 1 | **Automatic default.** Every automatic post lands here. | The ordinary working tier, and the ceiling for automatic work. |
 | `minion` | 2 | Automatic **fallback** (`fallback-tier: minion`). | Where a failed mentor job is retried, subject to role floors. |
 | `myrmidon` | 3 | Named explicitly by a producer or a role brief. | The expedient tier; never an automatic escalation or fallback target. |
@@ -46,10 +46,10 @@ for its own provider.
 A `tier:` value outside these four is treated as no tier at all (the resolver
 fails closed and logs a warning). Writing `tier: builder` is the classic
 mistake: `role:` is a separate field, and the misplaced value also costs the
-job its role's handler budget (chapter 8, § 8.5).
+job its role's handler budget ([chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.5](#ch8-85-per-job-budgets-wall-clock-and-tokens)).
 
 The `mentor` tier is unrelated to the [mentor](../../roles/mentor/AGENT.md)
-role (chapter 5, § 5.5.6), which watches the journal for automation to harden;
+role ([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.5.6](#ch5-556-mentor)), which watches the journal for automation to harden;
 the two only share a name.
 
 ## 10.2 Models per tier
@@ -81,8 +81,8 @@ Two details are easy to get wrong:
 A worker kind is a provider binding, not a tier: slot counts and budgets never
 change a job's tier. Capacity is set per host with
 `scripts/jobs/set-workers.sh <kind> <count>`, or through the target host's
-sysop (chapter 2, § 2.5). How the fleet sizes those pools against
-subscription quota is chapter 8, § 8.2 and § 8.3.
+sysop ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop)). How the fleet sizes those pools against
+subscription quota is [chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.2](#ch8-82-subscription-accounting) and [§ 8.3](#ch8-83-worker-count-leveling-and-derotation).
 
 | Kind | Unit | Provider / harness | Status on 2026-09-30 |
 | --- | --- | --- | --- |
@@ -94,8 +94,8 @@ subscription quota is chapter 8, § 8.2 and § 8.3.
 | `openrouter`, `openrouter-promo` | `garden-openrouter@`, `garden-openrouter-promo@` | OpenRouter | Explicit-model-only; disabled by default. |
 | `hermit` | `garden-hermit@` | Local served model | **Retired** 2026-09-13; pool pinned to 0. |
 
-"Gardener" is the shared worker role and spine that all of these run (chapter
-5, § 5.3.1), not a kind; the old `gardener` kind and `set-gardeners.sh` are
+"Gardener" is the shared worker role and spine that all of these run
+([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.3.1](#ch5-531-gardener)), not a kind; the old `gardener` kind and `set-gardeners.sh` are
 retired. Host slot counts are the `monks:`, `clerics:`, and similar lines in
 each host's `journal/hosts/<GARDEN>` file.
 
@@ -113,7 +113,7 @@ each host's `journal/hosts/<GARDEN>` file.
 3. **The scoped Ironhorse exception.** A foreman promotion of an
    `ironhorse-test262-press-<UTC stamp>` plan may carry `tier: mentat` with
    `dispatch: ratchet-delegated`, under a standing maintainer delegation for
-   the Ironhorse engine port (chapter 1, § 1.1). Claim and handlers check the
+   the Ironhorse engine port ([chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis), [§ 1.1](#ch1-11-what-the-garden-is)). Claim and handlers check the
    active journal authorization, the basename, the marker that ties the job
    to that line of work, and the canonical task text. No fallback, pin, or provider
    override rides that path.
@@ -124,7 +124,7 @@ each host's `journal/hosts/<GARDEN>` file.
 ## 10.5 Per-role tier floors
 
 `role_tier_floor` sets the lowest tier a role may be demoted to on reroute
-(§ 10.6). The roles themselves are catalogued in chapter 5.
+([§ 10.6](#ch10-106-fallback-when-a-provider-is-unavailable)). The roles themselves are catalogued in [chapter 5](#ch5-chapter-5-roles-reference).
 
 | Role | Floor |
 | --- | --- |
@@ -134,9 +134,9 @@ each host's `journal/hosts/<GARDEN>` file.
 Role briefs may also call for a lower working tier: the
 [americanizer](../../roles/americanizer/AGENT.md) and
 [deslopper](../../roles/deslopper/AGENT.md) are `myrmidon`-tier fixer variants
-(chapter 5, § 5.6.1 and § 5.6.2). Panel juror seats have their own per-seat
+([chapter 5](#ch5-chapter-5-roles-reference), [§ 5.6.1](#ch5-561-americanizer) and [§ 5.6.2](#ch5-562-deslopper)). Panel juror seats have their own per-seat
 map (`scripts/jobs/gardening/seat-model-tiers.tsv`, with values `opus`,
-`sonnet`, or `haiku`) inside the panel script (chapter 7, § 7.3); it only ever
+`sonnet`, or `haiku`) inside the panel script ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.3](#ch7-73-the-panel)); it only ever
 downshifts from the panel job's model and is not part of the fleet inventory.
 
 `role_default_model` supplies a model only for a job that carries no `tier:`
@@ -154,7 +154,7 @@ on the board until some live kind with a mentor model claims it. Because
 mentor spans Anthropic, OpenAI, Moonshot, and Fireworks, the job makes
 progress on whichever of those has slots; today that is always a monk.
 
-**A genuine failure while running.** The reaper's (chapter 2, § 2.2) one-hop
+**A genuine failure while running.** The reaper's ([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.2](#ch2-22-the-job-lifecycle)) one-hop
 reroute
 (`reroute_job_model` in `common.sh`) advances the job along its fallback
 chain: `tier: mentor` becomes `tier: minion`, the head of `fallback-tier:` is

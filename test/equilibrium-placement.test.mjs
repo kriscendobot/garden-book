@@ -432,7 +432,9 @@ test("each chart is inlined verbatim with its caption and exact-value disclosure
     ).trim();
     const title = /<title id="[^"]+">([^<]+)<\/title>/.exec(source)[1];
     assert.ok(
-      body.startsWith(`<figure class="eq-figure">${source}<figcaption>`),
+      body.startsWith(
+        `<figure id="ch8-figure-${chart.id.toLowerCase()}" class="eq-figure">${source}<figcaption>`,
+      ),
       `${chart.id} is not inlined verbatim`,
     );
     const figcaption =

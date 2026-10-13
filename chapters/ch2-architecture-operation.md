@@ -10,12 +10,12 @@ This chapter explains how the garden runs: where work is recorded, how many
 workers on many hosts share it without a lock server, how messages move,
 which services run where, and how a new version of the garden reaches a
 running fleet. It is written for readers who operate or change the machinery,
-so it names real script paths and journal locations throughout. Chapter 1
-tells how this architecture came about; chapter 3 covers driving it through
+so it names real script paths and journal locations throughout. [Chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis)
+tells how this architecture came about; [chapter 3](#ch3-chapter-3-using-the-garden) covers driving it through
 the liaison.
 
-It is grounded in [`CLAUDE.md`][claude-md] (§ Layout, § How work reaches
-workers, § Job system), the [job-board][job-board] and
+It is grounded in [`CLAUDE.md` § Layout](../../CLAUDE.md#layout), [§ How work reaches
+workers](../../CLAUDE.md#how-work-reaches-workers), and [§ Job system](../../CLAUDE.md#job-system-v2--the-journal-backed-board-bus-and-worker-fleet), the [job-board][job-board] and
 [message-bus][message-bus] skills, [`WORKTREES.md`][worktrees], and two
 architecture designs, [`designs/job-board.md`][design-job-board] and
 [`designs/gardening-state-machine.md`][design-gsm]. Where this chapter and
@@ -40,13 +40,13 @@ journal directory, in which case they are relative to the root of the
 
 ### One branch, three jobs
 
-The garden repository (`github.com/kriscendobot/garden`) has two long-lived
+The garden repository ([`github.com/kriscendobot/garden`](https://github.com/kriscendobot/garden)) has two long-lived
 branches that never merge:
 
 - **`main2`** holds the code and prose that agents read: `roles/`, `skills/`,
   `scripts/`, `designs/`, `context/` (the role and skill catalogs are
-  chapters 5 and 6; the reference library under `journal/library/` is
-  chapter 9).
+  [chapters 5](#ch5-chapter-5-roles-reference) and [6](#ch6-chapter-6-skills-reference); the reference library under `journal/library/` is
+  [chapter 9](#ch9-chapter-9-the-library-and-how-it-spends-context)).
 - **`journal2`** is an **orphan** branch (no shared history with `main2`)
   holding the garden's *state*. This is *the journal*, checked out as a
   worktree at `<garden-root>/journal/`.
@@ -56,19 +56,19 @@ The journal does three jobs at once:
 1. **It is the transcript.** `entries/<Y>/<M>/<D>/…` holds progress
    narration written by `scripts/jobs/journal-entry.sh`.
 2. **It is the job board.** `jobs/{todo,doin,tada}/` is the work queue, with
-   `jobs/plan/` for parked work (§ 2.2).
+   `jobs/plan/` for parked work ([§ 2.2](#ch2-22-the-job-lifecycle)).
 3. **It is the message bus.** Directed inboxes under `inbox/` and fan-out
    and host channels under `msgs/` carry every message between agents, the
-   maintainer, and the hosts (§ 2.4).
+   maintainer, and the hosts ([§ 2.4](#ch2-24-the-message-bus)).
 
 Around these sits the rest of the fleet's shared state, all on the same
 branch: `repos/<slug>` (the watch set; adding a file arms the watchers,
 removing it disarms them), `hosts/<GARDEN>` (per-host worker counts),
-`leader` (the leader marker, § 2.5), `schedules/` (recurring jobs),
+`leader` (the leader marker, [§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop)), `schedules/` (recurring jobs),
 `jobs/orch/` (orchestration records), `jobs/index/` (the directive-identity
 map, below), `work/<base>` (per-job in-flight state), and `deploy/roll/`
-(rolling-deploy release tokens, § 2.6). The design lists the core layout in
-[`designs/job-board.md`][design-job-board] § 1.
+(rolling-deploy release tokens, [§ 2.6](#ch2-26-the-deliberate-deploy)). The design lists the core layout in
+[`designs/job-board.md`][design-job-board] [§ 1](../../designs/job-board.md#1-the-journal-as-bus--board).
 
 Because all of this lives in git, the whole coordination state is versioned,
 auditable (`git log` on `journal2` is a complete history of who claimed what
@@ -104,8 +104,7 @@ break the no-op property. A **recurring verb against the same target**
 (`weave`, `shepherd`, `conduct`, a restack, a `retcon`) is different work this
 month than last month but derives the same bare base, so if the earlier job is
 in `tada/`, the new post is **silently swallowed**. Those bases get a
-disambiguator, conventionally an ISO date `-YYYYMMDD` ([job-board][job-board]
-§ Basename shape). The deterministic producers already handle this: the
+disambiguator, conventionally an ISO date `-YYYYMMDD` ([job-board § Basename shape](../../skills/job-board/SKILL.md#basename-shape-bare-for-one-shot-work-disambiguated-for-recurring-actions)). The deterministic producers already handle this: the
 scheduler stamps `${prefix}-YYYYMMDD-HHMMSS`, the pages-watcher keys on the
 commit SHA, and the comment and CI watchers pass a directive identity (below).
 `post-job.sh` and `post-plan.sh` also emit a loud WARN when a post collides
@@ -141,7 +140,7 @@ has the same shape:
 3. push; on rejection, go back to step 1.
 
 What differs is **whether to retry after a rejection**, a line the garden
-draws deliberately ([`designs/job-board.md`][design-job-board] § 2):
+draws deliberately ([`designs/job-board.md`][design-job-board] [§ 2](../../designs/job-board.md#2-the-claim-protocol-the-core)):
 
 - **Claims back off.** After a rejected claim push, `claim-job.sh` re-syncs;
   if its candidate is no longer in `todo/`, someone else took it, and the
@@ -193,8 +192,8 @@ followed by the work body in prose.
 `jobs/todo/<base>.md` and pushes, retrying on contention. Ordinary producers
 get `tier: mentor` with `minion` fallback; explicitly requested `mentat`
 work goes through `scripts/jobs/post-manual-job.sh`, which stamps
-`dispatch: manual` ([model-selection][model-selection]; tiers are chapter
-10).
+`dispatch: manual` ([model-selection][model-selection]; tiers are
+[chapter 10](#ch10-chapter-10-inference-tiers-reference)).
 
 **Claim.** `scripts/jobs/claim-job.sh <id>` (called from the worker spine):
 
@@ -205,7 +204,7 @@ work goes through `scripts/jobs/post-manual-job.sh`, which stamps
    file. Candidates are filtered for eligibility: model and provider fit for
    this worker kind, and any `requires:` capability tokens (such as
    `requires: aws`) the host must satisfy. A `role: boatman` job is never
-   claimed (§ 2.3).
+   claimed ([§ 2.3](#ch2-23-the-gardener-fleet)).
 4. `git mv jobs/todo/<base>.md jobs/doin/<base>.md`, stamps a `claim:` block
    (host, worker id, worker kind, provider, `claimed_at`), creates
    `work/<base>` and `inbox/<base>/`, and commits.
@@ -215,13 +214,13 @@ work goes through `scripts/jobs/post-manual-job.sh`, which stamps
 Jobs marked `market: bid` take a different route to the same push: a bounded
 bid window followed by a deterministic Thompson-draw award that every worker
 computes identically from the committed journal, resolved by the same
-todo→doin CAS ([bid-auction][bid-auction]; chapter 1, § 1.5 tells where the
+todo→doin CAS ([bid-auction][bid-auction]; [chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis), [§ 1.5](#ch1-15-the-next-metamorphosis-the-bidding-market) tells where the
 market is headed). Everything else, including every `priority: urgent` job,
 stays on the race.
 
-**Work.** The worker runs its handler with a wall-clock budget (below), in a
-per-job worktree (§ 2.3). While it works it can read its inbox and message
-the maintainer (§ 2.4).
+**Work.** The worker runs its handler with a wall-clock budget ([below](#budgets-and-the-reaper)), in a
+per-job worktree ([§ 2.3](#ch2-23-the-gardener-fleet)). While it works it can read its inbox and message
+the maintainer ([§ 2.4](#ch2-24-the-message-bus)).
 
 **Complete.** `scripts/jobs/complete-job.sh <id> <base> <report>` removes
 `doin/<base>.md`, `work/<base>`, and `inbox/<base>/`, writes the report to
@@ -252,7 +251,7 @@ directives, panel runs; table in `role_default_handler_timeout` in
 default in either direction, capped at
 `GARDEN_CLAIM_TTL − GARDEN_HANDLER_KILL_AFTER − 1` (14400 − 60 − 1 = 14339 s at
 the defaults). The cap preserves the single-owner invariant: a handler is
-always killed before its claim can be considered stale. Chapter 8, § 8.5
+always killed before its claim can be considered stale. [Chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.5](#ch8-85-per-job-budgets-wall-clock-and-tokens)
 treats the wall-clock and token budgets as cost controls.
 
 The leader-only **reaper** (`scripts/jobs/reaper.sh`, `garden-reaper.timer`)
@@ -275,8 +274,9 @@ rather than by a guard: `claim-job.sh` draws candidates only from `todo/`, and
 pool and never goes stale. It becomes work only when **promoted**:
 `scripts/jobs/promote-plan.sh <base>` moves `plan/<base>.md` to
 `todo/<base>.md`, strips the plan frontmatter, and clears the reaper's cycle
-markers so that a previously doomed job gets a genuinely fresh run. (Chapter
-3, § 3.4 covers the plan queue from the user's side.)
+markers so that a previously doomed job gets a genuinely fresh run.
+([Chapter 3](#ch3-chapter-3-using-the-garden), [§ 3.4](#ch3-34-the-plan-queue)
+covers the plan queue from the user's side.)
 
 A plan job's frontmatter names its **gate**, which determines who may promote
 it:
@@ -307,7 +307,7 @@ board, promotes the next child (serial) or all children (parallel), watches
 each reach `tada/`, and treats a child that vanished without a `tada/` report,
 or whose report carries `orchestration-failed: true`, as a failure handled by
 the record's policy (halt and surface to the maintainer, or continue).
-Chapter 7, § 7.4 covers orchestration as a procedure. This book is itself an
+[Chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration) covers orchestration as a procedure. This book is itself an
 orchestration, `garden-book-orch`, which first ran eight chapter children in
 parallel.
 
@@ -319,7 +319,7 @@ parallel.
 of process. The spine is `scripts/jobs/gardener.sh`: a loop that polls the
 bus, passes a pre-claim health gate, claims a job, runs a handler, and
 completes the job. The spine is backend-pluggable: the **worker kind**
-decides which agent CLI the handler drives (chapter 10 maps worker kinds to
+decides which agent CLI the handler drives ([chapter 10](#ch10-chapter-10-inference-tiers-reference) maps worker kinds to
 providers and tiers):
 
 | Kind | Unit | Handler | Backend |
@@ -337,10 +337,10 @@ spec. The standing brief every worker reads is
 
 Per-host pool size is journal state (`hosts/<GARDEN>`), set with
 `scripts/jobs/set-workers.sh monk|cleric <count>` on the host in question or
-remotely through that host's sysop (§ 2.5). Each host's
+remotely through that host's sysop ([§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop)). Each host's
 `garden-gardener-scaler.timer` reconciles its local unit pool to that record.
 Sizing the pool against quota and backend health is covered in
-[`context/operations/scaling.md`][scaling] and chapter 8, § 8.3.
+[`context/operations/scaling.md`][scaling] and [chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.3](#ch8-83-worker-count-leveling-and-derotation).
 
 **The pre-claim health gate.** Before claiming, the spine checks that it can
 actually run a job, meaning that its kind's agent CLI resolves
@@ -357,7 +357,7 @@ the drain marker is host-local), so the gate has to live in the spine.
 
 A job's `role:` frontmatter field (read by `plan_role` in `common.sh`) names
 the posture the gardener wears: `builder`, `fixer`, `designer`, `shepherd`,
-`conductor`, and so on, each with its own `roles/<role>/AGENT.md` (chapter 5
+`conductor`, and so on, each with its own `roles/<role>/AGENT.md` ([chapter 5](#ch5-chapter-5-roles-reference)
 describes every role). The job body directs the worker to that brief, and the
 gardener reads it, and the skills it links, just-in-time; role files are
 named `AGENT.md`, not `CLAUDE.md`, precisely so that Claude Code does not
@@ -366,9 +366,9 @@ auto-load them. The `role:` field also drives machinery around the handler:
 - **Model tier.** Absent an explicit `model:`, the handler resolves a
   per-role default through `role_default_model` / `role_default_tier`,
   subject to role floors (canonical map:
-  [model-selection][model-selection]; chapter 10 covers tiers and floors).
+  [model-selection][model-selection]; [chapter 10](#ch10-chapter-10-inference-tiers-reference) covers tiers and floors).
 - **Handler budget.** `role_default_handler_timeout` gives structurally long
-  roles their 7200 s default (§ 2.2).
+  roles their 7200 s default ([§ 2.2](#ch2-22-the-job-lifecycle)).
 - **Environment.** The handler exports `GARDEN_JOB_ROLE`, which, for
   instance, gives a `botanist` (the role that handles automated
   dependency-update PRs) a scripts-disabled dependency install in
@@ -376,16 +376,15 @@ auto-load them. The `role:` field also drives machinery around the handler:
 - **Completion edges.** When a `role: builder` job completes with an open
   draft PR authored by the bot, `scripts/jobs/auto-gauntlet-handoff.sh` posts
   the idempotent `<build-base>-gauntlet` job before the build can move to
-  `tada/` ([`designs/gardening-state-machine.md`][design-gsm] § Build handoff
-  invariant; the gauntlet itself is chapter 7, § 7.2).
+  `tada/` ([`designs/gardening-state-machine.md` § Producer handoff invariant](../../designs/gardening-state-machine.md#producer-handoff-invariant); the gauntlet itself is [chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.2](#ch7-72-the-gauntlet-end-to-end)).
 - **Refusals.** `role: boatman` is refused by `post-job.sh`, `claim-job.sh`,
   and `gardener.sh`. Ferrying lands commits under the maintainer's identity,
   so it runs only off-board, through `scripts/ferry.sh` on the credentialed
-  host (chapter 7, § 7.6).
+  host ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.6](#ch7-76-the-ferry)).
 
 PR work inside a job follows the **gardening state machine**
 (`scripts/jobs/gardening/garden-pr.sh`), which the gardener supervises rather
-than executing step by step (chapter 7, § 7.1). The script runs the
+than executing step by step ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.1](#ch7-71-the-supervised-script-principle)). The script runs the
 deterministic stages itself (safe rebase, sense-gated automations, pre-push
 gates, the always-on `local-verify.sh` evaluation gate, push) and shells out
 to `claude -p` only for small decisions such as "loop or stop?". It is quiet
@@ -397,8 +396,7 @@ subagent instead of to the supervisor
 ### Per-job worktrees, and why never the root
 
 A job never works in the deployed garden root. The spine gives each job two
-isolated checkouts, its per-job worktrees ([`WORKTREES.md`][worktrees]
-§ Per-job v2 worktrees):
+isolated checkouts, its per-job worktrees ([`WORKTREES.md` § Per-job v2 worktrees](../../WORKTREES.md#per-job-v2-worktrees)):
 
 - **Garden worktree:** `scratch/gardener-wt-<base>`, a checkout off
   `origin/main2` and the handler's working directory. Garden development
@@ -420,7 +418,7 @@ anything missed.
 
 The root is off-limits for three reasons:
 
-1. **It is a deployed version** (§ 2.6). Editing it would dirty the code the
+1. **It is a deployed version** ([§ 2.6](#ch2-26-the-deliberate-deploy)). Editing it would dirty the code the
    whole host is running and collide with peers.
 2. **It shares one repository with the journal.** `<garden-root>/.git` backs
    both the root checkout and the `journal/` worktree. A stray `git checkout`,
@@ -436,7 +434,7 @@ The root is off-limits for three reasons:
    and repairs and alerts on drift ([`designs/root-repo-guard.md`][root-guard]).
 
 The retired v1 route, in which the liaison dispatched subagents into a
-`dispatches/<role>--<id>/{garden,journal,project}/` triple (chapter 1, § 1.3,
+`dispatches/<role>--<id>/{garden,journal,project}/` triple ([chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis), [§ 1.3](#ch1-13-the-metamorphoses),
 stage two), survives in `WORKTREES.md` and the
 [dispatch-worktree][dispatch-worktree] skill only where a role still needs
 that shape. (`WORKTREES.md` also still calls the journal branch `journal`; the
@@ -444,7 +442,7 @@ live branch is `journal2`.)
 
 ## 2.4 The message bus
 
-§ 2.1 introduced the bus as the journal's third job; this section details
+[§ 2.1](#ch2-21-the-journal-as-job-board-and-message-bus) introduced the bus as the journal's third job; this section details
 its addresses. Even two processes on the same host talk through the journal,
 because the fleet spans hosts, and every send and every read-state move is a
 commit pushed with the same CAS discipline as the board. There are four kinds
@@ -481,7 +479,7 @@ messages, and disposes of each with `maintainer-reply.sh <msgid>` (which
 routes the reply into the originating doer's inbox via `reply_to` and
 archives the original) or `maintainer-archive.sh <msgid>`. The gardener, still
 working, picks up the reply with its own `inbox-read.sh`; an empty reply
-simply archives. Chapter 3, § 3.3 describes *muster*, the liaison's
+simply archives. [Chapter 3](#ch3-chapter-3-using-the-garden), [§ 3.3](#ch3-33-muster-working-the-maintainer-inbox) describes *muster*, the liaison's
 interactive triage of this inbox.
 
 Repeated notices do not pile up. With `GARDEN_MSG_COALESCE=1` and a stable
@@ -502,13 +500,13 @@ outside any worktree, so a `reset --hard` of a journal clone never loses it.
 Every working gardener polls `role/gardener` and `broadcast`. The watchman
 announces role and skill evolution on `main2` through `broadcast`, so a lesson
 reaches running agents mid-flight, and liaisons coordinate leadership
-handoffs on `role/liaison` (§ 2.5).
+handoffs on `role/liaison` ([§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop)).
 
 ### Host channels (the sysop)
 
 `msgs/host/<GARDEN>/` is addressed to one host's sysop daemon rather than to
 an agent. Senders use `scripts/jobs/send-host-op.sh <GARDEN> op=… key=…`;
-§ 2.5 describes the receiver.
+[§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop) describes the receiver.
 
 ### Summary
 
@@ -542,7 +540,7 @@ them coordinates with a second copy of itself:
 So the fleet is **leader/follower** ([`designs/multibot-leader-follower.md`][multibot],
 operator procedure [`context/operations/leader-follower.md`][leader-follower]).
 Each host has a unique `GARDEN` identity (`<hostname>-<basename>-<hash8>`,
-derived from the checkout path; chapter 4, § 4.3). The journal file `leader`
+derived from the checkout path; [chapter 4](#ch4-chapter-4-creating-your-own-instance), [§ 4.3](#ch4-43-identity)). The journal file `leader`
 holds the leader's identity, and `scripts/jobs/is-main-host.sh` exits 0 on
 the leader and 1 elsewhere.
 
@@ -598,7 +596,7 @@ pool, drain, clear failed units, deploy. `set-workers.sh` correctly refuses to
 write another host's count. The **sysop** (`scripts/jobs/sysop.sh`,
 `garden-sysop.{service,timer}`, [`designs/sysop.md`][sysop]) is the daemon
 that "sits at" each host and runs the command there, driven by a bus message.
-This section describes its architecture; chapter 8, § 8.3 shows how the
+This section describes its architecture; [chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.3](#ch8-83-worker-count-leveling-and-derotation) shows how the
 budget controllers use it.
 
 - **Deterministic, no LLM.** It runs no `claude` and claims no jobs; the
@@ -637,7 +635,7 @@ while workers keep draining the existing board. The foreman's *active
 target*, the number of jobs it tries to keep in flight, ships at 10, and
 `GARDEN_TOKEN_BACKOFF_FRACTION` is the spend brake. The
 control loops that turn these levers (worker-count leveling, the foreman as
-pacing actuator) are chapter 8, § 8.3 and § 8.4; see also
+pacing actuator) are [chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.3](#ch8-83-worker-count-leveling-and-derotation) and [§ 8.4](#ch8-84-the-foreman-as-pacing-actuator); see also
 [`context/operations/cybernetics.md`][cybernetics].
 
 ## 2.6 The deliberate deploy
@@ -647,7 +645,7 @@ pacing actuator) are chapter 8, § 8.3 and § 8.4; see also
 `<garden-root>` is not a development tree. Nothing fast-forwards it
 continuously. It holds a
 specific, recorded `main2` SHA, and every unit on the host runs that code.
-Development happens only in per-job worktrees (§ 2.3), which push to
+Development happens only in per-job worktrees ([§ 2.3](#ch2-23-the-gardener-fleet)), which push to
 `origin/main2`; the root moves only when that host **deploys**
 ([`designs/deliberate-deploy.md`][deliberate-deploy], procedure
 [`context/operations/deploy.md`][deploy]).
@@ -738,7 +736,7 @@ overrides, skipping canaries). A host with no liaison session still advances.
 ### Guarding the deployed root
 
 Because the root and `journal/` share one repository, the deploy model is
-paired with the `garden-root-repo-guard` described in § 2.3. Beyond the
+paired with the `garden-root-repo-guard` described in [§ 2.3](#ch2-23-the-gardener-fleet). Beyond the
 checks listed there, the guard verifies that the object store stays
 maintainable: a failed `git gc` leaves a `gc.log` that permanently disables
 automatic cleanup, after which packs grow without bound and every journal

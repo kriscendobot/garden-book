@@ -6,23 +6,23 @@ grounded-on: main2 649f5cdd617
 
 # Chapter 4: Creating your own instance
 
-Chapter 1 told the garden's history as a series of metamorphoses: from a lone
+[Chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis) told the garden's history as a series of metamorphoses: from a lone
 shepherd session, to a container with a bot, to a supervised always-on host, to
 the current shape with deterministic scripts in the middle and model calls on
 either side. This chapter is the practical counterpart: what you do, command by
 command, to stand up a garden of your own, and why each step exists.
 
-It is grounded in the files that define the procedure: [`CLAUDE.md`][claude-md]
-§ Host environment and § Container guard, [`scripts/check-in-container.sh`][guard],
+It is grounded in the files that define the procedure: [`CLAUDE.md` § Host environment](../../CLAUDE.md#host-environment)
+and [§ Container guard](../../CLAUDE.md#container-guard), [`scripts/check-in-container.sh`][guard],
 the launcher [`garden`][launcher], the first-run track in
 [`context/first-run/`][first-run] (especially [`identity.md`][identity] and
 [`auth.md`][auth]), the bring-up procedure
 [`context/operations/starting.md`][starting], the AWS turnkey design
 [`designs/turnkey-garden-host.md`][turnkey-design] and its runbook
 [`context/operations/turnkey-host.md`][turnkey-runbook], and
-[`README.md`][readme] § Getting started. Where this chapter and those files
+[`README.md` § Getting started](../../README.md#1-getting-started). Where this chapter and those files
 disagree, the files win. Where the sources disagree with each other, or the
-design runs ahead of the implementation, this chapter says so (§ 4.8).
+design runs ahead of the implementation, this chapter says so ([§ 4.8](#ch4-48-known-gaps-and-stale-spots)).
 
 ## Contents
 
@@ -48,8 +48,8 @@ The README's "Getting started" is three steps, once per host:
    identity, authenticates the bot's GitHub account, starts the garden (units,
    worker pool, leadership, its own monitors), and posts a first job. It asks
    before each consequential step and runs every command itself. Say **start
-   the garden** to skip the tour and go straight to bring-up (chapter 3,
-   § 3.2 covers both verbs).
+   the garden** to skip the tour and go straight to bring-up ([chapter 3](#ch3-chapter-3-using-the-garden),
+   [§ 3.2](#ch3-32-the-vocabulary) covers both verbs).
 
 What you must supply yourself, because no agent can:
 
@@ -58,7 +58,7 @@ What you must supply yourself, because no agent can:
 - **A bot GitHub account you control** (the garden's own is `kriscendobot`).
   Routine work happens as the bot, never as you. Your own identity is reserved
   for the **ferry**, the separate, permissioned path that carries approved work
-  upstream under the maintainer's name (chapter 7, § 7.6).
+  upstream under the maintainer's name ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.6](#ch7-76-the-ferry)).
 
 The rest of this chapter explains what happens during steps 2 and 3, so you can
 tell when the liaison has done a step correctly and fix it when it has not.
@@ -70,11 +70,11 @@ tell when the liaison has done a step correctly and fix it when it has not.
 The garden runs its fleet inside one long-lived Docker container per instance.
 Inside it, systemd runs as PID 1 and manages dozens of **user-mode units**:
 `garden-monk@N` and `garden-cleric@N` workers (the **gardeners** that claim jobs;
-monks use Anthropic, clerics use OpenAI; see chapter 10 for worker kinds), the
+monks use Anthropic, clerics use OpenAI; see [chapter 10](#ch10-chapter-10-inference-tiers-reference) for worker kinds), the
 watchers, the scheduler, the reaper, the scaler, the **sysop** (a small per-host
-daemon that runs host operations sent over the message bus; chapter 2, § 2.5),
+daemon that runs host operations sent over the message bus; [chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop)),
 and more. The container dates from HISTORY.md's second stage, "containment, a
-container and a bot" (chapter 1): once agents act autonomously, they must act
+container and a bot" ([chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis)): once agents act autonomously, they must act
 under a bot identity, in an environment that cannot reach the maintainer's own
 credentials.
 
@@ -103,7 +103,7 @@ The launcher (`./garden`, a bash script at the repo root):
   `GARDEN_DNS`), because a systemd-resolved host's loopback stub cannot be
   passed into a container. Without this, a home-network host's container
   cannot resolve `api.anthropic.com`.
-- **Pins `--name` and `--hostname`** to the instance identity (§ 4.3).
+- **Pins `--name` and `--hostname`** to the instance identity ([§ 4.3](#ch4-43-identity)).
 - **Deliberately does not forward your SSH agent**, so a human identity cannot
   leak into bot actions.
 
@@ -142,8 +142,8 @@ equal to home yet is not.
 The guard fires in three ways:
 
 1. **Liaison preflight.** `CLAUDE.md` makes it the first thing the liaison runs
-   in every session, before answering anything, `help` included (chapter 3,
-   § 3.1). A host-side `help` must get the warning and `./garden`, never a
+   in every session, before answering anything, `help` included ([chapter 3](#ch3-chapter-3-using-the-garden),
+   [§ 3.1](#ch3-31-who-you-are-talking-to)). A host-side `help` must get the warning and `./garden`, never a
    tutorial that would arm the wrong fleet.
 2. **A SessionStart hook.** At container creation the launcher seeds
    `.claude/settings.json` (only if absent) with a SessionStart hook that runs
@@ -200,7 +200,7 @@ Across hosts, the tiebreaker is the short hostname, so the one thing you must
 guarantee by hand is that **your hosts have distinct short hostnames**. The
 first-run tutorial asks exactly this in its identity stage, and the starting
 procedure refuses to continue on a collision. If two hosts must share a
-hostname, rename one or use the `GARDEN_HOSTNAME` override (below) before
+hostname, rename one or use the `GARDEN_HOSTNAME` override ([below](#the-multi-instance-recipe)) before
 standing up the second.
 
 ### The multi-instance recipe
@@ -215,7 +215,7 @@ Put each instance in its own directory:
 Each gets its own container, its own mirrored home, and its own `.ssh/` and
 `.config/gh/`. Both still point at the same `origin`, and so at the same
 `journal2` board, which makes them *collaborating* instances in one fleet
-(§ 4.7), not independent gardens.
+([§ 4.7](#ch4-47-what-creating-your-own-produces)), not independent gardens.
 
 To **rename** an instance, move or re-clone the checkout to a new path and
 re-create the container:
@@ -273,7 +273,7 @@ secret (`ensure-instance-profile.sh --with-secret <arn>` attaches an inline
 `secretsmanager:GetSecretValue` policy for that single ARN). The design calls
 for a bootstrap that reads the secret once into the bot's local `gh` credential
 store and removes its temporary file. The secret's *name* is launch
-configuration; its *value* never enters the image. See § 4.8: the IAM half of
+configuration; its *value* never enters the image. See [§ 4.8](#ch4-48-known-gaps-and-stale-spots): the IAM half of
 this path is implemented, but no read-once bootstrap script exists yet.
 
 The design deliberately excludes one thing from the secret store: the Claude
@@ -302,7 +302,7 @@ records, in precedence order:
    `279080640+kriscendobot@users.noreply.github.com`.
 
 The bootstrap runs from the container entrypoint on every start (applying the
-tracked default) and again in the starting procedure (§ 4.5, step 2) once the
+tracked default) and again in the starting procedure ([§ 4.5](#ch4-45-bring-up-step-by-step), step 2) once the
 journal is reachable, so a per-host override lands too. It writes only when the
 config is missing or wrong. As a further safeguard, `bot_name()` and
 `bot_email()` in `common.sh` fall back to the tracked default, so an unset
@@ -318,14 +318,14 @@ Otherwise the default identity is Kriscendo Bot's.
 
 [`starting.md`][starting] is written for the agent, not for you. The liaison
 runs it when you say **start the garden** (or reaches it as stage 4 of the
-`help` tour) under the first-run track's ask-before-acting contract (chapter 3,
-§ 3.2): every mutating step is proposed in one sentence with the command shown,
+`help` tour) under the first-run track's ask-before-acting contract ([chapter 3](#ch3-chapter-3-using-the-garden),
+[§ 3.2](#ch3-32-the-vocabulary)): every mutating step is proposed in one sentence with the command shown,
 run by the liaison on your yes, and verified; read-only probes run without
 asking. The steps, in order:
 
 ### Precondition: a unique identity
 
-Covered in § 4.3. Do not continue on a cross-host hostname collision.
+Covered in [§ 4.3](#ch4-43-identity). Do not continue on a cross-host hostname collision.
 
 ### Step 1: verify the user manager (linger)
 
@@ -346,7 +346,7 @@ passwordless sudo. A `degraded` manager calls for inspecting failed units.
 scripts/jobs/bootstrap-bot-identity.sh
 ```
 
-Described in § 4.4. A no-op when the config is already correct.
+Described in [§ 4.4](#ch4-44-bot-credentials). A no-op when the config is already correct.
 
 ### Step 3: install and enable the units
 
@@ -370,13 +370,13 @@ This writes the declared count to journal state (`hosts/<host>`), and the
 gardener-scaler reconciles running units against it. Start small, then size
 against the host's physical capacity and subscription budget
 ([`scaling.md`][scaling], [`cybernetics.md`][cybernetics]). The leader's budget
-leveler may adjust the count later; chapter 8, § 8.2 and § 8.3 describe the
+leveler may adjust the count later; [chapter 8](#ch8-chapter-8-cybernetics-and-budgeting), [§ 8.2](#ch8-82-subscription-accounting) and [§ 8.3](#ch8-83-worker-count-leveling-and-derotation) describe the
 pools, the meter, and the controllers that level and derotate worker counts.
 
 Two properties protect a new host from a bad declaration:
 
 - **Monks may be declared before Claude auth.** The effective count is held at 0
-  until the backend probe passes (§ 4.4), then ramps to the declared target
+  until the backend probe passes ([§ 4.4](#ch4-44-bot-credentials)), then ramps to the declared target
   without rewriting it.
 - **Other kinds are refused until their backend works.** `set-workers.sh`
   refuses a positive count for `cleric` (Codex, which needs `codex login`) and
@@ -384,7 +384,7 @@ Two properties protect a new host from a bad declaration:
   the missing piece. `GARDEN_FORCE_DECLARE=1` stages a declaration ahead of a
   credential, and the runtime cap still holds it at 0. Setting a kind to 0 is
   always allowed. A retired local-model kind, `hermit`, stays pinned to 0.
-  Chapter 10 lists the worker kinds and the tiers each can serve.
+  [Chapter 10](#ch10-chapter-10-inference-tiers-reference) lists the worker kinds and the tiers each can serve.
 
 ### Step 5: designate the leader
 
@@ -399,7 +399,7 @@ failover. The **singleton services** (the foreman, the scheduler, the
 watchers, the bulletin, the recovery services, and two of the liaison's
 monitors) run only on the leader, gated by `scripts/jobs/is-main-host.sh`,
 because none tolerates a duplicate. Gardeners and the sysop run on every host.
-Chapter 2, § 2.5 explains the leader/follower topology in full; for a second
+[Chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.5](#ch2-25-fleet-topology-leaders-followers-and-the-sysop) explains the leader/follower topology in full; for a second
 host joining as a follower, see [`leader-follower.md`][leader-follower].
 
 ### Step 6: check for a stale drain, and lift it
@@ -409,7 +409,7 @@ scripts/jobs/drain-fleet.sh status
 ```
 
 A **drain** is a moratorium on taking new work while work in progress finishes;
-**lift** ends it (chapter 3, § 3.2 under *Fleet operations*). A restart often
+**lift** ends it ([chapter 3](#ch3-chapter-3-using-the-garden), [§ 3.2](#ch3-32-the-vocabulary) under *Fleet operations*). A restart often
 follows a deploy, and an operator-engaged drain, or a deploy killed before it
 could lift its own drain, leaves the draining marker in place. A gardener that
 starts under the marker logs `fleet draining; exiting cleanly` and exits. The
@@ -446,7 +446,7 @@ liaison arms these as Claude Code **Monitor** tools in its own session:
 | Monitor | Where | What it does |
 | --- | --- | --- |
 | **Leader-marker watch** | every host | When the journal `leader` marker names this host, the liaison stands itself up as leader. The follower's half of the leader/follower contract. |
-| **Maintainer-inbox watch** | leader only | Runs `scripts/jobs/maintainer-watch.sh`; replies and dismissals go through `maintainer-reply.sh` / `maintainer-archive.sh` (chapter 3, § 3.1). A singleton, because two would both answer. |
+| **Maintainer-inbox watch** | leader only | Runs `scripts/jobs/maintainer-watch.sh`; replies and dismissals go through `maintainer-reply.sh` / `maintainer-archive.sh` ([chapter 3](#ch3-chapter-3-using-the-garden), [§ 3.1](#ch3-31-who-you-are-talking-to)). A singleton, because two would both answer. |
 | **Deploy-on-upgrade watch** | leader only | Watches `$GARDEN_STATE/deploy/upgrade-ready`. The leader-orchestrated rolling deploy is autonomous; this monitor is an observer and human override. |
 | **Liaison-bus watch** | every host | A standing loop over `read-msgs.sh` for `liaison-<host>`, `role/liaison`, `broadcast`, and `host/<GARDEN>`, with an `awk` filter that drops the session's own sends. On a drained host, it is the only reader of the bus. |
 
@@ -483,13 +483,13 @@ Some things are described but never performed during bring-up. Widening the
 **watch set** (which repos' comments and PRs flow into model context) needs
 explicit maintainer authorization recorded in a journal message, because
 watched text is a prompt-injection surface. The ferry and identity switches are
-maintainer-only (chapter 7, § 7.6).
+maintainer-only ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.6](#ch7-76-the-ferry)).
 
 ### Then: a first job
 
 The tour's final stage ([`first-job.md`][first-job]) offers to post a small real
-job and watch a gardener claim it, closing the loop end to end. Chapter 3,
-§ 3.5 walks through what such a job does once posted.
+job and watch a gardener claim it, closing the loop end to end. [Chapter 3](#ch3-chapter-3-using-the-garden),
+[§ 3.5](#ch3-35-worked-examples) walks through what such a job does once posted.
 
 ## 4.6 The turnkey path: a disposable AWS host
 
@@ -597,7 +597,7 @@ cd ~/garden
 ./garden        # device-login for Claude, then the liaison
 ```
 
-Then comes GitHub (§ 4.4, path 1 or path 2), and then the ordinary first-run
+Then comes GitHub ([§ 4.4](#ch4-44-bot-credentials), path 1 or path 2), and then the ordinary first-run
 tour. **The AMI does not start workers, arm watchers, or make the host leader.**
 Those are garden-level choices, and a freshly launched second host must not
 duplicate a leader's singleton services.
@@ -653,16 +653,16 @@ The procedure above can produce two different things, and it helps to be
 precise about which one you want.
 
 **A new host in an existing garden.** This is what the documented procedure
-fully supports. A fresh checkout of `kriscendobot/garden` gets a new,
+fully supports. A fresh checkout of [`kriscendobot/garden`](https://github.com/kriscendobot/garden) gets a new,
 location-derived identity, its own container, credentials, and worker pool, and
 it coordinates through the same `origin/journal2` board and bus as every other
 host. On a first host it becomes leader. On a later host it joins as a
 follower: gardeners race to claim jobs from the shared board, and the leader
 keeps the singleton services and rolls deploys to followers first, as canaries
-(chapter 2, § 2.6). Most of what this chapter describes, the uniqueness rules
+([chapter 2](#ch2-chapter-2-architecture-and-operation), [§ 2.6](#ch2-26-the-deliberate-deploy)). Most of what this chapter describes, the uniqueness rules
 included, exists because instances *share* a journal.
 
-**An independent garden.** This is the "metamorphosis" sense from chapter 1: a
+**An independent garden.** This is the "metamorphosis" sense from [chapter 1](#ch1-chapter-1-philosophy-history-and-metamorphosis): a
 new garden running the same library of roles, skills, and scripts against its
 own journal and state, free to evolve in its own direction. The pieces that make
 one instance distinct from another are already data rather than code:
@@ -682,14 +682,14 @@ one instance distinct from another are already data rather than code:
 
 The library itself (`roles/`, `skills/`, `scripts/`, `designs/`) is then a
 `main2` you can edit directly, with no PRs against yourself, as `CLAUDE.md`
-§ Conventions puts it (chapters 5, 6, and 9 describe what it holds). From that
+[`CLAUDE.md` § Conventions](../../CLAUDE.md#conventions) puts it ([chapters 5](#ch5-chapter-5-roles-reference), [6](#ch6-chapter-6-skills-reference), and [9](#ch9-chapter-9-the-library-and-how-it-spends-context) describe what it holds). From that
 point, the garden's standing self-improvement
 loops (encoding lessons as skills, carving new roles, landing designs) work on
 *your* `main2`, and your garden diverges from its parent the way each of the
 four stages in HISTORY.md diverged from the one before. Each instance is a place
 where the next metamorphosis can happen.
 
-The caveat, also listed in § 4.8: the sources do **not** yet document a
+The caveat, also listed in [§ 4.8](#ch4-48-known-gaps-and-stale-spots): the sources do **not** yet document a
 procedure for this second kind of instance. Nothing tells you how to fork the
 repo, create a fresh orphan `journal2`, or re-point the defaults that assume
 `kriscendobot`. The mechanics above imply what has to change, but no tested
@@ -708,12 +708,12 @@ other, as of `main2` `649f5cdd617`:
    unwritten manual step, something like `aws secretsmanager get-secret-value …
    | gh auth login --with-token`. Interactive `gh auth login` is the default
    and is complete.
-2. **No independent-garden recipe.** See § 4.7. Nothing documents forking the
+2. **No independent-garden recipe.** See [§ 4.7](#ch4-47-what-creating-your-own-produces). Nothing documents forking the
    repo, initializing a fresh orphan `journal2`, or changing the hardcoded
    defaults (`GARDEN_BOT_LOGIN` defaults to `kriscendobot`, and several
-   `CLAUDE.md` passages name `kriscendobot/garden`, the `endojs`/`Agoric`
+   `CLAUDE.md` passages name [`kriscendobot/garden`](https://github.com/kriscendobot/garden), the [`endojs`](https://github.com/endojs)/[`Agoric`](https://github.com/Agoric)
    org-membership trust fallback, and `kriskowal` as maintainer).
-3. **README's multi-instance line is stale.** `README.md` § Getting started
+3. **README's multi-instance line is stale.** [`README.md` § Getting started](../../README.md#1-getting-started)
    still says "Name each with `echo <name> > .garden` before its first
    `./garden`." The launcher, `CLAUDE.md`, and `identity.md` all say there is no
    `.garden` file and that identity comes from location. Follow `identity.md`.
@@ -721,7 +721,7 @@ other, as of `main2` `649f5cdd617`:
    "Alternatives considered" section describes `./garden` as a "privileged,
    `--cgroupns=host`" `docker run`. The launcher has since dropped
    `--privileged` in favor of the default capability set plus `SYS_ADMIN`
-   (§ 4.2). The launcher's comments are the current truth. The design's
+   ([§ 4.2](#ch4-42-the-container-model)). The launcher's comments are the current truth. The design's
    argument against Kubernetes is somewhat weaker than written but still holds.
 5. **The Graviton image carries an unused amd64 GPU overlay.** The shared
    `Dockerfile` unconditionally fetches an amd64 Ollama ROCm bundle for the

@@ -5,10 +5,9 @@
 // caption contrast, and plates that did not load. Optionally writes
 // screenshots of the title page and a few figures for a person to look at.
 //
-// A local edition is served over 127.0.0.1 with the Content-Security-Policy
-// header a published clip carries, so anything the clip would block (such as
-// the same-origin WebP plates) fails here too; any CSP console violation is a
-// failure in either mode.
+// A local edition is served by clip-server.mjs with the published clip's
+// Content-Security-Policy; any CSP console violation is a failure in either
+// mode.
 //
 //   node tools/browser-check.mjs out/index.html [screenshot-directory]
 //   node tools/browser-check.mjs https://<published-clip>/ [screenshot-directory]
@@ -18,11 +17,12 @@
 // module resolution, and launches CHROMIUM or the newest headless shell in
 // ~/.cache/ms-playwright. It exits 1 if any configuration fails.
 
-import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
-import { createServer } from "node:http";
+import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, extname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+
+import { serveEdition } from "./clip-server.mjs";
 
 const [, , htmlArgument = "out/index.html", shotsArgument] = process.argv;
 
@@ -54,45 +54,6 @@ const findChromium = () => {
         .filter(existsSync)
     : [];
   return candidates[0];
-};
-
-// The response header every published `<hash>.ocap.site` clip carries, read
-// with `curl -sI` from served garden-book editions on 2026-10-14
-// (skills/minion-town-clip-publishing on kriscendobot/garden). `img-src 'self'`
-// is what admits the same-origin WebP plates.
-const CLIP_CSP =
-  "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
-
-const contentTypes = {
-  ".html": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".webp": "image/webp",
-};
-
-// Serves the flat output directory the way the clip host does: only the
-// published file types, no subdirectories, and the clip's CSP on every reply.
-const serveEdition = async (htmlPath) => {
-  const directory = dirname(htmlPath);
-  const server = createServer((request, response) => {
-    const name = decodeURIComponent(
-      new URL(request.url, "http://localhost").pathname.slice(1),
-    );
-    const type = contentTypes[extname(name)];
-    if (!type || name.includes("/") || !existsSync(join(directory, name))) {
-      response.writeHead(404).end();
-      return;
-    }
-    response.writeHead(200, {
-      "content-type": type,
-      "content-security-policy": CLIP_CSP,
-    });
-    response.end(readFileSync(join(directory, name)));
-  });
-  await new Promise((ready) => server.listen(0, "127.0.0.1", ready));
-  return {
-    url: `http://127.0.0.1:${server.address().port}/${encodeURIComponent(htmlPath.slice(directory.length + 1))}`,
-    close: () => server.close(),
-  };
 };
 
 const configurations = [

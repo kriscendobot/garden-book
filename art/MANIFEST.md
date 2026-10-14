@@ -18,10 +18,10 @@ SVGs made it too easy to mistake them for the current edition's art.
 
 The 25 thematic illustrations below implement the complete set in `chapter-illustrations-brief.md`. Their filenames and target anchors are the deterministic placement keys; `build/illuminations.mjs` records placement, dimensions, alternative text, and captions. They were generated one image per scene with OpenAI image generation, then resized without cropping and encoded as WebP. `OPENAI-ILLUMINATIONS.md` preserves the shared art direction, per-image prompts, parameters, and processing record.
 
-`tools/illumination-check.mjs [screenshot-directory]` renders every plate at
-phone text-column width in light and dark schemes, writes individual shots and
-contact sheets, and fails on missing, collapsed, clipped, distorted, or
-overflowing art. The investigation, per-scene rendered observations, and
+`tools/browser-check.mjs out/index.html [screenshot-directory]` serves the
+built edition with the published clip's CSP and fails on blocked, missing,
+clipped, distorted, or overflowing art at phone and desktop widths in light and
+dark schemes. The investigation, per-scene rendered observations, and
 redraw results are recorded in `illumination-redraw-evidence.md`.
 
 | File | Target anchor | Role and theme | Suggested placement / ratio | Accessibility intent |

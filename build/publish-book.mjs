@@ -12,8 +12,14 @@ export const encodeBase64 = (bytes) => {
 };
 
 export const makePublishContent = async (builtTree) => {
+  const html = await readText(builtTree, "index.html");
+  const referencedImages = new Set(
+    [...html.matchAll(/\bsrc="(illumination-[a-z0-9-]+\.webp)"/gu)].map(
+      ([, file]) => file,
+    ),
+  );
   const images = (await builtTree.list()).filter((file) =>
-    /^illumination-.*\.webp$/u.test(file),
+    referencedImages.has(file),
   );
   const files = [
     ["index.html", "text/html; charset=utf-8", "text"],
@@ -26,7 +32,9 @@ export const makePublishContent = async (builtTree) => {
       contentType,
       bytes: encodeBase64(
         kind === "text"
-          ? new TextEncoder().encode(await readText(builtTree, path))
+          ? new TextEncoder().encode(
+              path === "index.html" ? html : await readText(builtTree, path),
+            )
           : await readBytes(builtTree, path),
       ),
     })),

@@ -42,7 +42,21 @@ test("the brief has one committed OpenAI-generated raster for each of its 25 ent
   );
   for (const illustration of illuminations) {
     const bytes = await readFile(resolve(artDirectory, illustration.file));
-    assert.deepEqual(webpDimensions(bytes), [illustration.width, illustration.height], illustration.file);
+    const [actualWidth, actualHeight] = webpDimensions(bytes);
+    assert.deepEqual(
+      [actualWidth, actualHeight],
+      [illustration.width, illustration.height],
+      illustration.file,
+    );
+    const ratioMatch = /^(\d+):(\d+)$/u.exec(illustration.ratio);
+    assert.ok(ratioMatch, `${illustration.file} has an invalid ratio`);
+    const ratioWidth = Number(ratioMatch[1]);
+    const ratioHeight = Number(ratioMatch[2]);
+    assert.equal(
+      actualWidth * ratioHeight,
+      actualHeight * ratioWidth,
+      `${illustration.file} declares ${illustration.ratio} but is ${actualWidth}:${actualHeight}`,
+    );
     assert.ok(bytes.length >= 5_000, `${illustration.file} is unexpectedly small`);
     assert.ok(bytes.length <= 40_000, `${illustration.file} is too large for the shared publish budget`);
     assert.ok(illustration.alt.length >= 40, `${illustration.file} needs meaningful alt text`);

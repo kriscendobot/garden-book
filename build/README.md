@@ -28,8 +28,9 @@ longest side: the edition encodes to about 1.94 MB. `publish.mjs` refuses a
 clip over the limit before writing anything, and `npm test` fails when the
 real edition stops fitting (see
 [`art/illumination-redraw-evidence.md`](../art/illumination-redraw-evidence.md)).
-Publishing reads the output tree's `index.html`, `styles.css`, and every
-`illumination-*.webp`, so build into a fresh directory.
+Publishing reads the output tree's `index.html`, `styles.css`, and only the
+`illumination-*.webp` files referenced by that edition's HTML, so stale plates
+left by an earlier build are ignored.
 
 Design hooks in [`render-book.mjs`](render-book.mjs): `PARTS` maps chapter numbers to the book's five
 parts (update it when chapters are added or renumbered; a chapter outside

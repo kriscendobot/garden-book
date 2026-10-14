@@ -255,7 +255,8 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
   };
   const response = await publishBook({
     builtTree: makeReadableTree({
-      "index.html": "<h1>Garden ✓</h1>",
+      "index.html":
+        '<h1>Garden ✓</h1><img src="illumination-test.webp">',
       "styles.css": "body {}",
       "illumination-test.webp": new Uint8Array([0, 1, 2, 255]),
     }),
@@ -282,6 +283,22 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
   );
   assert.equal(calls[2][1].arguments.content[2].bytes, "AAEC/w==");
   assert.equal(response.result.ok, true);
+});
+
+test("makePublishContent ignores stale unreferenced illuminations", async () => {
+  const content = await makePublishContent(
+    makeReadableTree({
+      "index.html": '<img src="illumination-current.webp">',
+      "styles.css": "",
+      "illumination-current.webp": new Uint8Array([1]),
+      "illumination-stale.webp": new Uint8Array([2]),
+    }),
+  );
+
+  assert.deepEqual(
+    content.map(({ path }) => path),
+    ["index.html", "styles.css", "illumination-current.webp"],
+  );
 });
 
 const recordingPeer = (calls) => ({

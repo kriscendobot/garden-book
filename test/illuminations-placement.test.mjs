@@ -32,6 +32,33 @@ test("renderBook places accessible raster openers and section figures", () => {
   assert.match(html, /<p>Two\.<\/p>\n<figure class="illumination section-figure ratio-5-2"><img .*?loading="lazy".*?<figcaption>Detail caption\.<\/figcaption><\/figure>\n<p>Three\.<\/p>/s);
 });
 
+test("renderBook escapes illumination alt text as an HTML attribute", () => {
+  const { html } = renderBook({
+    chapterSources,
+    introSource: "{{FRIEZE}}",
+    artwork: { illuminations: { "opener.webp": art } },
+    equilibriumCharts: [],
+    illuminations: [
+      {
+        file: "opener.webp",
+        anchor: "ch1-chapter-1-intro",
+        ratio: "3:2",
+        blocks: 0,
+        width: 3,
+        height: 2,
+        alt: 'Roots & shoots grow under a "glass <house>".',
+        caption: "Escaping test.",
+      },
+    ],
+  });
+
+  assert.match(
+    html,
+    /alt="Roots &amp; shoots grow under a &quot;glass &lt;house&gt;&quot;\."/,
+  );
+  assert.doesNotMatch(html, /alt="[^"]*<house>/);
+});
+
 test("renderBook refuses placements that would move or vanish", () => {
   const render = placement => renderBook({ chapterSources, introSource: "{{FRIEZE}}", artwork: { illuminations: { "x.webp": art } }, equilibriumCharts: [], illuminations: [{ file: "x.webp", ratio: "2:1", blocks: 0, width: 2, height: 1, alt: "x", caption: "x", ...placement }] });
   assert.throws(() => render({ anchor: "ch1-13-renamed" }), /No heading for x\.webp/);

@@ -17,3 +17,13 @@ The replacement is 25 independently generated OpenAI raster illustrations, one p
 The committed [contact sheet](illumination-contact-sheet.webp) shows the complete light-scheme set. `OPENAI-ILLUMINATIONS.md` records the common direction and every per-scene prompt. `node tools/illumination-check.mjs <shots>` renders all 25 at the phone text-column width in light and dark, writes individual shots and full contact sheets, and fails on missing, collapsed, clipped, distorted, or overflowing images. `node tools/browser-check.mjs out/index.html <shots>` performs the full-book phone/desktop and light/dark check.
 
 The WebP files retain intrinsic dimensions in markup to avoid layout shifts, load only from the immutable clip itself, and carry meaningful `alt` text. Their scenes use shapes, positions, routes, and objects—not color alone—to express distinctions.
+
+## Published-clip verification
+
+Checked 2026-10-14 against the live host rather than a test-only policy.
+
+- Every served `<hash>.ocap.site` clip, including the earlier garden-book editions, carries `Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`. Same-origin images are allowed.
+- `tools/illumination-check.mjs` now serves its preview over local HTTP with exactly that header and fails on any CSP console violation. A control run with `img-src data:` reported 50 violations and exited 1; the real policy passes with all 25 plates decoded in both schemes.
+- A smoke clip of `index.html`, `styles.css`, and one plate published, served the plate as `image/webp` with bytes identical to the build output, and rendered it in Chromium (natural width 1200, no console errors). It was then unpublished.
+- **Blocker:** the full edition (index.html plus 25 WebPs, 8.2 MB raw) encodes to 11,327,022 bytes in one `publish` request. minion.town's `/mcp` endpoint parses bodies with `express.json({ limit: "2mb" })` (`MCP_JSON_BODY_LIMIT`, `src/http.ts`, a maintainer decision of 2026-09-23 that is slated to shrink to about 64 KB once git-HTTP out-of-band submission lands). Probes accepted 1,887,896 base64 characters and returned HTTP 413 at 2,796,604. `index.html` alone uses about 1.4 MB of the budget, so the 25 plates cannot fit in-band at a usable quality. `build/publish-book.mjs` now refuses an oversize clip before writing anything, rather than surfacing the 413 as "MCP unreachable".
+

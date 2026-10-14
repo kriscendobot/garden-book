@@ -21,7 +21,12 @@ the live source.
 The build command writes `index.html`, `styles.css`, and the 25 illumination
 WebPs into the output directory (`out/` above). They are build artifacts, not
 committed: the publish step uploads all 27 files as the clip, and a rebuild
-overwrites them.
+overwrites them. The published clip's CSP (`img-src 'self' data:`) admits the
+same-origin WebPs, but the whole clip must travel in one MCP request under
+minion.town's 2 MB body limit. With the raster plates the edition encodes to
+about 11 MB, so `publish.mjs` refuses it with a size error until the plates
+fit or out-of-band clip submission lands (see
+[`art/illumination-redraw-evidence.md`](../art/illumination-redraw-evidence.md)).
 
 Design hooks in [`render-book.mjs`](render-book.mjs): `PARTS` maps chapter numbers to the book's five
 parts (update it when chapters are added or renumbered; a chapter outside

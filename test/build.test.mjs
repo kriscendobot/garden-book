@@ -3,7 +3,11 @@ import test from "node:test";
 
 import { assembleBook } from "../build/assemble-book.mjs";
 import { makeNodeReadableTree } from "../build/node-tree.mjs";
-import { encodeBase64, publishBook } from "../build/publish-book.mjs";
+import {
+  encodeBase64,
+  PUBLISH_REQUEST_LIMIT,
+  publishBook,
+} from "../build/publish-book.mjs";
 import { renderBook } from "../build/render-book.mjs";
 
 const makeReadableTree = (files) => ({
@@ -276,4 +280,33 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
   );
   assert.equal(calls[2][1].arguments.content[2].bytes, "AAEC/w==");
   assert.equal(response.result.ok, true);
+});
+
+test("publishBook refuses a clip over the MCP request limit before writing", async () => {
+  const calls = [];
+  const peer = {
+    async call(method, params) {
+      calls.push([method, params]);
+      return { jsonrpc: "2.0", id: calls.length, result: { ok: true } };
+    },
+    notify() {},
+  };
+  await assert.rejects(
+    publishBook({
+      builtTree: makeReadableTree({
+        "index.html": "<h1>Garden</h1>",
+        "styles.css": "body {}",
+        "illumination-large.webp": new Uint8Array(
+          (PUBLISH_REQUEST_LIMIT * 3) / 4 + 1,
+        ),
+      }),
+      peer,
+      powersName: "garden-book-test",
+    }),
+    /over minion\.town's 2097152-byte MCP request limit/,
+  );
+  assert.deepEqual(
+    calls.map(([method]) => method),
+    ["initialize"],
+  );
 });

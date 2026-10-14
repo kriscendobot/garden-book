@@ -35,6 +35,13 @@ export const makePublishContent = async (builtTree) => {
 
 const INERT_POWERS_NAME = /^garden-book-[a-z0-9-]+$/;
 
+// minion.town's /mcp endpoint parses request bodies with
+// `express.json({ limit: "2mb" })` (MCP_JSON_BODY_LIMIT in
+// kriscendobot/minion.town src/http.ts) and answers anything larger with an
+// HTTP 413 that the bridge reports only as "MCP unreachable". The whole clip
+// travels in one `publish` call, so check its encoded size first.
+export const PUBLISH_REQUEST_LIMIT = 2 * 1024 * 1024;
+
 /**
  * Publishes the built book as a minion.town clip.
  *
@@ -66,15 +73,24 @@ export const publishBook = async ({
     clientInfo: { name: "garden-book", version: "1" },
   });
   peer.notify("notifications/initialized", {});
+  const publishArguments = {
+    powers: powersName,
+    content: await makePublishContent(builtTree),
+  };
+  const requestBytes = new TextEncoder().encode(
+    JSON.stringify(publishArguments),
+  ).length;
+  if (requestBytes > PUBLISH_REQUEST_LIMIT) {
+    throw new RangeError(
+      `Refusing to publish: the clip encodes to ${requestBytes} bytes, over minion.town's ${PUBLISH_REQUEST_LIMIT}-byte MCP request limit`,
+    );
+  }
   await peer.call("tools/call", {
     name: "writeText",
     arguments: { name: powersName, text: "" },
   });
   return peer.call("tools/call", {
     name: "publish",
-    arguments: {
-      powers: powersName,
-      content: await makePublishContent(builtTree),
-    },
+    arguments: publishArguments,
   });
 };

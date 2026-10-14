@@ -5,8 +5,10 @@ import { assembleBook } from "../build/assemble-book.mjs";
 import { makeNodeReadableTree } from "../build/node-tree.mjs";
 import {
   encodeBase64,
+  makePublishContent,
   PUBLISH_REQUEST_LIMIT,
   publishBook,
+  publishRequestBytes,
 } from "../build/publish-book.mjs";
 import { renderBook } from "../build/render-book.mjs";
 
@@ -282,31 +284,89 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
   assert.equal(response.result.ok, true);
 });
 
-test("publishBook refuses a clip over the MCP request limit before writing", async () => {
-  const calls = [];
-  const peer = {
-    async call(method, params) {
-      calls.push([method, params]);
-      return { jsonrpc: "2.0", id: calls.length, result: { ok: true } };
-    },
-    notify() {},
+const recordingPeer = (calls) => ({
+  async call(method, params) {
+    calls.push([method, params]);
+    return { jsonrpc: "2.0", id: calls.length, result: { ok: true } };
+  },
+  notify() {},
+});
+
+// A clip whose publish request is exactly `PUBLISH_REQUEST_LIMIT + over`
+// bytes. Base64 grows in steps of four, so the powers name absorbs the rest.
+const clipOfRequestSize = async (over) => {
+  const measure = async (html, powersName) =>
+    publishRequestBytes({
+      powers: powersName,
+      content: await makePublishContent(
+        makeReadableTree({ "index.html": html, "styles.css": "" }),
+      ),
+    });
+  const room = PUBLISH_REQUEST_LIMIT + over - (await measure("", "garden-book-a"));
+  const groups = Math.floor(room / 4);
+  const html = "x".repeat(groups * 3);
+  const powersName = `garden-book-a${"a".repeat(room - groups * 4)}`;
+  assert.equal(await measure(html, powersName), PUBLISH_REQUEST_LIMIT + over);
+  return {
+    builtTree: makeReadableTree({ "index.html": html, "styles.css": "" }),
+    powersName,
   };
+};
+
+test("publishBook publishes a clip exactly at the MCP request limit", async () => {
+  const calls = [];
+  await publishBook({ ...(await clipOfRequestSize(0)), peer: recordingPeer(calls) });
+  assert.deepEqual(
+    calls.map(([method, params]) => params.name ?? method),
+    ["initialize", "writeText", "publish"],
+  );
+});
+
+test("publishBook refuses a clip one byte over the MCP request limit before writing", async () => {
+  const calls = [];
   await assert.rejects(
-    publishBook({
-      builtTree: makeReadableTree({
-        "index.html": "<h1>Garden</h1>",
-        "styles.css": "body {}",
-        "illumination-large.webp": new Uint8Array(
-          (PUBLISH_REQUEST_LIMIT * 3) / 4 + 1,
-        ),
-      }),
-      peer,
-      powersName: "garden-book-test",
-    }),
-    /over minion\.town's 2097152-byte MCP request limit/,
+    publishBook({ ...(await clipOfRequestSize(1)), peer: recordingPeer(calls) }),
+    /encodes to 2097153 bytes, over minion\.town's 2097152-byte MCP request limit/,
   );
   assert.deepEqual(
     calls.map(([method]) => method),
     ["initialize"],
+  );
+});
+
+test("publishRequestBytes measures the body the Python bridge sends", () => {
+  // json.dumps({"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params":
+  // {"name": "publish", "arguments": {"powers": "\u2713\ud83c\udf31"}}})
+  assert.equal(
+    publishRequestBytes({ powers: "\u2713\u{1f331}" }),
+    '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "publish", "arguments": {"powers": "\\u2713\\ud83c\\udf31"}}}'
+      .length,
+  );
+});
+
+test("the full edition, with every plate, fits one publish request", async () => {
+  const output = {};
+  await assembleBook({
+    chaptersTree: makeNodeReadableTree(
+      new URL("../chapters/", import.meta.url),
+    ),
+    buildTree: makeNodeReadableTree(new URL("../build/", import.meta.url)),
+    artworkTree: makeNodeReadableTree(new URL("../art/", import.meta.url)),
+    outputTree: {
+      async writeText(name, content) {
+        output[name] = content;
+      },
+      async writeBytes(name, content) {
+        output[name] = content;
+      },
+    },
+  });
+  const requestBytes = publishRequestBytes({
+    powers: "garden-book-inert",
+    content: await makePublishContent(makeReadableTree(output)),
+  });
+  assert.ok(
+    requestBytes <= PUBLISH_REQUEST_LIMIT,
+    `the edition encodes to ${requestBytes} bytes, over the ${PUBLISH_REQUEST_LIMIT}-byte limit`,
   );
 });

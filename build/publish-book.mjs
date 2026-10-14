@@ -42,6 +42,34 @@ const INERT_POWERS_NAME = /^garden-book-[a-z0-9-]+$/;
 // travels in one `publish` call, so check its encoded size first.
 export const PUBLISH_REQUEST_LIMIT = 2 * 1024 * 1024;
 
+// The bridge (scripts/jobs/minion-mcp-bridge.py on kriscendobot/garden)
+// re-serializes each message with Python's default `json.dumps`: `", "` and
+// `": "` separators and every non-ASCII code unit escaped as `\uXXXX`. This
+// mirrors that so the guard measures the HTTP body minion.town receives.
+const pythonJson = (value) => {
+  if (Array.isArray(value)) {
+    return `[${value.map(pythonJson).join(", ")}]`;
+  }
+  if (value !== null && typeof value === "object") {
+    return `{${Object.entries(value)
+      .map(([key, item]) => `${pythonJson(key)}: ${pythonJson(item)}`)
+      .join(", ")}}`;
+  }
+  return JSON.stringify(value).replace(
+    /[^\x00-\x7f]/g,
+    (unit) => `\\u${unit.charCodeAt(0).toString(16).padStart(4, "0")}`,
+  );
+};
+
+// `id` is the JSON-RPC id of the publish call: publishBook's third call.
+export const publishRequestBytes = (publishArguments, id = 3) =>
+  pythonJson({
+    jsonrpc: "2.0",
+    id,
+    method: "tools/call",
+    params: { name: "publish", arguments: publishArguments },
+  }).length;
+
 /**
  * Publishes the built book as a minion.town clip.
  *
@@ -77,9 +105,7 @@ export const publishBook = async ({
     powers: powersName,
     content: await makePublishContent(builtTree),
   };
-  const requestBytes = new TextEncoder().encode(
-    JSON.stringify(publishArguments),
-  ).length;
+  const requestBytes = publishRequestBytes(publishArguments);
   if (requestBytes > PUBLISH_REQUEST_LIMIT) {
     throw new RangeError(
       `Refusing to publish: the clip encodes to ${requestBytes} bytes, over minion.town's ${PUBLISH_REQUEST_LIMIT}-byte MCP request limit`,

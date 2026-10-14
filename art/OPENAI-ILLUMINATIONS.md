@@ -1,6 +1,6 @@
 # OpenAI illumination generation record
 
-Generated 2026-10-14 with OpenAI's image-generation tool, one fresh image per prompt. The tool did not expose a model identifier or seed. Each output used an opaque background and no input image. Original PNG results were resized to a maximum width of 1200 pixels without cropping, then encoded by Chromium Canvas as WebP at quality 0.84 (commit `340dba1` keeps those 1200-pixel masters). So the whole edition fits minion.town's 2 MiB publish request, the committed WebPs were then re-encoded from those masters by Chromium Canvas at a longest side of 480 pixels and one shared WebP quality of 0.18, the highest that keeps all 25 within about 400 KB; these are the publication sources.
+Generated 2026-10-14 with OpenAI's image-generation tool, one fresh image per prompt. The tool did not expose a model identifier or seed. Each output used an opaque background and no input image. Original PNG results were resized without cropping and encoded by Chromium Canvas as WebP at a longest side of 480 pixels and quality 0.18; these are the publication sources (see [`build/README.md`](../build/README.md) for the size limit).
 
 ## Common direction
 

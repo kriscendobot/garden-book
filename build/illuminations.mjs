@@ -7,9 +7,7 @@
 //
 // Chapter openers sit under the chapter title. Section figures sit at a pause
 // in the argument: after an opening explanation, or before details begin. Each
-// raster carries its intrinsic dimensions and meaningful alternative text so
-// the layout is stable before the image loads and does not depend on metadata
-// embedded in a generated file.
+// raster carries its intrinsic dimensions and meaningful alternative text.
 
 const imageMetadata = new Map([
   ["illumination-ch1-metamorphoses.webp", [480, 300, "One continuous root passes through a shepherd plot, glasshouse, supervised nursery, and distributed garden joined at a central ledger."]],

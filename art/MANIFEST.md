@@ -8,21 +8,9 @@ These assets extend the book's warm-paper presentation with a restrained garden 
 | --- | --- | --- |
 | `body-paper-texture.css-snippet` | Body background texture | Low-contrast broad radial marks and faint fibers for the existing light paper, plus a dark-scheme companion. Apply the declaration block to `body` or a page wrapper. |
 
-The former title scene, three chapter dividers, and four standalone figures
-were deleted in the 2026-10-14 redraw. They had no placement in the built book,
-used the same flat primitive language that prompted the redraw, and were all
-superseded by the anchor-specific illuminated set below. Keeping unused legacy
-SVGs made it too easy to mistake them for the current edition's art.
-
 ## Illuminated chapter and section set
 
-The 25 thematic illustrations below implement the complete set in `chapter-illustrations-brief.md`. Their filenames and target anchors are the deterministic placement keys; `build/illuminations.mjs` records placement, dimensions, alternative text, and captions. They were generated one image per scene with OpenAI image generation, then resized without cropping and encoded as WebP. `OPENAI-ILLUMINATIONS.md` preserves the shared art direction, per-image prompts, parameters, and processing record.
-
-`tools/browser-check.mjs out/index.html [screenshot-directory]` serves the
-built edition with the published clip's CSP and fails on blocked, missing,
-clipped, distorted, or overflowing art at phone and desktop widths in light and
-dark schemes. The investigation, per-scene rendered observations, and
-redraw results are recorded in `illumination-redraw-evidence.md`.
+The 25 thematic illustrations below implement the complete set in `chapter-illustrations-brief.md`; `build/illuminations.mjs` places them, and `OPENAI-ILLUMINATIONS.md` and `illumination-redraw-evidence.md` record their generation and review.
 
 | File | Target anchor | Role and theme | Suggested placement / ratio | Accessibility intent |
 | --- | --- | --- | --- | --- |

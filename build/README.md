@@ -21,16 +21,9 @@ the live source.
 The build command writes `index.html`, `styles.css`, and the 25 illumination
 WebPs into the output directory (`out/` above). They are build artifacts, not
 committed: the publish step uploads all 27 files as the clip, and a rebuild
-overwrites them. The published clip's CSP (`img-src 'self' data:`) admits the
-same-origin WebPs. The whole clip travels in one MCP request under
-minion.town's 2 MiB body limit, so the plates are committed at a 480-pixel
-longest side: the edition encodes to about 1.94 MB. `publish.mjs` refuses a
-clip over the limit before writing anything, and `npm test` fails when the
-real edition stops fitting (see
-[`art/illumination-redraw-evidence.md`](../art/illumination-redraw-evidence.md)).
-Publishing reads the output tree's `index.html`, `styles.css`, and only the
-`illumination-*.webp` files referenced by that edition's HTML, so stale plates
-left by an earlier build are ignored.
+overwrites them. Publishing refuses a clip over minion.town's MCP request
+limit, or one whose HTML references a plate missing from the output, before
+writing anything; stale unreferenced plates are ignored.
 
 Design hooks in [`render-book.mjs`](render-book.mjs): `PARTS` maps chapter numbers to the book's five
 parts (update it when chapters are added or renumbered; a chapter outside
@@ -57,7 +50,9 @@ and desktop widths in both color schemes and reports overflow, clipped or
 overlapping figures, plates that did not load, and caption contrast. It serves
 a local edition with the published clip's CSP and fails on any CSP violation
 (Playwright is not a dependency;
-point `PLAYWRIGHT_CORE` at an installed `playwright-core`). [`publish.mjs`](publish.mjs) publishes with
+point `PLAYWRIGHT_CORE` at an installed `playwright-core`). Before publishing,
+an edition must pass `npm test` and
+`npm run build && node tools/browser-check.mjs out/index.html`. [`publish.mjs`](publish.mjs) publishes with
 an inert empty-text pet name as `powers`, never `sites`, because `powers`
 becomes every visitor's bootstrap (see [`skills/minion-town-clip-publishing`](https://github.com/kriscendobot/garden/blob/main2/skills/minion-town-clip-publishing/SKILL.md)
 on [`kriscendobot/garden`](https://github.com/kriscendobot/garden)); it refuses any `GARDEN_BOOK_POWERS` that is not

@@ -54,17 +54,12 @@ export const makePublishContent = async (builtTree) => {
 
 const INERT_POWERS_NAME = /^garden-book-[a-z0-9-]+$/;
 
-// minion.town's /mcp endpoint parses request bodies with
-// `express.json({ limit: "2mb" })` (MCP_JSON_BODY_LIMIT in
-// kriscendobot/minion.town src/http.ts) and answers anything larger with an
-// HTTP 413 that the bridge reports only as "MCP unreachable". The whole clip
-// travels in one `publish` call, so check its encoded size first.
+// minion.town's /mcp request-body limit; the whole clip travels in one
+// `publish` call.
 export const PUBLISH_REQUEST_LIMIT = 2 * 1024 * 1024;
 
-// The bridge (scripts/jobs/minion-mcp-bridge.py on kriscendobot/garden)
-// re-serializes each message with Python's default `json.dumps`: `", "` and
-// `": "` separators and every non-ASCII code unit escaped as `\uXXXX`. This
-// mirrors that so the guard measures the HTTP body minion.town receives.
+// Mirrors the bridge's Python `json.dumps` serialization so the guard
+// measures the HTTP body minion.town receives.
 const pythonJson = (value) => {
   if (Array.isArray(value)) {
     return `[${value.map(pythonJson).join(", ")}]`;
@@ -80,7 +75,6 @@ const pythonJson = (value) => {
   );
 };
 
-// `id` is the JSON-RPC id of the publish call: publishBook's third call.
 export const publishRequestBytes = (publishArguments, id = 3) =>
   pythonJson({
     jsonrpc: "2.0",

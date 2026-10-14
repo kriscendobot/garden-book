@@ -22,11 +22,14 @@ The build command writes `index.html`, `styles.css`, and the 25 illumination
 WebPs into the output directory (`out/` above). They are build artifacts, not
 committed: the publish step uploads all 27 files as the clip, and a rebuild
 overwrites them. The published clip's CSP (`img-src 'self' data:`) admits the
-same-origin WebPs, but the whole clip must travel in one MCP request under
-minion.town's 2 MB body limit. With the raster plates the edition encodes to
-about 11 MB, so `publish.mjs` refuses it with a size error until the plates
-fit or out-of-band clip submission lands (see
+same-origin WebPs. The whole clip travels in one MCP request under
+minion.town's 2 MiB body limit, so the plates are committed at a 480-pixel
+longest side: the edition encodes to about 1.94 MB. `publish.mjs` refuses a
+clip over the limit before writing anything, and `npm test` fails when the
+real edition stops fitting (see
 [`art/illumination-redraw-evidence.md`](../art/illumination-redraw-evidence.md)).
+Publishing reads the output tree's `index.html`, `styles.css`, and every
+`illumination-*.webp`, so build into a fresh directory.
 
 Design hooks in [`render-book.mjs`](render-book.mjs): `PARTS` maps chapter numbers to the book's five
 parts (update it when chapters are added or renumbered; a chapter outside
@@ -50,7 +53,9 @@ directly after it. [`tools/equilibrium/integration-check.mjs`](../tools/equilibr
 nine placements in a built edition in the browser.
 [`tools/browser-check.mjs`](../tools/browser-check.mjs) loads a built edition in headless Chromium at phone
 and desktop widths in both color schemes and reports overflow, clipped or
-overlapping figures, and caption contrast (Playwright is not a dependency;
+overlapping figures, plates that did not load, and caption contrast. It serves
+a local edition with the published clip's CSP and fails on any CSP violation
+(Playwright is not a dependency;
 point `PLAYWRIGHT_CORE` at an installed `playwright-core`). [`publish.mjs`](publish.mjs) publishes with
 an inert empty-text pet name as `powers`, never `sites`, because `powers`
 becomes every visitor's bootstrap (see [`skills/minion-town-clip-publishing`](https://github.com/kriscendobot/garden/blob/main2/skills/minion-town-clip-publishing/SKILL.md)
@@ -58,11 +63,8 @@ on [`kriscendobot/garden`](https://github.com/kriscendobot/garden)); it refuses 
 `garden-book-<name>`, so `sites`, `@agent`, and the other reserved names are
 never overwritten.
 
-[`tools/illumination-check.mjs`](../tools/illumination-check.mjs) renders every
-plate at the phone text-column width in light and dark, optionally producing
-individual screenshots and contact sheets, and rejects missing, clipped,
-collapsed, distorted, or overflowing art. The generation record and committed
-review contact sheet are in [`art/`](../art/OPENAI-ILLUMINATIONS.md).
+The generation record, the committed review contact sheet, and the
+replacement evidence are in [`art/`](../art/illumination-redraw-evidence.md).
 
 [Chapter 8's review-economics section (8.8)](../chapters/ch8-cybernetics-budgeting.md#88-review-economics-an-equilibrium) is computed, not hand-written:
 [`tools/equilibrium/analyze.mjs`](../tools/equilibrium/analyze.mjs) reads one fixed `journal2` commit plus GitHub
@@ -141,8 +143,8 @@ requests, and 19 upstream ferries: [published edition](https://xddmohl7mf56oiaps
 Earlier edition, 2026-10-04, illuminated (jobs
 `book-illumination-integrate-20261004` and
 `book-illumination-supervisor-after-integrate-20261004`): the 25 plates in
-`art/illumination-*.svg` are inlined at the places `build/illuminations.mjs`
-names, each as a `figure` with a caption, and the title-page garden scene and
+the then-current procedural `art/illumination-*.svg` files (since replaced by
+WebP plates) are inlined at the places `build/illuminations.mjs` names, each as a `figure` with a caption, and the title-page garden scene and
 the [chapter 2](../chapters/ch2-architecture-operation.md) garden-bed figure are retired: [published edition](https://dnl43y7ksqqrkfzkzsiyzhfoqks7tnxpedzi7gfymzviqo7uvkda.ocap.site/).
 
 - Art: [PR #9](https://github.com/kriscendobot/garden-book/pull/9), merged as

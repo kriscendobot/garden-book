@@ -1,7 +1,7 @@
 // prefer-endo-primitives-exempt: garden-book is a standalone package with no
 // @endo/* dependency; TextEncoder and btoa are web standards, keeping this
 // module free of Node built-ins such as Buffer.
-import { readText } from "./tree-io.mjs";
+import { readBytes, readText } from "./tree-io.mjs";
 
 export const encodeBase64 = (bytes) => {
   let binary = "";
@@ -12,16 +12,22 @@ export const encodeBase64 = (bytes) => {
 };
 
 export const makePublishContent = async (builtTree) => {
+  const images = (await builtTree.list()).filter((file) =>
+    /^illumination-.*\.webp$/u.test(file),
+  );
   const files = [
-    ["index.html", "text/html; charset=utf-8"],
-    ["styles.css", "text/css; charset=utf-8"],
+    ["index.html", "text/html; charset=utf-8", "text"],
+    ["styles.css", "text/css; charset=utf-8", "text"],
+    ...images.map((file) => [file, "image/webp", "bytes"]),
   ];
   return Promise.all(
-    files.map(async ([path, contentType]) => ({
+    files.map(async ([path, contentType, kind]) => ({
       path,
       contentType,
       bytes: encodeBase64(
-        new TextEncoder().encode(await readText(builtTree, path)),
+        kind === "text"
+          ? new TextEncoder().encode(await readText(builtTree, path))
+          : await readBytes(builtTree, path),
       ),
     })),
   );

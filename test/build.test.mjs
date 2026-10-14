@@ -20,6 +20,11 @@ const makeReadableTree = (files) => ({
       async text() {
         return files[name];
       },
+      async bytes() {
+        return typeof files[name] === "string"
+          ? new TextEncoder().encode(files[name])
+          : files[name];
+      },
     };
   },
 });
@@ -99,6 +104,9 @@ test("assembleBook uses tree capabilities and writes the complete clip", async (
     async writeText(name, content) {
       output[name] = content;
     },
+    async writeBytes(name, content) {
+      output[name] = content;
+    },
   };
   const result = await assembleBook({
     chaptersTree: makeReadableTree({
@@ -130,6 +138,9 @@ test("every internal link in the assembled book resolves to an id", async () => 
     artworkTree: makeNodeReadableTree(new URL("../art/", import.meta.url)),
     outputTree: {
       async writeText(name, content) {
+        output[name] = content;
+      },
+      async writeBytes(name, content) {
         output[name] = content;
       },
     },
@@ -240,6 +251,7 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
     builtTree: makeReadableTree({
       "index.html": "<h1>Garden ✓</h1>",
       "styles.css": "body {}",
+      "illumination-test.webp": new Uint8Array([0, 1, 2, 255]),
     }),
     peer,
     powersName: "garden-book-test",
@@ -259,7 +271,9 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
     [
       ["index.html", "text/html; charset=utf-8"],
       ["styles.css", "text/css; charset=utf-8"],
+      ["illumination-test.webp", "image/webp"],
     ],
   );
+  assert.equal(calls[2][1].arguments.content[2].bytes, "AAEC/w==");
   assert.equal(response.result.ok, true);
 });

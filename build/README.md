@@ -1,8 +1,8 @@
 # garden-book build tooling
 
-Assembles `../chapters/ch*.md` into one static HTML book (`index.html` +
-sibling `styles.css`, since the clip CSP is `style-src 'self'`) and publishes
-it as a minion.town clip.
+Assembles `../chapters/ch*.md` into a static HTML book (`index.html`, sibling
+`styles.css`, and 25 same-origin WebP illuminations) and publishes it as a
+minion.town clip.
 
 As of 2026-10-01 this repo ([`kriscendobot/garden-book`](https://github.com/kriscendobot/garden-book)) is the source of
 record for ongoing editorial work — chapters, art, and this build tooling
@@ -18,9 +18,10 @@ the live source.
     source <garden-checkout>/scripts/jobs/minion-mcp-lib.sh; minion_mcp_prepare
     node build/publish.mjs "$(minion_mcp_env_json)" out   # prints the clip URL response
 
-The build command writes both `index.html` and `styles.css` into the output
-directory (`out/` above). They are build artifacts, not committed: the
-publish step uploads them as the clip, and a rebuild overwrites them.
+The build command writes `index.html`, `styles.css`, and the 25 illumination
+WebPs into the output directory (`out/` above). They are build artifacts, not
+committed: the publish step uploads all 27 files as the clip, and a rebuild
+overwrites them.
 
 Design hooks in [`render-book.mjs`](render-book.mjs): `PARTS` maps chapter numbers to the book's five
 parts (update it when chapters are added or renumbered; a chapter outside
@@ -31,7 +32,8 @@ catalog entry's `Source:` line (hoisted beside its heading and linked to
 `main2`), and the chapter's own `Contents` list. [`illuminations.mjs`](illuminations.mjs) places
 the plates from `art/`: each entry names an image, the heading anchor it was
 drawn for, an optional later heading inside that section (`at`), how many body
-blocks to pass before the figure (margin notes don't count), and its caption.
+blocks to pass before the figure (margin notes don't count), intrinsic
+dimensions, alternative text, and its caption.
 A placement whose heading is gone, which would leave its section, or which
 names missing art fails the build instead of moving silently.
 [`equilibrium-charts.mjs`](equilibrium-charts.mjs) does the same for the nine review-economics charts
@@ -50,6 +52,12 @@ becomes every visitor's bootstrap (see [`skills/minion-town-clip-publishing`](ht
 on [`kriscendobot/garden`](https://github.com/kriscendobot/garden)); it refuses any `GARDEN_BOOK_POWERS` that is not
 `garden-book-<name>`, so `sites`, `@agent`, and the other reserved names are
 never overwritten.
+
+[`tools/illumination-check.mjs`](../tools/illumination-check.mjs) renders every
+plate at the phone text-column width in light and dark, optionally producing
+individual screenshots and contact sheets, and rejects missing, clipped,
+collapsed, distorted, or overflowing art. The generation record and committed
+review contact sheet are in [`art/`](../art/OPENAI-ILLUMINATIONS.md).
 
 [Chapter 8's review-economics section (8.8)](../chapters/ch8-cybernetics-budgeting.md#88-review-economics-an-equilibrium) is computed, not hand-written:
 [`tools/equilibrium/analyze.mjs`](../tools/equilibrium/analyze.mjs) reads one fixed `journal2` commit plus GitHub

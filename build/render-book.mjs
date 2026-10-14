@@ -167,12 +167,10 @@ const assertWithinSection = (html, anchor, at) => {
   }
 };
 
-const illuminationFigure = (placement, source, opener) => {
+const illuminationFigure = (placement, opener) => {
   const shape = placement.ratio.replace(":", "-");
-  return `<figure class="illumination ${opener ? "opener" : "section-figure"} ratio-${shape}">${inlineSvg(
-    source,
-    "illumination-art",
-  )}<figcaption>${escapeHtml(placement.caption)}</figcaption></figure>`;
+  const loading = opener ? "eager" : "lazy";
+  return `<figure class="illumination ${opener ? "opener" : "section-figure"} ratio-${shape}"><img class="illumination-art" src="${escapeHtml(placement.file)}" width="${placement.width}" height="${placement.height}" loading="${loading}" decoding="async" alt="${escapeHtml(placement.alt)}"><figcaption>${escapeHtml(placement.caption)}</figcaption></figure>`;
 };
 
 // Inline code in a chart's table cells and notes is written between
@@ -542,7 +540,7 @@ export const renderBook = ({
         bodyHtml,
         at,
         placement.blocks,
-        illuminationFigure(placement, source, at === chapterId),
+        illuminationFigure(placement, at === chapterId),
       );
       placed.add(placement.file);
     }

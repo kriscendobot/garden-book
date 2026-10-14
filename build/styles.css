@@ -146,11 +146,12 @@ li>p.runin>strong:first-child{font:inherit;font-weight:600;letter-spacing:0;text
    so it reads the same on the light and dark page. Wide plates take the full
    reading measure; squarer ones are held narrower so none outgrows a screen. */
 .illumination{margin:2rem auto 2.4rem;max-width:100%}
-.illumination svg{display:block;width:100%;height:auto}
+.illumination img{display:block;width:100%;height:auto}
 .illumination figcaption{font:italic .88rem/1.45 var(--serif);color:var(--soil);margin:.55rem .3rem 0}
 .illumination.opener{margin-top:0}
 .illumination.ratio-4-3,.illumination.ratio-16-9{width:30rem}
 .illumination.ratio-1-1{width:24rem}
+.illumination.ratio-3-4{width:24rem}
 .illumination.ratio-4-5{width:19rem}
 
 /* Review-economics charts (section 8.8). Each chart is a figure followed by
@@ -282,6 +283,6 @@ footer{margin-top:6rem;padding-top:1rem;border-top:1px solid var(--rule);font:.8
     radial-gradient(ellipse at 28% 92%,#e6cf7a0c 0 1.5rem,transparent 9rem),
     radial-gradient(ellipse at 72% 76%,#d994700c 0 1.25rem,transparent 8.5rem),
     repeating-linear-gradient(8deg,transparent 0 18px,#e8d8b906 19px,transparent 20px 38px)}
-  .illumination svg{filter:saturate(.8) brightness(.84)}
+  .illumination img{filter:saturate(.82) brightness(.88)}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

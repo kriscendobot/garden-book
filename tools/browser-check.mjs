@@ -63,10 +63,10 @@ const configurations = [
 // Screenshot targets: the title page, chapter openers, and section figures.
 const shots = [
   ["title", "#top"],
-  ["opener-ch1", 'figure:has(svg[aria-labelledby^="illumination-ch1-metamorphoses-"])'],
-  ["opener-ch9", 'figure:has(svg[aria-labelledby^="illumination-ch9-hanging-library-"])'],
-  ["section-ch2-journal", 'figure:has(svg[aria-labelledby^="illumination-ch2-journal-duties-"])'],
-  ["section-ch8-loop", 'figure:has(svg[aria-labelledby^="illumination-ch8-cybernetic-loop-"])'],
+  ["opener-ch1", 'figure:has(img[src="illumination-ch1-metamorphoses.webp"])'],
+  ["opener-ch9", 'figure:has(img[src="illumination-ch9-hanging-library.webp"])'],
+  ["section-ch2-journal", 'figure:has(img[src="illumination-ch2-journal-duties.webp"])'],
+  ["section-ch8-loop", 'figure:has(img[src="illumination-ch8-cybernetic-loop.webp"])'],
 ];
 
 // Runs in the page. Everything it needs is defined inside.
@@ -95,15 +95,18 @@ const measure = () => {
   let minimumContrast = Infinity;
   let tallest = 0;
   for (const figure of figures) {
-    const svg = figure.querySelector("svg");
+    const art = figure.querySelector(".illumination-art");
     const caption = figure.querySelector("figcaption");
-    const label = svg.getAttribute("aria-labelledby").split(" ")[0].replace(/-title$/, "");
+    const label = art.getAttribute("src").replace(/\.webp$/, "");
     const figureBox = figure.getBoundingClientRect();
-    const svgBox = svg.getBoundingClientRect();
+    const artBox = art.getBoundingClientRect();
     const captionBox = caption.getBoundingClientRect();
     const container = figure.parentElement.getBoundingClientRect();
     const floated = getComputedStyle(figure).float !== "none";
-    for (const [part, box] of [["figure", figureBox], ["svg", svgBox], ["caption", captionBox]]) {
+    if (!art.complete || art.naturalWidth === 0) {
+      problems.push(`${label}: image did not load`);
+    }
+    for (const [part, box] of [["figure", figureBox], ["art", artBox], ["caption", captionBox]]) {
       if (box.left < -0.5 || box.right > viewportWidth + 0.5) {
         problems.push(`${label}: ${part} leaves the viewport`);
       }
@@ -111,21 +114,20 @@ const measure = () => {
         problems.push(`${label}: ${part} is wider than its column`);
       }
     }
-    if (svgBox.width > figureBox.width + 0.5 || captionBox.width > figureBox.width + 0.5) {
+    if (artBox.width > figureBox.width + 0.5 || captionBox.width > figureBox.width + 0.5) {
       problems.push(`${label}: content wider than its figure`);
     }
-    const [, , viewWidth, viewHeight] = svg.getAttribute("viewBox").split(/\s+/).map(Number);
-    const expectedHeight = (svgBox.width * viewHeight) / viewWidth;
-    if (Math.abs(svgBox.height - expectedHeight) > 1.5) {
-      problems.push(`${label}: svg is ${svgBox.height.toFixed(0)}px tall, expected ${expectedHeight.toFixed(0)}px`);
+    const expectedHeight = (artBox.width * Number(art.getAttribute("height"))) / Number(art.getAttribute("width"));
+    if (Math.abs(artBox.height - expectedHeight) > 1.5) {
+      problems.push(`${label}: art is ${artBox.height.toFixed(0)}px tall, expected ${expectedHeight.toFixed(0)}px`);
     }
-    if (svgBox.height > window.innerHeight * 0.75) {
-      problems.push(`${label}: svg is taller than three quarters of the viewport`);
+    if (artBox.height > window.innerHeight * 0.75) {
+      problems.push(`${label}: art is taller than three quarters of the viewport`);
     }
     if (figure.scrollHeight > figure.clientHeight + 1 || captionBox.bottom > figureBox.bottom + 0.5) {
       problems.push(`${label}: figure clips its content`);
     }
-    tallest = Math.max(tallest, svgBox.height);
+    tallest = Math.max(tallest, artBox.height);
     // Anything else in the chapter that a figure could cover.
     const section = figure.closest("section");
     for (const other of section.querySelectorAll(
@@ -188,6 +190,13 @@ try {
     });
     const page = await context.newPage();
     await page.goto(url, { waitUntil: "load" });
+    await page.evaluate(async () => {
+      for (const image of document.images) {
+        image.scrollIntoView({ block: "center" });
+        await image.decode().catch(() => undefined);
+      }
+      window.scrollTo(0, 0);
+    });
     const result = await page.evaluate(measure);
     results.push({ ...configuration, ...result });
     if (shotsArgument) {
@@ -214,7 +223,7 @@ try {
 }
 
 console.log(
-  "| Configuration | scrollWidth / clientWidth | Figures | Tallest SVG | Caption contrast (min) | Body contrast | Result |",
+  "| Configuration | scrollWidth / clientWidth | Figures | Tallest figure | Caption contrast (min) | Body contrast | Result |",
 );
 console.log("| --- | --- | --- | --- | --- | --- | --- |");
 for (const result of results) {

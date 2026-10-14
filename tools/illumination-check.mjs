@@ -1,17 +1,22 @@
 #!/usr/bin/env node
 // Render every illumination at the phone text-column width in light and dark
 // schemes. The element shots are the visual-review artifact; the measurements
-// catch clipping, collapsed plates, and accidental ratio changes.
+// catch clipping, collapsed plates, and accidental ratio changes. The preview
+// is served over local HTTP with the same Content-Security-Policy header a
+// published clip carries, so a plate the clip would block fails here too.
 
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   readdirSync,
   writeFileSync,
 } from 'node:fs';
+import { createServer } from 'node:http';
 import { homedir, tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { extname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { illuminations } from '../build/illuminations.mjs';
@@ -36,13 +41,27 @@ const findChromium = () => {
     .find(existsSync);
 };
 
+// The response header every published `<hash>.ocap.site` clip carries, read
+// with `curl -sI` from served garden-book editions on 2026-10-14
+// (skills/minion-town-clip-publishing on kriscendobot/garden). `img-src 'self'`
+// is what admits the same-origin WebP plates.
+const CLIP_CSP = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+
+const contentTypes = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.webp': 'image/webp',
+};
+
 const preview = mkdtempSync(join(tmpdir(), 'illumination-preview-'));
+for (const { file } of illuminations) {
+  copyFileSync(resolve(repository, 'art', file), join(preview, file));
+}
 const figures = illuminations.map((illustration, index) => {
-  return `<figure id="plate-${index + 1}"><img src="${pathToFileURL(resolve(repository, 'art', illustration.file)).href}" width="${illustration.width}" height="${illustration.height}" alt="${illustration.alt}"><figcaption>${index + 1}. ${illustration.caption}</figcaption></figure>`;
+  return `<figure id="plate-${index + 1}"><img src="${illustration.file}" width="${illustration.width}" height="${illustration.height}" alt="${illustration.alt}"><figcaption>${index + 1}. ${illustration.caption}</figcaption></figure>`;
 }).join('\n');
 writeFileSync(join(preview, 'index.html'), `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src file:">
 <title>Illumination preview</title><link rel="stylesheet" href="preview.css"></head>
 <body><main>${figures}</main></body></html>\n`);
 writeFileSync(join(preview, 'preview.css'), `
@@ -72,6 +91,19 @@ const measure = () => ({
   }),
 });
 
+const server = createServer((request, response) => {
+  const name = new URL(request.url, 'http://localhost').pathname.slice(1) || 'index.html';
+  const type = contentTypes[extname(name)];
+  if (!type || name.includes('/') || !existsSync(join(preview, name))) {
+    response.writeHead(404).end();
+    return;
+  }
+  response.writeHead(200, { 'content-type': type, 'content-security-policy': CLIP_CSP });
+  response.end(readFileSync(join(preview, name)));
+});
+await new Promise(ready => server.listen(0, '127.0.0.1', ready));
+const origin = `http://127.0.0.1:${server.address().port}`;
+
 const { chromium } = await loadPlaywright();
 const executablePath = findChromium();
 const browser = await chromium.launch({ ...(executablePath ? { executablePath } : {}), args: ['--no-sandbox'] });
@@ -82,10 +114,14 @@ let failed = false;
 for (const colorScheme of ['light', 'dark']) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme, deviceScaleFactor: 2 });
   const page = await context.newPage();
-  await page.goto(pathToFileURL(join(preview, 'index.html')).href);
-  await page.evaluate(() => Promise.all([...document.images].map(image => image.decode())));
+  const blocked = [];
+  page.on('console', message => {
+    if (/Content Security Policy/u.test(message.text())) blocked.push(message.text());
+  });
+  await page.goto(`${origin}/index.html`);
+  await page.evaluate(() => Promise.all([...document.images].map(image => image.decode().catch(() => undefined))));
   const report = await page.evaluate(measure);
-  const problems = [];
+  const problems = blocked.map(text => `CSP violation: ${text}`);
   if (report.scrollWidth !== report.clientWidth) problems.push(`horizontal overflow: ${report.scrollWidth} > ${report.clientWidth}`);
   if (report.plates.length !== illuminations.length) problems.push(`plates: ${report.plates.length}, expected ${illuminations.length}`);
   for (const plate of report.plates) {
@@ -97,7 +133,7 @@ for (const colorScheme of ['light', 'dark']) {
     await page.screenshot({ path: join(shots, `contact-${colorScheme}.png`), fullPage: true, scale: 'css' });
     for (const [index, illustration] of illuminations.entries()) {
       await page.locator(`#plate-${index + 1}`).screenshot({
-        path: join(shots, `${illustration.file.replace(/\.svg$/u, '')}-${colorScheme}.png`),
+        path: join(shots, `${illustration.file.replace(/\.webp$/u, '')}-${colorScheme}.png`),
         scale: 'css',
       });
     }
@@ -107,5 +143,6 @@ for (const colorScheme of ['light', 'dark']) {
   await context.close();
 }
 await browser.close();
+server.close();
 console.log(JSON.stringify(reports, null, 2));
 process.exit(failed ? 1 : 0);

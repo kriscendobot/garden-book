@@ -13,14 +13,25 @@ export const encodeBase64 = (bytes) => {
 
 export const makePublishContent = async (builtTree) => {
   const html = await readText(builtTree, "index.html");
-  const referencedImages = new Set(
-    [...html.matchAll(/\bsrc="(illumination-[a-z0-9-]+\.webp)"/gu)].map(
-      ([, file]) => file,
+  const referencedImages = [
+    ...new Set(
+      [...html.matchAll(/\bsrc="(illumination-[^"]*)"/gu)].map(([, file]) => file),
     ),
-  );
-  const images = (await builtTree.list()).filter((file) =>
-    referencedImages.has(file),
-  );
+  ];
+  const unsupported = referencedImages.filter((file) => !file.endsWith(".webp"));
+  if (unsupported.length > 0) {
+    throw new TypeError(
+      `Refusing to publish: index.html references non-WebP plates: ${unsupported.join(", ")}`,
+    );
+  }
+  const built = new Set(await builtTree.list());
+  const missing = referencedImages.filter((file) => !built.has(file));
+  if (missing.length > 0) {
+    throw new Error(
+      `Refusing to publish: index.html references plates missing from the build output: ${missing.join(", ")}`,
+    );
+  }
+  const images = [...built].filter((file) => referencedImages.includes(file));
   const files = [
     ["index.html", "text/html; charset=utf-8", "text"],
     ["styles.css", "text/css; charset=utf-8", "text"],

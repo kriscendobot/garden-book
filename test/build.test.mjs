@@ -301,6 +301,33 @@ test("makePublishContent ignores stale unreferenced illuminations", async () => 
   );
 });
 
+test("makePublishContent refuses a referenced plate missing from the build", async () => {
+  await assert.rejects(
+    makePublishContent(
+      makeReadableTree({
+        "index.html":
+          '<img src="illumination-present.webp"><img src="illumination-Gone_1.webp">',
+        "styles.css": "",
+        "illumination-present.webp": new Uint8Array([1]),
+      }),
+    ),
+    /missing from the build output: illumination-Gone_1\.webp$/u,
+  );
+});
+
+test("makePublishContent refuses a referenced plate that is not WebP", async () => {
+  await assert.rejects(
+    makePublishContent(
+      makeReadableTree({
+        "index.html": '<img src="illumination-odd.png">',
+        "styles.css": "",
+        "illumination-odd.png": new Uint8Array([1]),
+      }),
+    ),
+    /non-WebP plates: illumination-odd\.png$/u,
+  );
+});
+
 const recordingPeer = (calls) => ({
   async call(method, params) {
     calls.push([method, params]);

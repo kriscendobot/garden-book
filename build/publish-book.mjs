@@ -13,9 +13,13 @@ export const encodeBase64 = (bytes) => {
 
 export const makePublishContent = async (builtTree) => {
   const html = await readText(builtTree, "index.html");
+  // Every same-origin image the page loads must travel in the clip, whatever
+  // its name; absolute and data: URLs are not published files.
   const referencedImages = [
     ...new Set(
-      [...html.matchAll(/\bsrc="(illumination-[^"]*)"/gu)].map(([, file]) => file),
+      [...html.matchAll(/<img\b[^>]*?\bsrc="([^"]*)"/gu)]
+        .map(([, file]) => file)
+        .filter((file) => !/^(?:[a-z][a-z0-9+.-]*:|\/)/iu.test(file)),
     ),
   ];
   const unsupported = referencedImages.filter((file) => !file.endsWith(".webp"));
@@ -75,10 +79,10 @@ const pythonJson = (value) => {
   );
 };
 
-export const publishRequestBytes = (publishArguments, id = 3) =>
+export const publishRequestBytes = (publishArguments, requestIdentifier = 3) =>
   pythonJson({
     jsonrpc: "2.0",
-    id,
+    id: requestIdentifier,
     method: "tools/call",
     params: { name: "publish", arguments: publishArguments },
   }).length;
@@ -88,7 +92,7 @@ export const publishRequestBytes = (publishArguments, id = 3) =>
  *
  * @param {object} options
  * @param {object} options.builtTree readable tree holding `index.html`,
- *   `styles.css`, and every `illumination-*.webp` plate that `index.html`
+ *   `styles.css`, and every relative WebP image that `index.html`
  *   references, from a prior build.
  * @param {object} options.peer JSON-RPC peer connected to the minion MCP bridge.
  * @param {string} [options.powersName] pet name for the clip's `powers`,

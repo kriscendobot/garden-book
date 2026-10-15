@@ -47,8 +47,8 @@ with only `writeText` fails on the first plate. Each placement passed as
 `alt`; the build does not validate them. The committed placements come from
 the metadata map in [`illuminations.mjs`](illuminations.mjs);
 `test/illustrations.test.mjs` checks that each `width` and `height` matches
-its WebP header and that each `alt` is descriptive; and publishing refuses an
-`illumination-*` reference that is not a `.webp` file in the output.
+its WebP header and that each `alt` is descriptive; and publishing refuses any
+relative `img` reference that is not a `.webp` file in the output.
 
 ## Publish size
 

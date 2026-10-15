@@ -328,6 +328,30 @@ test("makePublishContent refuses a referenced plate that is not WebP", async () 
   );
 });
 
+test("makePublishContent publishes a referenced plate whatever its name", async () => {
+  const content = await makePublishContent(
+    makeReadableTree({
+      "index.html":
+        '<img class="illumination-art" src="plate.webp"><img src="data:image/webp;base64,AA=="><img src="https://example.test/remote.webp">',
+      "styles.css": "",
+      "plate.webp": new Uint8Array([7]),
+    }),
+  );
+  assert.deepEqual(
+    content.map(({ path }) => path),
+    ["index.html", "styles.css", "plate.webp"],
+  );
+});
+
+test("makePublishContent refuses a non-illumination plate missing from the build", async () => {
+  await assert.rejects(
+    makePublishContent(
+      makeReadableTree({ "index.html": '<img src="plate.webp">', "styles.css": "" }),
+    ),
+    /missing from the build output: plate\.webp$/u,
+  );
+});
+
 const recordingPeer = (calls) => ({
   async call(method, params) {
     calls.push([method, params]);

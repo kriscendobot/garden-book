@@ -1,7 +1,5 @@
-// Serves a built edition's flat output directory the way the clip host does:
-// only the published file types, no subdirectories, and the published clip's
-// Content-Security-Policy on every reply. `img-src 'self'` is what admits the
-// same-origin WebP plates.
+// CLIP_CSP is the policy documented for published clips in the garden's
+// skills/minion-town-clip-publishing (kriscendobot/garden).
 import { existsSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { dirname, extname, join } from "node:path";

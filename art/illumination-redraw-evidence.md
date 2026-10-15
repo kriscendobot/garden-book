@@ -1,10 +1,6 @@
 # Illumination replacement evidence
 
-This records the 2026-10-14 investigation and replacement of the 25 illustrations for *Better Code and Gardens*.
-
-## Root cause
-
-The published edition rendered all 25 procedural SVG plates correctly; the defect was art quality, as their flat blocks and stick figures made distinct scenes look alike at phone width.
+This records the 2026-10-14 replacement of the 25 illustrations for *Better Code and Gardens*.
 
 ## Replacement
 
@@ -12,8 +8,6 @@ The replacement is 25 independently generated OpenAI raster illustrations, one p
 
 The committed [contact sheet](illumination-contact-sheet.webp) shows the complete light-scheme set. `OPENAI-ILLUMINATIONS.md` records the common direction and every per-scene prompt. `node tools/browser-check.mjs out/index.html <shots>` serves the built edition with the published clip's CSP and performs the full-book phone/desktop and light/dark check, failing on CSP violations and on missing, clipped, distorted, or overflowing images.
 
-The WebP files retain intrinsic dimensions in markup to avoid layout shifts, load only from the immutable clip itself, and carry meaningful `alt` text. Their scenes use shapes, positions, routes, and objects—not color alone—to express distinctions.
+## Published-clip policy
 
-## Published-clip verification
-
-Published `<hash>.ocap.site` clips carry `img-src 'self' data:`, which admits the same-origin plates; `tools/clip-server.mjs` serves a local edition with that policy for `tools/browser-check.mjs`. `test/build.test.mjs` fails if the full edition stops fitting one publish request.
+The garden's [clip-publishing skill](https://github.com/kriscendobot/garden/blob/main2/skills/minion-town-clip-publishing/SKILL.md) documents that published `<hash>.ocap.site` clips carry `img-src 'self' data:`, which admits the same-origin plates. This repository does not verify that policy against the live host; `tools/clip-server.mjs` reproduces it locally.

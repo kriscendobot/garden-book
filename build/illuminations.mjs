@@ -6,8 +6,7 @@
 // block count runs past the next heading, is an error rather than a silent move.
 //
 // Chapter openers sit under the chapter title. Section figures sit at a pause
-// in the argument: after an opening explanation, or before details begin. Each
-// raster carries its intrinsic dimensions and meaningful alternative text.
+// in the argument: after an opening explanation, or before details begin.
 
 const imageMetadata = new Map([
   ["illumination-ch1-metamorphoses.webp", [480, 300, "One continuous root passes through a shepherd plot, glasshouse, supervised nursery, and distributed garden joined at a central ledger."]],

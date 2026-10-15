@@ -472,11 +472,10 @@ interpretive link rather than repeat the alternative text.
 ## Existing first-edition background
 
 **Recommendation: repurpose it as title-page-only ornament, not as a flat
-background.** (Historical: the 2026-10-14 raster redraw deleted
-`title-garden.svg`.) The `art/title-garden.svg` scene introduced in pull requests 4
-and 5 is quiet and technically well prepared, but its broad washes and scattered
-edge plants do not explain the book's subject. At the low opacity required behind
-title copy, most of its already sparse information disappears, which supports the
+background.** The `art/title-garden.svg` scene introduced in pull requests 4
+and 5 was quiet and technically well prepared, but its broad washes and scattered
+edge plants did not explain the book's subject. At the low opacity required behind
+title copy, most of its already sparse information disappeared, which supports the
 maintainer's judgment that it does not add much.
 
 The production stage should remove the full-field backdrop treatment and test a

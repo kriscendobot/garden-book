@@ -1,20 +1,25 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import { checkEdition } from "../tools/browser-check.mjs";
 import { CLIP_CONTENT_SECURITY_POLICY } from "../tools/clip-server.mjs";
 
-// Stands in for Playwright: each page fetches its URL for real and reports a
-// CSP console message when `violate` says so; the in-page measurement passes.
-const makeFakeBrowser = ({ violate }) => {
+// Stands in for Playwright: each page fetches its URL and the images it
+// references for real, and reports a CSP console message when `violate` says
+// so; the in-page measurement passes. `fail` names a page method that rejects.
+const makeFakeBrowser = ({ violate, fail }) => {
   const visits = [];
+  const contexts = [];
   return {
     visits,
+    contexts,
     async newContext() {
-      return {
+      const context = {
+        closed: false,
         async newPage() {
           const listeners = [];
           return {
@@ -24,11 +29,28 @@ const makeFakeBrowser = ({ violate }) => {
               }
             },
             async goto(url) {
+              if (fail === "goto") {
+                throw new Error("navigation failed");
+              }
               const response = await fetch(url);
+              const html = await response.text();
+              const images = [];
+              for (const [, source] of html.matchAll(/<img\b[^>]*?\bsrc="([^"]*)"/gu)) {
+                const image = await fetch(new URL(source, url));
+                images.push({
+                  source,
+                  status: image.status,
+                  type: image.headers.get("content-type"),
+                  signature: new TextDecoder().decode(
+                    new Uint8Array(await image.arrayBuffer()).subarray(8, 12),
+                  ),
+                });
+              }
               visits.push({
                 url,
                 status: response.status,
                 policy: response.headers.get("content-security-policy"),
+                images,
               });
               if (violate) {
                 for (const listener of listeners) {
@@ -44,15 +66,24 @@ const makeFakeBrowser = ({ violate }) => {
             },
           };
         },
-        async close() {},
+        async close() {
+          context.closed = true;
+        },
       };
+      contexts.push(context);
+      return context;
     },
   };
 };
 
+const realPlate = fileURLToPath(
+  new URL("../art/illumination-ch3-muster.webp", import.meta.url),
+);
+
 const makeEdition = () => {
   const directory = mkdtempSync(join(tmpdir(), "browser-check-"));
-  writeFileSync(join(directory, "index.html"), "<p>book</p>");
+  writeFileSync(join(directory, "index.html"), '<p>book</p><img src="plate.webp">');
+  copyFileSync(realPlate, join(directory, "plate.webp"));
   return join(directory, "index.html");
 };
 
@@ -65,7 +96,32 @@ test("checkEdition loads a local edition through the clip server's CSP", async (
     assert.match(visit.url, /^http:\/\/127\.0\.0\.1:\d+\/index\.html$/u);
     assert.equal(visit.status, 200);
     assert.equal(visit.policy, CLIP_CONTENT_SECURITY_POLICY);
+    assert.deepEqual(visit.images, [
+      { source: "plate.webp", status: 200, type: "image/webp", signature: "WEBP" },
+    ]);
   }
+  assert.ok(browser.contexts.every(({ closed }) => closed));
+});
+
+test("checkEdition closes the browser context and the server when a page fails", async () => {
+  const browser = makeFakeBrowser({ violate: false, fail: "goto" });
+  let closed = false;
+  await assert.rejects(
+    checkEdition({
+      browser,
+      target: makeEdition(),
+      serve: async () => ({
+        url: "http://127.0.0.1:1/",
+        close: async () => {
+          closed = true;
+        },
+      }),
+    }),
+    /navigation failed/u,
+  );
+  assert.equal(browser.contexts.length, 1);
+  assert.equal(browser.contexts[0].closed, true);
+  assert.equal(closed, true);
 });
 
 test("checkEdition reports a CSP console violation as a failure in every configuration", async () => {

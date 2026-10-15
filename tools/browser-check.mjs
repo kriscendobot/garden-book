@@ -206,7 +206,9 @@ const measure = () => {
  * @param {object} options.browser Playwright browser.
  * @param {string} options.target path to an `index.html` or an http(s) URL.
  * @param {string} [options.shotsDirectory] where to write screenshots.
- * @param {Function} [options.serve] serves a local edition.
+ * @param {(htmlPath: string) => Promise<{ url: string, close: () => (void | Promise<void>) }>} [options.serve]
+ *   serves the local edition at the absolute `htmlPath` and resolves to the
+ *   `url` to load and a `close` that stops serving.
  */
 export const checkEdition = async ({
   browser,
@@ -225,45 +227,48 @@ export const checkEdition = async ({
         colorScheme: configuration.colorScheme,
         reducedMotion: "reduce",
       });
-      const page = await context.newPage();
-      const violations = [];
-      page.on("console", (message) => {
-        if (/Content Security Policy/u.test(message.text())) {
-          violations.push(`CSP violation: ${message.text()}`);
+      try {
+        const page = await context.newPage();
+        const violations = [];
+        page.on("console", (message) => {
+          if (/Content Security Policy/u.test(message.text())) {
+            violations.push(`CSP violation: ${message.text()}`);
+          }
+        });
+        await page.goto(served.url, { waitUntil: "load" });
+        await page.evaluate(async () => {
+          for (const image of document.images) {
+            image.scrollIntoView({ block: "center" });
+            await image.decode().catch(() => undefined);
+          }
+          window.scrollTo(0, 0);
+        });
+        const result = await page.evaluate(measure);
+        results.push({
+          ...configuration,
+          ...result,
+          problems: [...violations, ...result.problems],
+        });
+        if (shotsDirectory) {
+          mkdirSync(shotsDirectory, { recursive: true });
+          for (const [name, selector] of shots) {
+            const element = page.locator(selector).first();
+            await element.scrollIntoViewIfNeeded();
+            await page.evaluate(
+              (selectorText) => {
+                const box = document.querySelector(selectorText).getBoundingClientRect();
+                window.scrollBy(0, box.top - 64);
+              },
+              selector,
+            );
+            await page.screenshot({
+              path: join(shotsDirectory, `${configuration.name}-${name}.png`),
+            });
+          }
         }
-      });
-      await page.goto(served.url, { waitUntil: "load" });
-      await page.evaluate(async () => {
-        for (const image of document.images) {
-          image.scrollIntoView({ block: "center" });
-          await image.decode().catch(() => undefined);
-        }
-        window.scrollTo(0, 0);
-      });
-      const result = await page.evaluate(measure);
-      results.push({
-        ...configuration,
-        ...result,
-        problems: [...violations, ...result.problems],
-      });
-      if (shotsDirectory) {
-        mkdirSync(shotsDirectory, { recursive: true });
-        for (const [name, selector] of shots) {
-          const element = page.locator(selector).first();
-          await element.scrollIntoViewIfNeeded();
-          await page.evaluate(
-            (selectorText) => {
-              const box = document.querySelector(selectorText).getBoundingClientRect();
-              window.scrollBy(0, box.top - 64);
-            },
-            selector,
-          );
-          await page.screenshot({
-            path: join(shotsDirectory, `${configuration.name}-${name}.png`),
-          });
-        }
+      } finally {
+        await context.close();
       }
-      await context.close();
     }
   } finally {
     await served.close();

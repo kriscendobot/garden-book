@@ -25,6 +25,41 @@ overwrites them. Publishing refuses a clip over minion.town's MCP request
 limit, or one whose HTML references a plate missing from the output, before
 writing anything; stale unreferenced plates are ignored.
 
+## Multi-file output
+
+The output is no longer a single self-contained `index.html` plus
+`styles.css`: the plates are separate files that `index.html` loads by
+relative `src`, so they must travel with it. The consumers in this repository
+are the publish step ([`publish-book.mjs`](publish-book.mjs) uploads every
+referenced plate and refuses if one is missing) and the browser check
+([`tools/clip-server.mjs`](../tools/clip-server.mjs) serves the whole output
+directory). The repository has no CI workflow or Pages deploy. Anything else
+that copies an edition, such as a `file://` copy or an archived artifact, must
+copy the whole output directory, not `index.html` alone.
+
+## Tree contract
+
+`assembleBook` reads chapters, `intro.html`, and art through readable trees
+whose `lookup(name)` returns a blob with `text()`, or `bytes()` for the plates
+([`tree-io.mjs`](tree-io.mjs) `readText`/`readBytes`). The output tree must
+provide both `writeText(name, content)` and `writeBytes(name, content)`; a tree
+with only `writeText` fails on the first plate. Every placement passed as
+`illuminations` must name a `.webp` `file` and carry numeric `width` and
+`height` and a non-empty `alt`, which become the `img` attributes.
+
+## Publish size
+
+`publishBook` refuses any request over `PUBLISH_REQUEST_LIMIT` (2,097,152
+bytes), because the plates are base64-encoded into one MCP request. The
+2026-10-15 edition encodes to 1,943,167 bytes, leaving 153,985 bytes (about
+7%) of headroom; `test/build.test.mjs` fails if the full edition stops fitting.
+To recover from an over-limit build, re-encode the largest plates smaller (the
+plates are WebP at a 480-pixel longest side, see
+[`art/OPENAI-ILLUMINATIONS.md`](../art/OPENAI-ILLUMINATIONS.md)) or drop a
+placement, then rebuild and rerun `npm test`.
+
+## Design hooks and checks
+
 Design hooks in [`render-book.mjs`](render-book.mjs): `PARTS` maps chapter numbers to the book's five
 parts (update it when chapters are added or renumbered; a chapter outside
 every part is listed after them); `GLYPHS` holds each part's inline SVG

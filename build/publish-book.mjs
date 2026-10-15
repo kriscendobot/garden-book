@@ -87,8 +87,9 @@ export const publishRequestBytes = (publishArguments, id = 3) =>
  * Publishes the built book as a minion.town clip.
  *
  * @param {object} options
- * @param {object} options.builtTree readable tree holding `index.html` and
- *   `styles.css` from a prior build.
+ * @param {object} options.builtTree readable tree holding `index.html`,
+ *   `styles.css`, and every `illumination-*.webp` plate that `index.html`
+ *   references, from a prior build.
  * @param {object} options.peer JSON-RPC peer connected to the minion MCP bridge.
  * @param {string} [options.powersName] pet name for the clip's `powers`,
  *   which becomes every visitor's bootstrap. It is overwritten with inert

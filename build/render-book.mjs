@@ -170,7 +170,7 @@ const assertWithinSection = (html, anchor, at) => {
 const illuminationFigure = (placement, opener) => {
   const shape = placement.ratio.replace(":", "-");
   const loading = opener ? "eager" : "lazy";
-  return `<figure class="illumination ${opener ? "opener" : "section-figure"} ratio-${shape}"><img class="illumination-art" src="${escapeHtml(placement.file)}" width="${placement.width}" height="${placement.height}" loading="${loading}" decoding="async" alt="${escapeHtml(placement.alt)}"><figcaption>${escapeHtml(placement.caption)}</figcaption></figure>`;
+  return `<figure class="illumination ${opener ? "opener" : "section-figure"} ratio-${shape}"><img class="illumination-art" src="${escapeHtml(placement.file)}" width="${placement.width}" height="${placement.height}" loading="${loading}" decoding="async" alt="${escapeHtml(placement.alternativeText)}"><figcaption>${escapeHtml(placement.caption)}</figcaption></figure>`;
 };
 
 // Inline code in a chart's table cells and notes is written between

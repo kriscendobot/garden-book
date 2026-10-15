@@ -59,7 +59,7 @@ test("the brief has one committed OpenAI-generated raster for each of its 25 ent
     );
     assert.ok(bytes.length >= 5_000, `${illustration.file} is unexpectedly small`);
     assert.ok(bytes.length <= 40_000, `${illustration.file} is too large for the shared publish budget`);
-    assert.ok(illustration.alt.length >= 40, `${illustration.file} needs meaningful alt text`);
+    assert.ok(illustration.alternativeText.length >= 40, `${illustration.file} needs meaningful alt text`);
   }
 });
 

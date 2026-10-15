@@ -249,6 +249,6 @@ export const illuminations = placements.map((placement) => {
   if (!metadata) {
     throw new RangeError(`Missing image metadata for ${placement.file}`);
   }
-  const [width, height, alt] = metadata;
-  return { ...placement, width, height, alt };
+  const [width, height, alternativeText] = metadata;
+  return { ...placement, width, height, alternativeText };
 });

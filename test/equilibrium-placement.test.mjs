@@ -502,9 +502,9 @@ test("inline ids stay unique and only local illumination images enter the page",
     );
   }
   assert.equal(html.split('<figure class="illumination ').length - 1, 25);
-  for (const { file, alt } of illuminations) {
+  for (const { file, alternativeText } of illuminations) {
     assert.equal(html.split(`src="${file}"`).length - 1, 1, file);
-    assert.ok(html.includes(`alt="${alt}"`), file);
+    assert.ok(html.includes(`alt="${alternativeText}"`), file);
   }
   for (const references of html.matchAll(/aria-labelledby="([^"]+)"/g)) {
     for (const id of references[1].split(" ")) assert.ok(ids.includes(id), id);

@@ -24,8 +24,8 @@ test("renderBook places accessible raster openers and section figures", () => {
     artwork: { illuminations: { "opener.webp": art, "detail.webp": art } },
     equilibriumCharts: [],
     illuminations: [
-      { file: "opener.webp", anchor: "ch1-chapter-1-intro", ratio: "3:2", blocks: 0, width: 1200, height: 800, alt: "An opener scene.", caption: "Opener & caption." },
-      { file: "detail.webp", anchor: "ch1-11-first", at: "ch1-detail", ratio: "5:2", blocks: 1, width: 1200, height: 480, alt: "A detail scene.", caption: "Detail caption." },
+      { file: "opener.webp", anchor: "ch1-chapter-1-intro", ratio: "3:2", blocks: 0, width: 1200, height: 800, alternativeText: "An opener scene.", caption: "Opener & caption." },
+      { file: "detail.webp", anchor: "ch1-11-first", at: "ch1-detail", ratio: "5:2", blocks: 1, width: 1200, height: 480, alternativeText: "A detail scene.", caption: "Detail caption." },
     ],
   });
   assert.match(html, /<div class="marginnote provenance" role="note">.*?<\/div>\n<figure class="illumination opener ratio-3-2"><img class="illumination-art" src="opener\.webp" width="1200" height="800" loading="eager" decoding="async" alt="An opener scene\."><figcaption>Opener &amp; caption\.<\/figcaption><\/figure>\n<p>Opening\.<\/p>/s);
@@ -46,7 +46,7 @@ test("renderBook escapes illumination alt text as an HTML attribute", () => {
         blocks: 0,
         width: 3,
         height: 2,
-        alt: 'Roots & shoots grow under a "glass <house>".',
+        alternativeText: 'Roots & shoots grow under a "glass <house>".',
         caption: "Escaping test.",
       },
     ],
@@ -60,11 +60,11 @@ test("renderBook escapes illumination alt text as an HTML attribute", () => {
 });
 
 test("renderBook refuses placements that would move or vanish", () => {
-  const render = placement => renderBook({ chapterSources, introSource: "{{FRIEZE}}", artwork: { illuminations: { "x.webp": art } }, equilibriumCharts: [], illuminations: [{ file: "x.webp", ratio: "2:1", blocks: 0, width: 2, height: 1, alt: "x", caption: "x", ...placement }] });
+  const render = placement => renderBook({ chapterSources, introSource: "{{FRIEZE}}", artwork: { illuminations: { "x.webp": art } }, equilibriumCharts: [], illuminations: [{ file: "x.webp", ratio: "2:1", blocks: 0, width: 2, height: 1, alternativeText: "x", caption: "x", ...placement }] });
   assert.throws(() => render({ anchor: "ch1-13-renamed" }), /No heading for x\.webp/);
   assert.throws(() => render({ anchor: "ch1-11-first", at: "ch1-12-second" }), /is not inside the section/);
   assert.throws(() => render({ anchor: "ch1-12-second", blocks: 2 }), /has 1 blocks/);
-  assert.throws(() => renderBook({ chapterSources, introSource: "{{FRIEZE}}", artwork: { illuminations: {} }, equilibriumCharts: [], illuminations: [{ file: "y.webp", anchor: "ch1-11-first", ratio: "2:1", blocks: 0, width: 2, height: 1, alt: "y", caption: "y" }] }), /No artwork for y\.webp/);
+  assert.throws(() => renderBook({ chapterSources, introSource: "{{FRIEZE}}", artwork: { illuminations: {} }, equilibriumCharts: [], illuminations: [{ file: "y.webp", anchor: "ch1-11-first", ratio: "2:1", blocks: 0, width: 2, height: 1, alternativeText: "y", caption: "y" }] }), /No artwork for y\.webp/);
 });
 
 test("the edition emits and copies every illumination once", async () => {
@@ -77,11 +77,11 @@ test("the edition emits and copies every illumination once", async () => {
   });
   const html = output["index.html"];
   assert.equal(html.split('<figure class="illumination ').length - 1, 25);
-  for (const { file, anchor, width, height, alt, caption } of illuminations) {
+  for (const { file, anchor, width, height, alternativeText, caption } of illuminations) {
     const matching = [...html.matchAll(new RegExp(`<img class="illumination-art"[^>]+src="${file}"[^>]*>`, "g"))];
     assert.equal(matching.length, 1, file);
     assert.ok(matching[0][0].includes(`width="${width}" height="${height}"`), file);
-    assert.ok(matching[0][0].includes(`alt="${alt.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}"`), file);
+    assert.ok(matching[0][0].includes(`alt="${alternativeText.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}"`), file);
     assert.ok(html.includes(`<figcaption>${caption.replaceAll("'", "&#x27;")}</figcaption>`), file);
     assert.ok(output[file] instanceof Uint8Array, `${file} was not copied as bytes`);
     assert.ok(html.indexOf(`id="${anchor}"`) < matching[0].index, file);

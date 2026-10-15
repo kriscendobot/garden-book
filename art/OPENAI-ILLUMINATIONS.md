@@ -1,6 +1,6 @@
 # OpenAI illumination generation record
 
-Generated 2026-10-14 with OpenAI's image-generation tool, one fresh image per prompt. The tool did not expose a model identifier or seed. Each output used an opaque background and no input image. Original PNG results were resized without cropping and encoded by Chromium Canvas as WebP at a longest side of 480 pixels and quality 0.18; these are the publication sources. The 480-pixel bound keeps the whole edition inside one publish request (see [`build/README.md`](../build/README.md#publish-size)); `test/build.test.mjs` checks that it fits.
+Generated 2026-10-14 with OpenAI's image-generation tool, one fresh image per prompt. The tool did not expose a model identifier or seed. Each output used an opaque background and no input image. Original PNG results were resized without cropping and encoded by Chromium Canvas as WebP at a longest side of 480 pixels and quality 0.18; these are the publication sources.
 
 ## Common direction
 

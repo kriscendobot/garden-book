@@ -23,19 +23,9 @@ WebPs into the output directory (`out/` above). They are build artifacts, not
 committed: the publish step uploads all 27 files as the clip, and a rebuild
 overwrites them. Publishing refuses a clip over minion.town's MCP request
 limit, or one missing a plate declared in [`illuminations.mjs`](illuminations.mjs),
-before writing anything; other files in the output are never uploaded.
-
-## Multi-file output
-
-The output is `index.html`, `styles.css`, and the plates declared in
-[`illuminations.mjs`](illuminations.mjs); copy all of them together. The
-consumers in this repository are the publish step
-([`publish-book.mjs`](publish-book.mjs) uploads exactly the declared plates,
-never parsing `index.html` for them, and refuses if one is missing) and the browser check
-([`tools/clip-server.mjs`](../tools/clip-server.mjs) serves the whole output
-directory). The repository has no CI workflow or Pages deploy. Anything else
-that copies an edition, such as a `file://` copy or an archived artifact, must
-copy the whole output directory, not `index.html` alone.
+before writing anything; other files in the output are never uploaded. Anything
+else that copies an edition must copy the whole output directory, not
+`index.html` alone.
 
 ## Tree contract
 
@@ -43,13 +33,11 @@ copy the whole output directory, not `index.html` alone.
 whose `lookup(name)` returns a blob with `text()`, or `bytes()` for the plates
 ([`tree-io.mjs`](tree-io.mjs) `readText`/`readBytes`). The output tree must
 provide both `writeText(name, content)` and `writeBytes(name, content)`; a tree
-with only `writeText` fails on the first plate. This is a breaking change from the text-only tree contract of 1.x, released as 2.0.0: a caller passing its own trees must add `bytes()` to art blobs and `writeBytes(name, content)` to the output tree. Each placement passed as
+with only `writeText` fails on the first plate. Each placement passed as
 `illuminations` supplies the `img` attributes `file`, `width`, `height`, and
 `alternativeText` (rendered as the `alt` attribute); the build does not validate them. The committed placements come from
-the metadata map in [`illuminations.mjs`](illuminations.mjs);
-`test/illustrations.test.mjs` checks that each `width` and `height` matches
-its WebP header and that each `alternativeText` is descriptive; and publishing refuses any
-declared plate that is not a `.webp` file in the output directory.
+the metadata map in [`illuminations.mjs`](illuminations.mjs), and publishing
+refuses any declared plate that is not a `.webp` file in the output directory.
 
 ## Publish size
 
@@ -85,10 +73,12 @@ directly after it. [`tools/equilibrium/integration-check.mjs`](../tools/equilibr
 nine placements in a built edition in the browser.
 [`tools/browser-check.mjs`](../tools/browser-check.mjs) loads a built edition in headless Chromium at phone
 and desktop widths in both color schemes and reports overflow, clipped or
-overlapping figures, plates that did not load, and caption contrast. It serves
-a local edition with the published clip's CSP and fails on any CSP violation
-(Playwright is not a dependency;
-point `PLAYWRIGHT_CORE` at an installed `playwright-core`). Before publishing,
+overlapping figures, plates that did not load, and caption contrast. For a
+local edition it loads exactly the files the publish step would upload, under
+the published clip's CSP, and fails on any CSP violation (Playwright is not a
+dependency; point `PLAYWRIGHT_CORE` at an installed `playwright-core`).
+`test/browser-check-chromium.test.mjs` runs it against a fresh build and a
+known-bad copy when `playwright-core` resolves, and is skipped otherwise. Before publishing,
 an edition must pass `npm test` and
 `npm run build && node tools/browser-check.mjs out/index.html`. [`publish.mjs`](publish.mjs) publishes with
 an inert empty-text pet name as `powers`, never `sites`, because `powers`

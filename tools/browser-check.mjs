@@ -5,9 +5,9 @@
 // caption contrast, and plates that did not load. Optionally writes
 // screenshots of the title page and a few figures for a person to look at.
 //
-// A local edition is served by clip-server.mjs with the published clip's
-// Content-Security-Policy; any CSP console violation is a failure in either
-// mode.
+// A local edition is the file set makePublishContent would publish, fulfilled
+// in-process by Playwright under the published clip's Content-Security-Policy;
+// any CSP console violation is a failure in either mode.
 //
 //   node tools/browser-check.mjs out/index.html [screenshot-directory]
 //   node tools/browser-check.mjs https://<published-clip>/ [screenshot-directory]
@@ -20,12 +20,23 @@
 
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { serveEdition } from "./clip-server.mjs";
+import { makeNodeReadableTree } from "../build/node-tree.mjs";
+import { makePublishContent } from "../build/publish-book.mjs";
 
-const loadPlaywright = async () => {
+// The garden's skills/minion-town-clip-publishing (kriscendobot/garden)
+// documents the script-src, style-src, connect-src, and img-src directives of
+// published clips; the other CLIP_CONTENT_SECURITY_POLICY directives are this
+// tool's assumption.
+export const CLIP_CONTENT_SECURITY_POLICY =
+  "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+
+// Never resolved by DNS: every request to it is fulfilled by the route below.
+export const EDITION_ORIGIN = "https://edition.invalid";
+
+export const loadPlaywright = async () => {
   const specifier = process.env.PLAYWRIGHT_CORE
     ? pathToFileURL(join(resolve(process.env.PLAYWRIGHT_CORE), "index.mjs"))
         .href
@@ -56,7 +67,7 @@ const playwrightCache = () =>
 
 // Returns undefined when nothing is found, so Playwright falls back to its
 // own platform-aware default browser.
-const findChromium = () => {
+export const findChromium = () => {
   if (process.env.CHROMIUM) {
     return process.env.CHROMIUM;
   }
@@ -197,81 +208,104 @@ const measure = () => {
   };
 };
 
+// Fulfils EDITION_ORIGIN from the publish content under the clip's CSP; a
+// file the clip leaves out answers 404.
+const routeEdition = async (context, content) => {
+  const files = new Map(content.map((file) => [`/${file.path}`, file]));
+  await context.route(`${EDITION_ORIGIN}/**`, (route) => {
+    const file = files.get(new URL(route.request().url()).pathname);
+    return file
+      ? route.fulfill({
+          status: 200,
+          contentType: file.contentType,
+          headers: { "content-security-policy": CLIP_CONTENT_SECURITY_POLICY },
+          body: Buffer.from(file.bytes, "base64"),
+        })
+      : route.fulfill({ status: 404 });
+  });
+};
+
 /**
- * Measures a built edition in every configuration. A local `target` is served
- * by `serve` (clip-server.mjs by default) so it loads under the clip's CSP;
+ * Measures a built edition in every configuration. A local `target` loads
+ * exactly the files `makePublishContent` would publish, under the clip's CSP;
  * any CSP console message becomes a problem in that configuration's result.
  *
  * @param {object} options
  * @param {object} options.browser Playwright browser.
- * @param {string} options.target path to an `index.html` or an http(s) URL.
+ * @param {string} options.target path to a built `index.html` or an http(s) URL.
  * @param {string} [options.shotsDirectory] where to write screenshots.
- * @param {(htmlPath: string) => Promise<{ url: string, close: () => (void | Promise<void>) }>} [options.serve]
- *   serves the local edition at the absolute `htmlPath` and resolves to the
- *   `url` to load and a `close` that stops serving.
+ * @param {string[]} [options.plates] plates to publish beside a local page;
+ *   defaults to the plates `build/illuminations.mjs` declares.
  */
 export const checkEdition = async ({
   browser,
   target,
   shotsDirectory,
-  serve = serveEdition,
+  plates,
 }) => {
-  const served = /^https?:\/\//.test(target)
-    ? { url: target, close() {} }
-    : await serve(resolve(target));
+  const remote = /^https?:\/\//.test(target);
+  if (!remote && basename(target) !== "index.html") {
+    throw new TypeError(`A local edition is loaded from its index.html, not ${target}`);
+  }
+  const content = remote
+    ? undefined
+    : await makePublishContent(
+        makeNodeReadableTree(pathToFileURL(`${dirname(resolve(target))}/`)),
+        plates,
+      );
+  const url = remote ? target : `${EDITION_ORIGIN}/index.html`;
   const results = [];
-  try {
-    for (const configuration of configurations) {
-      const context = await browser.newContext({
-        viewport: { width: configuration.width, height: configuration.height },
-        colorScheme: configuration.colorScheme,
-        reducedMotion: "reduce",
-      });
-      try {
-        const page = await context.newPage();
-        const violations = [];
-        page.on("console", (message) => {
-          if (/Content Security Policy/u.test(message.text())) {
-            violations.push(`CSP violation: ${message.text()}`);
-          }
-        });
-        await page.goto(served.url, { waitUntil: "load" });
-        await page.evaluate(async () => {
-          for (const image of document.images) {
-            image.scrollIntoView({ block: "center" });
-            await image.decode().catch(() => undefined);
-          }
-          window.scrollTo(0, 0);
-        });
-        const result = await page.evaluate(measure);
-        results.push({
-          ...configuration,
-          ...result,
-          problems: [...violations, ...result.problems],
-        });
-        if (shotsDirectory) {
-          mkdirSync(shotsDirectory, { recursive: true });
-          for (const [name, selector] of shots) {
-            const element = page.locator(selector).first();
-            await element.scrollIntoViewIfNeeded();
-            await page.evaluate(
-              (selectorText) => {
-                const box = document.querySelector(selectorText).getBoundingClientRect();
-                window.scrollBy(0, box.top - 64);
-              },
-              selector,
-            );
-            await page.screenshot({
-              path: join(shotsDirectory, `${configuration.name}-${name}.png`),
-            });
-          }
-        }
-      } finally {
-        await context.close();
+  for (const configuration of configurations) {
+    const context = await browser.newContext({
+      viewport: { width: configuration.width, height: configuration.height },
+      colorScheme: configuration.colorScheme,
+      reducedMotion: "reduce",
+    });
+    try {
+      if (content) {
+        await routeEdition(context, content);
       }
+      const page = await context.newPage();
+      const violations = [];
+      page.on("console", (message) => {
+        if (/Content Security Policy/u.test(message.text())) {
+          violations.push(`CSP violation: ${message.text()}`);
+        }
+      });
+      await page.goto(url, { waitUntil: "load" });
+      await page.evaluate(async () => {
+        for (const image of document.images) {
+          image.scrollIntoView({ block: "center" });
+          await image.decode().catch(() => undefined);
+        }
+        window.scrollTo(0, 0);
+      });
+      const result = await page.evaluate(measure);
+      results.push({
+        ...configuration,
+        ...result,
+        problems: [...violations, ...result.problems],
+      });
+      if (shotsDirectory) {
+        mkdirSync(shotsDirectory, { recursive: true });
+        for (const [name, selector] of shots) {
+          const element = page.locator(selector).first();
+          await element.scrollIntoViewIfNeeded();
+          await page.evaluate(
+            (selectorText) => {
+              const box = document.querySelector(selectorText).getBoundingClientRect();
+              window.scrollBy(0, box.top - 64);
+            },
+            selector,
+          );
+          await page.screenshot({
+            path: join(shotsDirectory, `${configuration.name}-${name}.png`),
+          });
+        }
+      }
+    } finally {
+      await context.close();
     }
-  } finally {
-    await served.close();
   }
   return results;
 };

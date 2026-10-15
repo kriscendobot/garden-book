@@ -1,5 +1,6 @@
-// CLIP_CSP is the policy documented for published clips in the garden's
-// skills/minion-town-clip-publishing (kriscendobot/garden).
+// The garden's skills/minion-town-clip-publishing (kriscendobot/garden)
+// documents the script-src, style-src, connect-src, and img-src directives of
+// published clips; the other CLIP_CSP directives are this tool's assumption.
 import { existsSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { dirname, extname, join } from "node:path";

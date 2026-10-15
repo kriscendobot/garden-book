@@ -164,7 +164,7 @@ const measure = () => {
     scrollWidth: root.scrollWidth,
     clientWidth: viewportWidth,
     figures: figures.length,
-    tallestSvg: Math.round(tallest),
+    tallestPlate: Math.round(tallest),
     minimumCaptionContrast: Number(minimumContrast.toFixed(2)),
     bodyContrast: Number(bodyContrast.toFixed(2)),
     pageBackground,
@@ -237,12 +237,12 @@ try {
 }
 
 console.log(
-  "| Configuration | scrollWidth / clientWidth | Figures | Tallest figure | Caption contrast (min) | Body contrast | Result |",
+  "| Configuration | scrollWidth / clientWidth | Figures | Tallest plate | Caption contrast (min) | Body contrast | Result |",
 );
 console.log("| --- | --- | --- | --- | --- | --- | --- |");
 for (const result of results) {
   console.log(
-    `| ${result.name} (${result.width}×${result.height}, ${result.colorScheme}) | ${result.scrollWidth} / ${result.clientWidth} | ${result.figures} | ${result.tallestSvg}px | ${result.minimumCaptionContrast}:1 | ${result.bodyContrast}:1 | ${result.problems.length === 0 ? "pass" : "FAIL"} |`,
+    `| ${result.name} (${result.width}×${result.height}, ${result.colorScheme}) | ${result.scrollWidth} / ${result.clientWidth} | ${result.figures} | ${result.tallestPlate}px | ${result.minimumCaptionContrast}:1 | ${result.bodyContrast}:1 | ${result.problems.length === 0 ? "pass" : "FAIL"} |`,
   );
 }
 for (const result of results) {

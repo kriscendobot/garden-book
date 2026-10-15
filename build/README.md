@@ -27,9 +27,8 @@ writing anything; stale unreferenced plates are ignored.
 
 ## Multi-file output
 
-The output is no longer a single self-contained `index.html` plus
-`styles.css`: the plates are separate files that `index.html` loads by
-relative `src`, so they must travel with it. The consumers in this repository
+The output is `index.html`, `styles.css`, and the plates `index.html` loads by
+relative `src`; copy all of them together. The consumers in this repository
 are the publish step ([`publish-book.mjs`](publish-book.mjs) uploads every
 referenced plate and refuses if one is missing) and the browser check
 ([`tools/clip-server.mjs`](../tools/clip-server.mjs) serves the whole output
@@ -43,16 +42,19 @@ copy the whole output directory, not `index.html` alone.
 whose `lookup(name)` returns a blob with `text()`, or `bytes()` for the plates
 ([`tree-io.mjs`](tree-io.mjs) `readText`/`readBytes`). The output tree must
 provide both `writeText(name, content)` and `writeBytes(name, content)`; a tree
-with only `writeText` fails on the first plate. Every placement passed as
-`illuminations` must name a `.webp` `file` and carry numeric `width` and
-`height` and a non-empty `alt`, which become the `img` attributes.
+with only `writeText` fails on the first plate. Each placement passed as
+`illuminations` supplies the `img` attributes `file`, `width`, `height`, and
+`alt`; the build does not validate them. The committed placements come from
+the metadata map in [`illuminations.mjs`](illuminations.mjs);
+`test/illustrations.test.mjs` checks that each `width` and `height` matches
+its WebP header and that each `alt` is descriptive; and publishing refuses an
+`illumination-*` reference that is not a `.webp` file in the output.
 
 ## Publish size
 
 `publishBook` refuses any request over `PUBLISH_REQUEST_LIMIT` (2,097,152
-bytes), because the plates are base64-encoded into one MCP request. The
-2026-10-15 edition encodes to 1,943,167 bytes, leaving 153,985 bytes (about
-7%) of headroom; `test/build.test.mjs` fails if the full edition stops fitting.
+bytes), because the plates are base64-encoded into one MCP request;
+`test/build.test.mjs` fails if the full edition stops fitting.
 To recover from an over-limit build, re-encode the largest plates smaller (the
 plates are WebP at a 480-pixel longest side, see
 [`art/OPENAI-ILLUMINATIONS.md`](../art/OPENAI-ILLUMINATIONS.md)) or drop a

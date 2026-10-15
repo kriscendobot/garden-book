@@ -14,8 +14,9 @@
 //
 // Playwright is not a dependency of the book. The script imports
 // playwright-core from PLAYWRIGHT_CORE (a path to the package) or from normal
-// module resolution, and launches CHROMIUM or the newest headless shell in
-// ~/.cache/ms-playwright. It exits 1 if any configuration fails.
+// module resolution, and launches CHROMIUM, the newest headless shell in the
+// platform's Playwright cache, or Playwright's default browser. It exits 1 if
+// any configuration fails.
 
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
@@ -23,8 +24,6 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { serveEdition } from "./clip-server.mjs";
-
-const [, , htmlArgument = "out/index.html", shotsArgument] = process.argv;
 
 const loadPlaywright = async () => {
   const specifier = process.env.PLAYWRIGHT_CORE
@@ -34,11 +33,34 @@ const loadPlaywright = async () => {
   return import(specifier);
 };
 
+// Playwright's headless-shell directory and executable for each platform.
+const headlessShells = {
+  linux: [
+    ["chrome-headless-shell-linux64", "chrome-headless-shell"],
+    ["chrome-headless-shell-linux-arm64", "chrome-headless-shell"],
+  ],
+  darwin: [
+    ["chrome-headless-shell-mac-arm64", "chrome-headless-shell"],
+    ["chrome-headless-shell-mac-x64", "chrome-headless-shell"],
+  ],
+  win32: [["chrome-headless-shell-win64", "chrome-headless-shell.exe"]],
+};
+
+const playwrightCache = () =>
+  process.env.PLAYWRIGHT_BROWSERS_PATH ??
+  {
+    darwin: join(homedir(), "Library", "Caches", "ms-playwright"),
+    win32: join(process.env.LOCALAPPDATA ?? homedir(), "ms-playwright"),
+  }[process.platform] ??
+  join(homedir(), ".cache", "ms-playwright");
+
+// Returns undefined when nothing is found, so Playwright falls back to its
+// own platform-aware default browser.
 const findChromium = () => {
   if (process.env.CHROMIUM) {
     return process.env.CHROMIUM;
   }
-  const cache = join(homedir(), ".cache", "ms-playwright");
+  const cache = playwrightCache();
   const candidates = existsSync(cache)
     ? readdirSync(cache)
         .filter((name) => name.startsWith("chromium_headless_shell-"))
@@ -47,8 +69,8 @@ const findChromium = () => {
             Number(right.split("-")[1]) - Number(left.split("-")[1]),
         )
         .flatMap((name) =>
-          ["chrome-headless-shell-linux64", "chrome-headless-shell-linux-arm64"].map(
-            (platform) => join(cache, name, platform, "chrome-headless-shell"),
+          (headlessShells[process.platform] ?? []).map(([platform, executable]) =>
+            join(cache, name, platform, executable),
           ),
         )
         .filter(existsSync)
@@ -98,18 +120,18 @@ const measure = () => {
   let minimumContrast = Infinity;
   let tallest = 0;
   for (const figure of figures) {
-    const art = figure.querySelector(".illumination-art");
+    const illuminationImage = figure.querySelector(".illumination-art");
     const caption = figure.querySelector("figcaption");
-    const label = art.getAttribute("src").replace(/\.webp$/, "");
+    const label = illuminationImage.getAttribute("src").replace(/\.webp$/, "");
     const figureBox = figure.getBoundingClientRect();
-    const artBox = art.getBoundingClientRect();
+    const illuminationImageBox = illuminationImage.getBoundingClientRect();
     const captionBox = caption.getBoundingClientRect();
     const container = figure.parentElement.getBoundingClientRect();
     const floated = getComputedStyle(figure).float !== "none";
-    if (!art.complete || art.naturalWidth === 0) {
+    if (!illuminationImage.complete || illuminationImage.naturalWidth === 0) {
       problems.push(`${label}: image did not load`);
     }
-    for (const [part, box] of [["figure", figureBox], ["art", artBox], ["caption", captionBox]]) {
+    for (const [part, box] of [["figure", figureBox], ["art", illuminationImageBox], ["caption", captionBox]]) {
       if (box.left < -0.5 || box.right > viewportWidth + 0.5) {
         problems.push(`${label}: ${part} leaves the viewport`);
       }
@@ -117,20 +139,20 @@ const measure = () => {
         problems.push(`${label}: ${part} is wider than its column`);
       }
     }
-    if (artBox.width > figureBox.width + 0.5 || captionBox.width > figureBox.width + 0.5) {
+    if (illuminationImageBox.width > figureBox.width + 0.5 || captionBox.width > figureBox.width + 0.5) {
       problems.push(`${label}: content wider than its figure`);
     }
-    const expectedHeight = (artBox.width * Number(art.getAttribute("height"))) / Number(art.getAttribute("width"));
-    if (Math.abs(artBox.height - expectedHeight) > 1.5) {
-      problems.push(`${label}: art is ${artBox.height.toFixed(0)}px tall, expected ${expectedHeight.toFixed(0)}px`);
+    const expectedHeight = (illuminationImageBox.width * Number(illuminationImage.getAttribute("height"))) / Number(illuminationImage.getAttribute("width"));
+    if (Math.abs(illuminationImageBox.height - expectedHeight) > 1.5) {
+      problems.push(`${label}: art is ${illuminationImageBox.height.toFixed(0)}px tall, expected ${expectedHeight.toFixed(0)}px`);
     }
-    if (artBox.height > window.innerHeight * 0.75) {
+    if (illuminationImageBox.height > window.innerHeight * 0.75) {
       problems.push(`${label}: art is taller than three quarters of the viewport`);
     }
     if (figure.scrollHeight > figure.clientHeight + 1 || captionBox.bottom > figureBox.bottom + 0.5) {
       problems.push(`${label}: figure clips its content`);
     }
-    tallest = Math.max(tallest, artBox.height);
+    tallest = Math.max(tallest, illuminationImageBox.height);
     // Anything else in the chapter that a figure could cover.
     const section = figure.closest("section");
     for (const other of section.querySelectorAll(
@@ -175,81 +197,116 @@ const measure = () => {
   };
 };
 
-const { chromium } = await loadPlaywright();
-const browser = await chromium.launch({
-  executablePath: findChromium(),
-  args: ["--no-sandbox"],
-});
-const served = /^https?:\/\//.test(htmlArgument)
-  ? { url: htmlArgument, close() {} }
-  : await serveEdition(resolve(htmlArgument));
-const results = [];
-try {
-  for (const configuration of configurations) {
-    const context = await browser.newContext({
-      viewport: { width: configuration.width, height: configuration.height },
-      colorScheme: configuration.colorScheme,
-      reducedMotion: "reduce",
-    });
-    const page = await context.newPage();
-    const violations = [];
-    page.on("console", (message) => {
-      if (/Content Security Policy/u.test(message.text())) {
-        violations.push(`CSP violation: ${message.text()}`);
+/**
+ * Measures a built edition in every configuration. A local `target` is served
+ * by `serve` (clip-server.mjs by default) so it loads under the clip's CSP;
+ * any CSP console message becomes a problem in that configuration's result.
+ *
+ * @param {object} options
+ * @param {object} options.browser Playwright browser.
+ * @param {string} options.target path to an `index.html` or an http(s) URL.
+ * @param {string} [options.shotsDirectory] where to write screenshots.
+ * @param {Function} [options.serve] serves a local edition.
+ */
+export const checkEdition = async ({
+  browser,
+  target,
+  shotsDirectory,
+  serve = serveEdition,
+}) => {
+  const served = /^https?:\/\//.test(target)
+    ? { url: target, close() {} }
+    : await serve(resolve(target));
+  const results = [];
+  try {
+    for (const configuration of configurations) {
+      const context = await browser.newContext({
+        viewport: { width: configuration.width, height: configuration.height },
+        colorScheme: configuration.colorScheme,
+        reducedMotion: "reduce",
+      });
+      const page = await context.newPage();
+      const violations = [];
+      page.on("console", (message) => {
+        if (/Content Security Policy/u.test(message.text())) {
+          violations.push(`CSP violation: ${message.text()}`);
+        }
+      });
+      await page.goto(served.url, { waitUntil: "load" });
+      await page.evaluate(async () => {
+        for (const image of document.images) {
+          image.scrollIntoView({ block: "center" });
+          await image.decode().catch(() => undefined);
+        }
+        window.scrollTo(0, 0);
+      });
+      const result = await page.evaluate(measure);
+      results.push({
+        ...configuration,
+        ...result,
+        problems: [...violations, ...result.problems],
+      });
+      if (shotsDirectory) {
+        mkdirSync(shotsDirectory, { recursive: true });
+        for (const [name, selector] of shots) {
+          const element = page.locator(selector).first();
+          await element.scrollIntoViewIfNeeded();
+          await page.evaluate(
+            (selectorText) => {
+              const box = document.querySelector(selectorText).getBoundingClientRect();
+              window.scrollBy(0, box.top - 64);
+            },
+            selector,
+          );
+          await page.screenshot({
+            path: join(shotsDirectory, `${configuration.name}-${name}.png`),
+          });
+        }
       }
-    });
-    await page.goto(served.url, { waitUntil: "load" });
-    await page.evaluate(async () => {
-      for (const image of document.images) {
-        image.scrollIntoView({ block: "center" });
-        await image.decode().catch(() => undefined);
-      }
-      window.scrollTo(0, 0);
-    });
-    const result = await page.evaluate(measure);
-    results.push({
-      ...configuration,
-      ...result,
-      problems: [...violations, ...result.problems],
-    });
-    if (shotsArgument) {
-      mkdirSync(shotsArgument, { recursive: true });
-      for (const [name, selector] of shots) {
-        const element = page.locator(selector).first();
-        await element.scrollIntoViewIfNeeded();
-        await page.evaluate(
-          (target) => {
-            const box = document.querySelector(target).getBoundingClientRect();
-            window.scrollBy(0, box.top - 64);
-          },
-          selector,
-        );
-        await page.screenshot({
-          path: join(shotsArgument, `${configuration.name}-${name}.png`),
-        });
-      }
+      await context.close();
     }
-    await context.close();
+  } finally {
+    await served.close();
   }
-} finally {
-  await browser.close();
-  served.close();
-}
+  return results;
+};
 
-console.log(
-  "| Configuration | scrollWidth / clientWidth | Figures | Tallest plate | Caption contrast (min) | Body contrast | Result |",
-);
-console.log("| --- | --- | --- | --- | --- | --- | --- |");
-for (const result of results) {
-  console.log(
-    `| ${result.name} (${result.width}×${result.height}, ${result.colorScheme}) | ${result.scrollWidth} / ${result.clientWidth} | ${result.figures} | ${result.tallestPlate}px | ${result.minimumCaptionContrast}:1 | ${result.bodyContrast}:1 | ${result.problems.length === 0 ? "pass" : "FAIL"} |`,
-  );
-}
-for (const result of results) {
-  for (const problem of result.problems) {
-    console.log(`${result.name}: ${problem}`);
+const main = async () => {
+  const [, , htmlArgument = "out/index.html", shotsArgument] = process.argv;
+  const { chromium } = await loadPlaywright();
+  const browser = await chromium.launch({
+    executablePath: findChromium(),
+    args: ["--no-sandbox"],
+  });
+  let results;
+  try {
+    results = await checkEdition({
+      browser,
+      target: htmlArgument,
+      shotsDirectory: shotsArgument,
+    });
+  } finally {
+    await browser.close();
   }
-}
-if (results.some((result) => result.problems.length > 0)) {
-  process.exitCode = 1;
+  console.log(
+    "| Configuration | scrollWidth / clientWidth | Figures | Tallest plate | Caption contrast (min) | Body contrast | Result |",
+  );
+  console.log("| --- | --- | --- | --- | --- | --- | --- |");
+  for (const result of results) {
+    console.log(
+      `| ${result.name} (${result.width}×${result.height}, ${result.colorScheme}) | ${result.scrollWidth} / ${result.clientWidth} | ${result.figures} | ${result.tallestPlate}px | ${result.minimumCaptionContrast}:1 | ${result.bodyContrast}:1 | ${result.problems.length === 0 ? "pass" : "FAIL"} |`,
+    );
+  }
+  for (const result of results) {
+    for (const problem of result.problems) {
+      console.log(`${result.name}: ${problem}`);
+    }
+  }
+  if (results.some((result) => result.problems.length > 0)) {
+    process.exitCode = 1;
+  }
+};
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  await main();
 }

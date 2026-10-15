@@ -1,6 +1,9 @@
 // prefer-endo-primitives-exempt: garden-book is a standalone package with no
 // @endo/* dependency; TextEncoder and btoa are web standards, keeping this
 // module free of Node built-ins such as Buffer.
+import packageJson from "../package.json" with { type: "json" };
+
+import { illuminations } from "./illuminations.mjs";
 import { readBytes, readText } from "./tree-io.mjs";
 
 export const encodeBase64 = (bytes) => {
@@ -11,68 +14,33 @@ export const encodeBase64 = (bytes) => {
   return btoa(binary);
 };
 
-export const makePublishContent = async (builtTree) => {
-  const html = await readText(builtTree, "index.html");
-  // Every same-origin image the page loads must travel in the clip, whatever
-  // its name; absolute and data: URLs are not published files. A relative
-  // reference is published under its URL path, so `./plate.webp`,
-  // `plate.webp?rev=1`, and `plate.webp#figure` all name `plate.webp`.
-  const imageTags = [...html.matchAll(/<img\b[^>]*>/giu)].map(([tag]) => tag);
-  // The browser may pick any srcset candidate, so a manifest built from src
-  // alone could omit the image a reader actually loads.
-  const selecting = imageTags.filter((tag) => /\ssrcset\s*=/iu.test(tag));
-  if (selecting.length > 0 || /<source\b/iu.test(html)) {
-    throw new TypeError(
-      `Refusing to publish: index.html selects images with srcset or <source>, which the publish manifest does not follow: ${selecting.join(", ")}`,
-    );
-  }
-  const base = "http://clip.invalid/";
-  const referencedImages = [
-    ...new Set(
-      imageTags
-        .map((tag) => /\ssrc\s*=\s*(?:"([^"]*)"|'([^']*)')/iu.exec(tag))
-        .filter(Boolean)
-        .map(([, double, single]) => double ?? single)
-        .filter((source) => !/^(?:[a-z][a-z0-9+.-]*:|\/)/iu.test(source))
-        .map((source) => {
-          const url = new URL(source, base);
-          let file;
-          try {
-            file = decodeURIComponent(url.pathname.slice(1));
-          } catch {
-            file = source;
-          }
-          if (
-            url.origin !== new URL(base).origin ||
-            file.includes("/") ||
-            /(?:^|\/)\.\.(?:[/?#]|$)/u.test(source)
-          ) {
-            throw new TypeError(
-              `Refusing to publish: index.html references an image outside the edition directory: ${source}`,
-            );
-          }
-          return file;
-        }),
-    ),
-  ];
-  const unsupported = referencedImages.filter((file) => !file.endsWith(".webp"));
+// The build declares every plate it writes, so publication carries exactly
+// that list rather than whatever files the rendered page happens to name.
+const declaredPlates = illuminations.map(({ file }) => file);
+
+export const makePublishContent = async (
+  builtTree,
+  plates = declaredPlates,
+) => {
+  const unsupported = plates.filter(
+    (file) => !/^[A-Za-z0-9][A-Za-z0-9_.-]*\.webp$/u.test(file),
+  );
   if (unsupported.length > 0) {
     throw new TypeError(
-      `Refusing to publish: index.html references non-WebP plates: ${unsupported.join(", ")}`,
+      `Refusing to publish: declared plates must be WebP files in the edition directory: ${unsupported.join(", ")}`,
     );
   }
   const built = new Set(await builtTree.list());
-  const missing = referencedImages.filter((file) => !built.has(file));
+  const missing = plates.filter((file) => !built.has(file));
   if (missing.length > 0) {
     throw new Error(
-      `Refusing to publish: index.html references plates missing from the build output: ${missing.join(", ")}`,
+      `Refusing to publish: declared plates missing from the build output: ${missing.join(", ")}`,
     );
   }
-  const images = [...built].filter((file) => referencedImages.includes(file));
   const files = [
     ["index.html", "text/html; charset=utf-8", "text"],
     ["styles.css", "text/css; charset=utf-8", "text"],
-    ...images.map((file) => [file, "image/webp", "bytes"]),
+    ...[...new Set(plates)].map((file) => [file, "image/webp", "bytes"]),
   ];
   return Promise.all(
     files.map(async ([path, contentType, kind]) => ({
@@ -80,9 +48,7 @@ export const makePublishContent = async (builtTree) => {
       contentType,
       bytes: encodeBase64(
         kind === "text"
-          ? new TextEncoder().encode(
-              path === "index.html" ? html : await readText(builtTree, path),
-            )
+          ? new TextEncoder().encode(await readText(builtTree, path))
           : await readBytes(builtTree, path),
       ),
     })),
@@ -125,8 +91,9 @@ export const publishRequestBytes = (publishArguments, requestIdentifier = 3) =>
  *
  * @param {object} options
  * @param {object} options.builtTree readable tree holding `index.html`,
- *   `styles.css`, and every relative WebP image that `index.html`
- *   references, from a prior build.
+ *   `styles.css`, and every declared plate, from a prior build.
+ * @param {string[]} [options.plates] WebP files to publish beside the page;
+ *   defaults to the plates `build/illuminations.mjs` declares.
  * @param {object} options.peer JSON-RPC peer connected to the minion MCP bridge.
  * @param {string} [options.powersName] pet name for the clip's `powers`,
  *   which becomes every visitor's bootstrap. It is overwritten with inert
@@ -140,6 +107,7 @@ export const publishBook = async ({
   builtTree,
   peer,
   powersName = "garden-book-inert",
+  plates = declaredPlates,
 }) => {
   if (typeof powersName !== "string" || !INERT_POWERS_NAME.test(powersName)) {
     throw new RangeError(
@@ -149,12 +117,12 @@ export const publishBook = async ({
   await peer.call("initialize", {
     protocolVersion: "2025-03-26",
     capabilities: {},
-    clientInfo: { name: "garden-book", version: "1" },
+    clientInfo: { name: "garden-book", version: packageJson.version },
   });
   peer.notify("notifications/initialized", {});
   const publishArguments = {
     powers: powersName,
-    content: await makePublishContent(builtTree),
+    content: await makePublishContent(builtTree, plates),
   };
   const requestBytes = publishRequestBytes(publishArguments);
   if (requestBytes > PUBLISH_REQUEST_LIMIT) {

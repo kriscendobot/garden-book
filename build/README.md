@@ -22,15 +22,16 @@ The build command writes `index.html`, `styles.css`, and the 25 illumination
 WebPs into the output directory (`out/` above). They are build artifacts, not
 committed: the publish step uploads all 27 files as the clip, and a rebuild
 overwrites them. Publishing refuses a clip over minion.town's MCP request
-limit, or one whose HTML references a plate missing from the output, before
-writing anything; stale unreferenced plates are ignored.
+limit, or one missing a plate declared in [`illuminations.mjs`](illuminations.mjs),
+before writing anything; other files in the output are never uploaded.
 
 ## Multi-file output
 
-The output is `index.html`, `styles.css`, and the plates `index.html` loads by
-relative `src`; copy all of them together. The consumers in this repository
-are the publish step ([`publish-book.mjs`](publish-book.mjs) uploads every
-referenced plate and refuses if one is missing) and the browser check
+The output is `index.html`, `styles.css`, and the plates declared in
+[`illuminations.mjs`](illuminations.mjs); copy all of them together. The
+consumers in this repository are the publish step
+([`publish-book.mjs`](publish-book.mjs) uploads exactly the declared plates,
+never parsing `index.html` for them, and refuses if one is missing) and the browser check
 ([`tools/clip-server.mjs`](../tools/clip-server.mjs) serves the whole output
 directory). The repository has no CI workflow or Pages deploy. Anything else
 that copies an edition, such as a `file://` copy or an archived artifact, must
@@ -48,7 +49,7 @@ with only `writeText` fails on the first plate. This is a breaking change from t
 the metadata map in [`illuminations.mjs`](illuminations.mjs);
 `test/illustrations.test.mjs` checks that each `width` and `height` matches
 its WebP header and that each `alternativeText` is descriptive; and publishing refuses any
-relative `img` reference that is not a `.webp` file in the output.
+declared plate that is not a `.webp` file in the output directory.
 
 ## Publish size
 

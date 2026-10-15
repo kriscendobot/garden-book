@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import fc from "fast-check";
+import fastCheck from "fast-check";
+
+import packageJson from "../package.json" with { type: "json" };
 
 import { assembleBook } from "../build/assemble-book.mjs";
+import { illuminations } from "../build/illuminations.mjs";
 import { makeNodeReadableTree } from "../build/node-tree.mjs";
 import {
   encodeBase64,
@@ -264,8 +267,17 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
     }),
     peer,
     powersName: "garden-book-test",
+    plates: ["illumination-test.webp"],
   });
 
+  assert.deepEqual(calls[0], [
+    "initialize",
+    {
+      protocolVersion: "2025-03-26",
+      capabilities: {},
+      clientInfo: { name: "garden-book", version: packageJson.version },
+    },
+  ]);
   assert.deepEqual(notifications, [["notifications/initialized", {}]]);
   assert.deepEqual(calls[1], [
     "tools/call",
@@ -288,130 +300,93 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
 });
 
 test("makePublishContent preserves arbitrary plate bytes through its Base64 record", async () => {
-  await fc.assert(
-    fc.asyncProperty(fc.uint8Array({ maxLength: 32_768 }), async (bytes) => {
-      const content = await makePublishContent(
-        makeReadableTree({
-          "index.html": '<img src="plate.webp">',
-          "styles.css": "",
-          "plate.webp": bytes,
-        }),
-      );
-      const plate = content.find(({ path }) => path === "plate.webp");
-      assert.deepEqual(
-        new Uint8Array(Buffer.from(plate.bytes, "base64")),
-        bytes,
-      );
-    }),
+  await fastCheck.assert(
+    fastCheck.asyncProperty(
+      fastCheck.uint8Array({ maxLength: 32_768 }),
+      async (bytes) => {
+        const content = await makePublishContent(
+          makeReadableTree({
+            "index.html": "",
+            "styles.css": "",
+            "plate.webp": bytes,
+          }),
+          ["plate.webp"],
+        );
+        const plate = content.find(({ path }) => path === "plate.webp");
+        assert.deepEqual(
+          new Uint8Array(Buffer.from(plate.bytes, "base64")),
+          bytes,
+        );
+      },
+    ),
     { numRuns: 200 },
   );
 });
 
-test("makePublishContent ignores stale unreferenced illuminations", async () => {
-  const content = await makePublishContent(
-    makeReadableTree({
-      "index.html": '<img src="illumination-current.webp">',
-      "styles.css": "",
-      "illumination-current.webp": new Uint8Array([1]),
-      "illumination-stale.webp": new Uint8Array([2]),
-    }),
+test("makePublishContent publishes the declared plates by default", async () => {
+  const output = Object.fromEntries(
+    illuminations.map(({ file }) => [file, new Uint8Array([1])]),
   );
-
+  const content = await makePublishContent(
+    makeReadableTree({ "index.html": "", "styles.css": "", ...output }),
+  );
   assert.deepEqual(
     content.map(({ path }) => path),
-    ["index.html", "styles.css", "illumination-current.webp"],
+    ["index.html", "styles.css", ...illuminations.map(({ file }) => file)],
   );
 });
 
-test("makePublishContent refuses a referenced plate missing from the build", async () => {
+test("makePublishContent never publishes an undeclared sibling the page names", async () => {
+  for (const html of [
+    '<img src="confidential.webp">',
+    "<img src=confidential.webp>",
+    '<img data-note=">" src="confidential.webp">',
+  ]) {
+    const content = await makePublishContent(
+      makeReadableTree({
+        "index.html": html,
+        "styles.css": "",
+        "plate.webp": new Uint8Array([1]),
+        "confidential.webp": new Uint8Array([2]),
+      }),
+      ["plate.webp"],
+    );
+    assert.deepEqual(
+      content.map(({ path }) => path),
+      ["index.html", "styles.css", "plate.webp"],
+    );
+  }
+});
+
+test("makePublishContent refuses a declared plate missing from the build", async () => {
   await assert.rejects(
     makePublishContent(
       makeReadableTree({
-        "index.html":
-          '<img src="illumination-present.webp"><img src="illumination-Gone_1.webp">',
+        "index.html": "",
         "styles.css": "",
         "illumination-present.webp": new Uint8Array([1]),
       }),
+      ["illumination-present.webp", "illumination-Gone_1.webp"],
     ),
     /missing from the build output: illumination-Gone_1\.webp$/u,
   );
 });
 
-test("makePublishContent refuses a referenced plate that is not WebP", async () => {
-  await assert.rejects(
-    makePublishContent(
-      makeReadableTree({
-        "index.html": '<img src="illumination-odd.png">',
-        "styles.css": "",
-        "illumination-odd.png": new Uint8Array([1]),
-      }),
-    ),
-    /non-WebP plates: illumination-odd\.png$/u,
-  );
-});
-
-test("makePublishContent publishes a referenced plate whatever its name", async () => {
-  const content = await makePublishContent(
-    makeReadableTree({
-      "index.html":
-        '<img class="illumination-art" src="plate.webp"><img src="data:image/webp;base64,AA=="><img src="https://example.test/remote.webp">',
-      "styles.css": "",
-      "plate.webp": new Uint8Array([7]),
-    }),
-  );
-  assert.deepEqual(
-    content.map(({ path }) => path),
-    ["index.html", "styles.css", "plate.webp"],
-  );
-});
-
-test("makePublishContent publishes query, fragment, and ./ spellings under the plate's name", async () => {
-  const content = await makePublishContent(
-    makeReadableTree({
-      "index.html":
-        "<img src=\"plate.webp?rev=1\"><img src=\"other.webp#figure\"><img src='./third.webp'>",
-      "styles.css": "",
-      "plate.webp": new Uint8Array([1]),
-      "other.webp": new Uint8Array([2]),
-      "third.webp": new Uint8Array([3]),
-    }),
-  );
-  assert.deepEqual(
-    content.map(({ path }) => path).sort(),
-    ["index.html", "other.webp", "plate.webp", "styles.css", "third.webp"],
-  );
-});
-
-for (const [why, html, pattern] of [
-  ["a srcset candidate", '<img src="small.webp" srcset="large.webp 2x">', /srcset or <source>/u],
-  ["a <picture> source", '<picture><source srcset="large.webp"><img src="small.webp"></picture>', /srcset or <source>/u],
-  ["a parent-directory image", '<img src="../plate.webp">', /outside the edition directory: \.\.\/plate\.webp$/u],
-  ["a subdirectory image", '<img src="art/plate.webp">', /outside the edition directory: art\/plate\.webp$/u],
+for (const [why, plate] of [
+  ["a non-WebP plate", "illumination-odd.png"],
+  ["a parent-directory plate", "../plate.webp"],
+  ["a subdirectory plate", "art/plate.webp"],
 ]) {
   test(`makePublishContent refuses ${why}`, async () => {
     await assert.rejects(
       makePublishContent(
-        makeReadableTree({
-          "index.html": html,
-          "styles.css": "",
-          "small.webp": new Uint8Array([1]),
-          "large.webp": new Uint8Array([2]),
-          "plate.webp": new Uint8Array([3]),
-        }),
+        makeReadableTree({ "index.html": "", "styles.css": "", [plate]: new Uint8Array([1]) }),
+        [plate],
       ),
-      pattern,
+      /declared plates must be WebP files in the edition directory/u,
     );
   });
 }
-
-test("makePublishContent refuses a non-illumination plate missing from the build", async () => {
-  await assert.rejects(
-    makePublishContent(
-      makeReadableTree({ "index.html": '<img src="plate.webp">', "styles.css": "" }),
-    ),
-    /missing from the build output: plate\.webp$/u,
-  );
-});
 
 const recordingPeer = (calls) => ({
   async call(method, params) {
@@ -429,6 +404,7 @@ const clipOfRequestSize = async (over) => {
       powers: powersName,
       content: await makePublishContent(
         makeReadableTree({ "index.html": html, "styles.css": "" }),
+        [],
       ),
     });
   const room = PUBLISH_REQUEST_LIMIT + over - (await measure("", "garden-book-a"));
@@ -439,6 +415,7 @@ const clipOfRequestSize = async (over) => {
   return {
     builtTree: makeReadableTree({ "index.html": html, "styles.css": "" }),
     powersName,
+    plates: [],
   };
 };
 

@@ -2,7 +2,7 @@
 // documents the script-src, style-src, connect-src, and img-src directives of
 // published clips; the other CLIP_CONTENT_SECURITY_POLICY directives are this
 // tool's assumption.
-import { readFileSync, statSync } from "node:fs";
+import { lstatSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { dirname, extname, join } from "node:path";
 
@@ -31,7 +31,8 @@ const readPublished = (directory, pathname) => {
   }
   const path = join(directory, name);
   try {
-    if (!statSync(path).isFile()) {
+    // lstat, not stat: a symbolic link could name a file outside the edition.
+    if (!lstatSync(path).isFile()) {
       return { status: 404 };
     }
     return { status: 200, type, body: readFileSync(path) };

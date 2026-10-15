@@ -14,12 +14,45 @@ export const encodeBase64 = (bytes) => {
 export const makePublishContent = async (builtTree) => {
   const html = await readText(builtTree, "index.html");
   // Every same-origin image the page loads must travel in the clip, whatever
-  // its name; absolute and data: URLs are not published files.
+  // its name; absolute and data: URLs are not published files. A relative
+  // reference is published under its URL path, so `./plate.webp`,
+  // `plate.webp?rev=1`, and `plate.webp#figure` all name `plate.webp`.
+  const imageTags = [...html.matchAll(/<img\b[^>]*>/giu)].map(([tag]) => tag);
+  // The browser may pick any srcset candidate, so a manifest built from src
+  // alone could omit the image a reader actually loads.
+  const selecting = imageTags.filter((tag) => /\ssrcset\s*=/iu.test(tag));
+  if (selecting.length > 0 || /<source\b/iu.test(html)) {
+    throw new TypeError(
+      `Refusing to publish: index.html selects images with srcset or <source>, which the publish manifest does not follow: ${selecting.join(", ")}`,
+    );
+  }
+  const base = "http://clip.invalid/";
   const referencedImages = [
     ...new Set(
-      [...html.matchAll(/<img\b[^>]*?\bsrc="([^"]*)"/gu)]
-        .map(([, file]) => file)
-        .filter((file) => !/^(?:[a-z][a-z0-9+.-]*:|\/)/iu.test(file)),
+      imageTags
+        .map((tag) => /\ssrc\s*=\s*(?:"([^"]*)"|'([^']*)')/iu.exec(tag))
+        .filter(Boolean)
+        .map(([, double, single]) => double ?? single)
+        .filter((source) => !/^(?:[a-z][a-z0-9+.-]*:|\/)/iu.test(source))
+        .map((source) => {
+          const url = new URL(source, base);
+          let file;
+          try {
+            file = decodeURIComponent(url.pathname.slice(1));
+          } catch {
+            file = source;
+          }
+          if (
+            url.origin !== new URL(base).origin ||
+            file.includes("/") ||
+            /(?:^|\/)\.\.(?:[/?#]|$)/u.test(source)
+          ) {
+            throw new TypeError(
+              `Refusing to publish: index.html references an image outside the edition directory: ${source}`,
+            );
+          }
+          return file;
+        }),
     ),
   ];
   const unsupported = referencedImages.filter((file) => !file.endsWith(".webp"));

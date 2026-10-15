@@ -80,9 +80,6 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#x27;");
 
-const inlineSvg = (source, className) =>
-  source.trim().replace(/<svg\s+xmlns="[^"]+"/, `<svg class="${className}"`);
-
 const glyph = (key, className = "glyph") =>
   `<svg class="${className}" aria-hidden="true" focusable="false"><use href="#g-${key}"/></svg>`;
 
@@ -532,8 +529,7 @@ export const renderBook = ({
       if (at !== placement.anchor) {
         assertWithinSection(bodyHtml, placement.anchor, at);
       }
-      const source = artwork.illuminations?.[placement.file];
-      if (source === undefined) {
+      if (!Object.hasOwn(artwork.illuminations ?? {}, placement.file)) {
         throw new RangeError(`No artwork for ${placement.file}`);
       }
       bodyHtml = insertAfterBlocks(

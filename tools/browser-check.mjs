@@ -5,10 +5,6 @@
 // caption contrast, and plates that did not load. Optionally writes
 // screenshots of the title page and a few figures for a person to look at.
 //
-// A local edition is the file set makePublishContent would publish, fulfilled
-// in-process by Playwright under the published clip's Content-Security-Policy;
-// any CSP console violation is a failure in either mode.
-//
 //   node tools/browser-check.mjs out/index.html [screenshot-directory]
 //   node tools/browser-check.mjs https://<published-clip>/ [screenshot-directory]
 //
@@ -231,7 +227,6 @@ const routeEdition = async (context, content) => {
  * any CSP console message becomes a problem in that configuration's result.
  *
  * @param {object} options
- * @param {object} options.browser Playwright browser.
  * @param {string} options.target path to a built `index.html` or an http(s) URL.
  * @param {string} [options.shotsDirectory] where to write screenshots.
  * @param {string[]} [options.plates] plates to publish beside a local page;

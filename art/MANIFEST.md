@@ -12,42 +12,42 @@ These assets extend the book's warm-paper presentation with a restrained garden 
 
 The 25 thematic illustrations below implement the complete set in `chapter-illustrations-brief.md`; `build/illuminations.mjs` places them, and `OPENAI-ILLUMINATIONS.md` and `illumination-redraw-evidence.md` record their generation and review.
 
-| File | Target anchor | Role and theme | Suggested placement / ratio | Accessibility intent |
-| --- | --- | --- | --- | --- |
-| `illumination-ch1-metamorphoses.webp` | `ch1-chapter-1-philosophy-history-and-metamorphosis` | Chapter opener; one practice rebuilt through four garden forms | After chapter provenance, 16:10 | Names the shepherd plot, glasshouse, supervised nursery, distributed garden, and their continuous root. |
-| `illumination-ch1-bidding-market.webp` | `ch1-15-the-next-metamorphosis-the-bidding-market` | Section; selection by fit, cost, and reputation replaces a claim race | After the section heading, 5:2 | Contrasts the faded fastest-arrival route with the balance selecting the best-matched gardener. |
-| `illumination-ch2-shared-garden.webp` | `ch2-chapter-2-architecture-and-operation` | Chapter opener; independent workers coordinate through shared state and isolated workspaces | After chapter provenance, 3:2 | Relates separate beds and sheds to underground routes that meet at one journal. |
-| `illumination-ch2-journal-duties.webp` | `ch2-21-the-journal-as-job-board-and-message-bus` | Section; one journal serves transcript, job board, and message bus | After the opening explanation, 2:1 | Explicitly names the three duties and their common clasp. |
-| `illumination-ch2-deliberate-deploy.webp` | `ch2-26-the-deliberate-deploy` | Section; a tested version advances deliberately across the fleet | At the process explanation, 5:2 | States the order from development through canaries to leader and the one-settled-graft invariant. |
-| `illumination-ch3-garden-gate.webp` | `ch3-chapter-3-using-the-garden` | Chapter opener; the liaison relays intent and questions without doing field work | After chapter provenance, 3:4 | Identifies the reader, liaison, distant workers, durable work packets, and returning questions. |
-| `illumination-ch3-muster.webp` | `ch3-33-muster-working-the-maintainer-inbox` | Section; compact, classify, and dispose of accumulated messages | Mid-section, 3:1 | Names the three passes in order and preserves the human decision at the final stage. |
-| `illumination-ch4-living-enclosure.webp` | `ch4-chapter-4-creating-your-own-instance` | Chapter opener; provisioning a distinct instance that joins a larger garden | After chapter provenance, 3:2 | Names the enclosure, unique gate, locked credentials, workers, and shared connection. |
-| `illumination-ch4-container-boundary.webp` | `ch4-42-the-container-model` | Section; the container separates the bot fleet from human host credentials | After the boundary explanation, 4:3 | States which tools, services, and credentials remain inside or outside and that the glass prevents reach-through. |
-| `illumination-ch4-turnkey-host.webp` | `ch4-46-the-turnkey-path-a-disposable-aws-host` | Section; prebuilt disposable infrastructure arrives without secrets | Before resource and launch details, 16:9 | Contrasts the fitted floating host with empty credential niches filled only after landing. |
-| `illumination-ch5-field-guilds.webp` | `ch5-chapter-5-roles-reference` | Chapter opener; one worker adopts different focused role briefs | After chapter provenance, 3:2 | Explains that a generic gardener selects a role emblem and operating brief for the current work. |
-| `illumination-ch5-panel-arbor.webp` | `ch5-54-judicial-and-panel-adjacent-roles` | Section; specialist reviews converge through a deterministic loop | At the conceptual transition, 2:1 | Describes many lenses inspecting one artifact and findings entering a scripted sorter. |
-| `illumination-ch6-skill-cabinet.webp` | `ch6-chapter-6-skills-reference` | Chapter opener; reusable playbooks are selected just in time and may have scripted mechanisms | After chapter provenance, 3:2 | Distinguishes selecting a few procedure folios from executing deterministic gears below them. |
-| `illumination-ch6-guarded-edge.webp` | `ch6-610-security-and-trust-surfaces` | Section; inbound and outbound material crosses explicit trust checks | At the catalog pause, 5:2 | Identifies incoming classification and outgoing destination validation without depicting foreign content as hostile. |
-| `illumination-ch7-named-paths.webp` | `ch7-chapter-7-procedures-and-workflows` | Chapter opener; durable procedures provide different route shapes | After chapter provenance, 16:10 | Names the loop, branching sequence, delayed gate, and identity-crossing river route. |
-| `illumination-ch7-gauntlet.webp` | `ch7-72-the-gauntlet-end-to-end` | Section; one draft artifact moves through review and repair | At the visual rest point, 3:1 | Names root inspection, pruning, panel review, repair, readiness, and the review-to-fix loop. |
-| `illumination-ch7-orchestration.webp` | `ch7-74-orchestration` | Section; multi-part order, policy, and budget are recorded before execution | After the section heading, 2:1 | Describes serial and parallel children, stop/continue policy, and one measured shared reservoir. |
-| `illumination-ch7-ferry.webp` | `ch7-76-the-ferry` | Section; approved work crosses an identity boundary under human authority | Before authorization details, 5:2 | Names the bot bank, upstream orchard, human signet, sealed graft, and temporary identity change. |
-| `illumination-ch8-feedback-loops.webp` | `ch8-chapter-8-cybernetics-and-budgeting` | Chapter opener; regulation arises from several observable feedback loops | After chapter provenance, 3:2 | Enumerates sensor, setpoint, controller, actuator, changed soil, and returned measurement. |
-| `illumination-ch8-cybernetic-loop.webp` | `ch8-81-why-cybernetics` | Section; a close causal study of measurement changing behavior | After the five audit questions, 1:1 | Traces cistern, gauge, human-adjusted valve, irrigated bed, and return channel in order. |
-| `illumination-ch8-bounded-pie.webp` | `ch8-86-per-orchestration-budgets-a-bounded-pie` | Section; serial work shares a finite campaign budget | Before the mechanics, 4:3 | Explains measured admission from one finite seed bowl and closed gates when seeds or the scoop are absent. |
-| `illumination-ch9-hanging-library.webp` | `ch9-chapter-9-the-library-and-how-it-spends-context` | Chapter opener; layered knowledge supports selective retrieval | After chapter provenance or in the wide-screen margin, 4:5 | Describes indexed terraces and one small relevant basket lowered to the reader. |
-| `illumination-ch9-three-indexes.webp` | `ch9-92-what-it-looks-like-on-disk` | Section; source, topic, and keyword indexes lead to section content | After the directory sketch, 4:3 | Names all three index routes, the central folios, and maintenance tags that preserve provenance. |
-| `illumination-ch9-reading-basket.webp` | `ch9-96-why-it-is-shaped-this-way-the-context-economy` | Section; sufficient abstracts limit context loading | Before authoring-discipline details, 2:1 | States the stop condition, branching descent, finite basket, and selective completeness. |
-| `illumination-ch10-inference-tiers.webp` | `ch10-chapter-10-inference-tiers-reference` | Chapter opener; tiers, worker kinds, floors, and fallback are separate constraints | After chapter provenance, 3:2 | Distinguishes job terraces, provider-bound ladders, role-floor rail, and permitted fallback using both shape and route. |
+| File | Target anchor | Role and theme | Suggested placement / ratio |
+| --- | --- | --- | --- |
+| `illumination-ch1-metamorphoses.webp` | `ch1-chapter-1-philosophy-history-and-metamorphosis` | Chapter opener; one practice rebuilt through four garden forms | After chapter provenance, 16:10 |
+| `illumination-ch1-bidding-market.webp` | `ch1-15-the-next-metamorphosis-the-bidding-market` | Section; selection by fit, cost, and reputation replaces a claim race | After the section heading, 5:2 |
+| `illumination-ch2-shared-garden.webp` | `ch2-chapter-2-architecture-and-operation` | Chapter opener; independent workers coordinate through shared state and isolated workspaces | After chapter provenance, 3:2 |
+| `illumination-ch2-journal-duties.webp` | `ch2-21-the-journal-as-job-board-and-message-bus` | Section; one journal serves transcript, job board, and message bus | After the opening explanation, 2:1 |
+| `illumination-ch2-deliberate-deploy.webp` | `ch2-26-the-deliberate-deploy` | Section; a tested version advances deliberately across the fleet | At the process explanation, 5:2 |
+| `illumination-ch3-garden-gate.webp` | `ch3-chapter-3-using-the-garden` | Chapter opener; the liaison relays intent and questions without doing field work | After chapter provenance, 3:4 |
+| `illumination-ch3-muster.webp` | `ch3-33-muster-working-the-maintainer-inbox` | Section; compact, classify, and dispose of accumulated messages | Mid-section, 3:1 |
+| `illumination-ch4-living-enclosure.webp` | `ch4-chapter-4-creating-your-own-instance` | Chapter opener; provisioning a distinct instance that joins a larger garden | After chapter provenance, 3:2 |
+| `illumination-ch4-container-boundary.webp` | `ch4-42-the-container-model` | Section; the container separates the bot fleet from human host credentials | After the boundary explanation, 4:3 |
+| `illumination-ch4-turnkey-host.webp` | `ch4-46-the-turnkey-path-a-disposable-aws-host` | Section; prebuilt disposable infrastructure arrives without secrets | Before resource and launch details, 16:9 |
+| `illumination-ch5-field-guilds.webp` | `ch5-chapter-5-roles-reference` | Chapter opener; one worker adopts different focused role briefs | After chapter provenance, 3:2 |
+| `illumination-ch5-panel-arbor.webp` | `ch5-54-judicial-and-panel-adjacent-roles` | Section; specialist reviews converge through a deterministic loop | At the conceptual transition, 2:1 |
+| `illumination-ch6-skill-cabinet.webp` | `ch6-chapter-6-skills-reference` | Chapter opener; reusable playbooks are selected just in time and may have scripted mechanisms | After chapter provenance, 3:2 |
+| `illumination-ch6-guarded-edge.webp` | `ch6-610-security-and-trust-surfaces` | Section; inbound and outbound material crosses explicit trust checks | At the catalog pause, 5:2 |
+| `illumination-ch7-named-paths.webp` | `ch7-chapter-7-procedures-and-workflows` | Chapter opener; durable procedures provide different route shapes | After chapter provenance, 16:10 |
+| `illumination-ch7-gauntlet.webp` | `ch7-72-the-gauntlet-end-to-end` | Section; one draft artifact moves through review and repair | At the visual rest point, 3:1 |
+| `illumination-ch7-orchestration.webp` | `ch7-74-orchestration` | Section; multi-part order, policy, and budget are recorded before execution | After the section heading, 2:1 |
+| `illumination-ch7-ferry.webp` | `ch7-76-the-ferry` | Section; approved work crosses an identity boundary under human authority | Before authorization details, 5:2 |
+| `illumination-ch8-feedback-loops.webp` | `ch8-chapter-8-cybernetics-and-budgeting` | Chapter opener; regulation arises from several observable feedback loops | After chapter provenance, 3:2 |
+| `illumination-ch8-cybernetic-loop.webp` | `ch8-81-why-cybernetics` | Section; a close causal study of measurement changing behavior | After the five audit questions, 1:1 |
+| `illumination-ch8-bounded-pie.webp` | `ch8-86-per-orchestration-budgets-a-bounded-pie` | Section; serial work shares a finite campaign budget | Before the mechanics, 4:3 |
+| `illumination-ch9-hanging-library.webp` | `ch9-chapter-9-the-library-and-how-it-spends-context` | Chapter opener; layered knowledge supports selective retrieval | After chapter provenance or in the wide-screen margin, 4:5 |
+| `illumination-ch9-three-indexes.webp` | `ch9-92-what-it-looks-like-on-disk` | Section; source, topic, and keyword indexes lead to section content | After the directory sketch, 4:3 |
+| `illumination-ch9-reading-basket.webp` | `ch9-96-why-it-is-shaped-this-way-the-context-economy` | Section; sufficient abstracts limit context loading | Before authoring-discipline details, 2:1 |
+| `illumination-ch10-inference-tiers.webp` | `ch10-chapter-10-inference-tiers-reference` | Chapter opener; tiers, worker kinds, floors, and fallback are separate constraints | After chapter provenance, 3:2 |
 
-Every illumination carries meaning and therefore keeps its descriptive `alt`. Do not reuse these files as decoration without empty alternative text and an explicitly decorative context.
+Do not reuse these files as decoration without empty alternative text and an explicitly decorative context.
 
 ## Review-economics charts (section 8.8)
 
 The nine charts below draw `equilibrium-data-spec.md` (charts E1 to E9) from the committed `data/equilibrium/aggregates.json` and `data/equilibrium/scenario.json`. `generate-equilibrium-charts.mjs` rewrites exactly these SVGs, byte for byte, from that data; `test/equilibrium-charts.test.mjs` checks reproduction, the spec's numbers and labels, the spec tables against the data, the plotted scenario geometry, and inline safety. The chart ID is the deterministic key: it matches the spec heading (`### E1.`), the SVG's `data-chart` attribute, and the generator's `charts` entry, which also carries a draft caption (kind, sample size, cutoff) for integration. `build/equilibrium-charts.mjs` places the charts in section 8.8, each with its caption and the spec's exact values in a disclosure directly after it; `test/equilibrium-placement.test.mjs` checks the placements and values, and `equilibrium-integration-evidence.md` records the browser check of the built book.
 
 | Chart | File | Spec placement anchor | Kind | Data |
-| --- | --- | --- | --- | --- |
+| --- | --- | --- | --- |
 | E1 | `equilibrium-e1-pr-cost.svg` | `ch8-two-price-tags-on-one-pull-request` | Derived and observed | `ebfb.mergedJoined` |
 | E2 | `equilibrium-e2-list-vs-paid.svg` | `ch8-two-price-tags-on-one-pull-request` | Observed list price; derived fee and ratio | `reconciliation.byMonth`, window totals; study point quoted from the spec |
 | E3 | `equilibrium-e3-weekly-throughput.svg` | `ch8-latency-and-throughput` | Observed | `weeklySeries` |

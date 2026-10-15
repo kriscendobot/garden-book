@@ -4,9 +4,9 @@ This records the 2026-10-14 replacement of the 25 illustrations for *Better Code
 
 ## Replacement
 
-The replacement is 25 independently generated OpenAI raster illustrations, one per brief entry. They share an illuminated-manuscript vocabulary—ink, gouache, gold geometry, botanical marginalia, and warm paper—but use different compositions and readable silhouettes for each concept. No procedural fallback remains. The source SVG set and its generator were removed, as were the unplaced title, divider, and figure SVGs that the new set supersedes.
+The replacement is 25 independently generated OpenAI raster illustrations, one per brief entry. They share an illuminated-manuscript vocabulary—ink, gouache, gold geometry, botanical marginalia, and warm paper—but use different compositions and readable silhouettes for each concept. No procedural fallback remains.
 
-The committed [contact sheet](illumination-contact-sheet.webp) shows the complete light-scheme set. `OPENAI-ILLUMINATIONS.md` records the common direction and every per-scene prompt. The browser check is described in [`build/README.md`](../build/README.md#design-hooks-and-checks).
+The committed [contact sheet](illumination-contact-sheet.webp) shows the complete light-scheme set.
 
 ## Published-clip policy
 

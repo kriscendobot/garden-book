@@ -469,28 +469,11 @@ interpretive link rather than repeat the alternative text.
   distinguish job tier, provider-bound worker kind, floor, and fallback. Avoid
   encoding rank only by vertical position; use shape and caption language too.
 
-## Existing first-edition background
-
-**Recommendation: repurpose it as title-page-only ornament, not as a flat
-background.** The `art/title-garden.svg` scene introduced in pull requests 4
-and 5 was quiet and technically well prepared, but its broad washes and scattered
-edge plants did not explain the book's subject. At the low opacity required behind
-title copy, most of its already sparse information disappeared, which supports the
-maintainer's judgment that it does not add much.
-
-The production stage should remove the full-field backdrop treatment and test a
-tighter reuse of its strongest material: crop or redraw the right-hand vine,
-trellis, and lower bed as a title-page border or corner illumination around the
-title block. That gives the existing work one restrained ceremonial role without
-counting it as one of the 25 thematic images. If the cropped ornament still reads
-as a faint generic garden rather than a deliberate frame, drop it instead of
-preserving it for continuity. Do not repeat it behind chapter or section art.
+## Existing paper texture
 
 The existing paper texture is a separate presentation layer, not an illustration.
 Its future use can be judged with the anchored color scheme and contrast tests in
-production. The existing garden-bed figure may remain as an interim asset, but the
-new chapter 2 opener should replace its current burden of representing the whole
-architecture chapter once the set is integrated.
+production.
 
 ## Coverage and integration notes
 

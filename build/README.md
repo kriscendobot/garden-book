@@ -42,12 +42,12 @@ copy the whole output directory, not `index.html` alone.
 whose `lookup(name)` returns a blob with `text()`, or `bytes()` for the plates
 ([`tree-io.mjs`](tree-io.mjs) `readText`/`readBytes`). The output tree must
 provide both `writeText(name, content)` and `writeBytes(name, content)`; a tree
-with only `writeText` fails on the first plate. Each placement passed as
+with only `writeText` fails on the first plate. This is a breaking change from the text-only tree contract of 1.x, released as 2.0.0: a caller passing its own trees must add `bytes()` to art blobs and `writeBytes(name, content)` to the output tree. Each placement passed as
 `illuminations` supplies the `img` attributes `file`, `width`, `height`, and
-`alt`; the build does not validate them. The committed placements come from
+`alternativeText` (rendered as the `alt` attribute); the build does not validate them. The committed placements come from
 the metadata map in [`illuminations.mjs`](illuminations.mjs);
 `test/illustrations.test.mjs` checks that each `width` and `height` matches
-its WebP header and that each `alt` is descriptive; and publishing refuses any
+its WebP header and that each `alternativeText` is descriptive; and publishing refuses any
 relative `img` reference that is not a `.webp` file in the output.
 
 ## Publish size

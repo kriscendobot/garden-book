@@ -5,7 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { pathToFileURL } from "node:url";
 
-import fc from "fast-check";
+import fastCheck from "fast-check";
 
 import {
   makeNodeReadableTree,
@@ -144,8 +144,8 @@ test("the Node trees round-trip arbitrary bytes through writeBytes and readBytes
   const root = await mkdtemp(join(tmpdir(), "garden-book-bytes-"));
   try {
     const url = pathToFileURL(root);
-    await fc.assert(
-      fc.asyncProperty(fc.uint8Array({ maxLength: 65_536 }), async (bytes) => {
+    await fastCheck.assert(
+      fastCheck.asyncProperty(fastCheck.uint8Array({ maxLength: 65_536 }), async (bytes) => {
         await writeBytes(makeNodeWritableTree(url), "image.webp", bytes);
         assert.deepEqual(
           new Uint8Array(await readBytes(makeNodeReadableTree(url), "image.webp")),

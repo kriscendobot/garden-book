@@ -37,9 +37,9 @@ with only `writeText` fails on the first plate. Each placement passed as
 `illuminations` supplies the `img` attributes `file`, `width`, `height`, and
 `alternativeText` (rendered as the `alt` attribute); the build does not validate them. The committed placements come from
 the metadata map in [`illuminations.mjs`](illuminations.mjs), and publishing
-refuses any declared plate that is not a `.webp` file in the output directory
-or whose bytes are not a well-formed RIFF/WEBP container (`isWebpContainer`
-checks the header, declared length, and chunk layout; it does not decode).
+refuses any declared plate that is not a `.webp` file in the output directory.
+Publishing reads only the named files, through `lookup`, and does not decode
+the plates; the browser check is what confirms that each one decodes.
 
 ## Publish size
 
@@ -83,11 +83,12 @@ dependency; point `PLAYWRIGHT_CORE` at an installed `playwright-core`).
 known-bad copy when `playwright-core` resolves, and is skipped otherwise. Before publishing,
 an edition must pass `npm test` and
 `npm run build && node tools/browser-check.mjs out/index.html`. [`publish.mjs`](publish.mjs) publishes with
-an inert empty-text pet name as `powers`, never `sites`, because `powers`
-becomes every visitor's bootstrap (see [`skills/minion-town-clip-publishing`](https://github.com/kriscendobot/garden/blob/main2/skills/minion-town-clip-publishing/SKILL.md)
-on [`kriscendobot/garden`](https://github.com/kriscendobot/garden)); it refuses any `GARDEN_BOOK_POWERS` that is not
-`garden-book-<name>`, so `sites`, `@agent`, and the other reserved names are
-never overwritten.
+the fixed pet name `garden-book-inert` (`POWERS_NAME`), overwritten with empty
+text, as `powers`, never `sites`, because `powers` becomes every visitor's
+bootstrap (see [`skills/minion-town-clip-publishing`](https://github.com/kriscendobot/garden/blob/main2/skills/minion-town-clip-publishing/SKILL.md)
+on [`kriscendobot/garden`](https://github.com/kriscendobot/garden)). The name
+is not configurable, so no caller can point the overwrite at a real
+capability.
 
 The generation record is
 [`art/OPENAI-ILLUMINATIONS.md`](../art/OPENAI-ILLUMINATIONS.md); the committed

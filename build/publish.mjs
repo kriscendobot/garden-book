@@ -38,11 +38,7 @@ if (!environmentArgument || extras.length > 0) {
     const builtTree = makeNodeReadableTree(
       pathToFileURL(`${resolve(outputArgument)}/`),
     );
-    const response = await publishBook({
-      builtTree,
-      peer,
-      powersName: process.env.GARDEN_BOOK_POWERS || "garden-book-inert",
-    });
+    const response = await publishBook({ builtTree, peer });
     console.log(JSON.stringify(response));
   } finally {
     peer.close();

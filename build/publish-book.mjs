@@ -18,38 +18,6 @@ export const encodeBase64 = (bytes) => {
 // that list rather than whatever files the rendered page happens to name.
 const declaredPlates = illuminations.map(({ file }) => file);
 
-const fourCharacterCode = (bytes, offset) =>
-  String.fromCharCode(...bytes.subarray(offset, offset + 4));
-
-const littleEndianUint32 = (bytes, offset) =>
-  (bytes[offset] |
-    (bytes[offset + 1] << 8) |
-    (bytes[offset + 2] << 16) |
-    (bytes[offset + 3] << 24)) >>>
-  0;
-
-// A RIFF/WEBP container whose declared length matches the bytes, whose first
-// chunk carries image data (VP8, VP8L, or VP8X), and whose chunks tile the
-// file exactly. This does not decode the image, but it refuses the truncated
-// and mislabeled files a `.webp` suffix alone would let through.
-export const isWebpContainer = (bytes) => {
-  if (
-    bytes.length < 20 ||
-    fourCharacterCode(bytes, 0) !== "RIFF" ||
-    fourCharacterCode(bytes, 8) !== "WEBP" ||
-    littleEndianUint32(bytes, 4) + 8 !== bytes.length ||
-    !["VP8 ", "VP8L", "VP8X"].includes(fourCharacterCode(bytes, 12))
-  ) {
-    return false;
-  }
-  let offset = 12;
-  while (offset + 8 <= bytes.length) {
-    const size = littleEndianUint32(bytes, offset + 4);
-    offset += 8 + size + (size % 2);
-  }
-  return offset === bytes.length;
-};
-
 export const makePublishContent = async (
   builtTree,
   plates = declaredPlates,
@@ -63,22 +31,25 @@ export const makePublishContent = async (
       `Refusing to publish: declared plates must be WebP files in the edition directory: ${unsupported.join(", ")}`,
     );
   }
-  const built = new Set(await builtTree.list());
-  const missing = uniquePlates.filter((file) => !built.has(file));
+  // Reads exactly the declared names, so the tree needs only lookup, not
+  // directory listing; Chromium's decode in tools/browser-check.mjs is what
+  // tests that a plate is a usable image.
+  const plateBytes = await Promise.all(
+    uniquePlates.map((file) =>
+      readBytes(builtTree, file).catch((error) => {
+        if (error?.code === "ENOENT") {
+          return undefined;
+        }
+        throw error;
+      }),
+    ),
+  );
+  const missing = uniquePlates.filter(
+    (_file, index) => plateBytes[index] === undefined,
+  );
   if (missing.length > 0) {
     throw new Error(
       `Refusing to publish: declared plates missing from the build output: ${missing.join(", ")}`,
-    );
-  }
-  const plateBytes = await Promise.all(
-    uniquePlates.map((file) => readBytes(builtTree, file)),
-  );
-  const malformed = uniquePlates.filter(
-    (_file, index) => !isWebpContainer(plateBytes[index]),
-  );
-  if (malformed.length > 0) {
-    throw new TypeError(
-      `Refusing to publish: declared plates are not well-formed WebP files: ${malformed.join(", ")}`,
     );
   }
   const record = (path, contentType, bytes) => ({
@@ -104,7 +75,12 @@ export const makePublishContent = async (
   ];
 };
 
-const INERT_POWERS_NAME = /^garden-book-[a-z0-9-]+$/;
+// The pet name for the clip's `powers`, which becomes every visitor's
+// bootstrap. publishBook overwrites it with inert empty text first, so it is
+// one fixed name reserved for that purpose, never a caller-chosen one that
+// could name a real capability (skills/minion-town-clip-publishing on
+// kriscendobot/garden).
+export const POWERS_NAME = "garden-book-inert";
 
 // minion.town's /mcp request-body limit; the whole clip travels in one
 // `publish` call.
@@ -136,33 +112,26 @@ export const publishRequestBytes = (publishArguments, requestIdentifier = 3) =>
   }).length;
 
 /**
- * Publishes the built book as a minion.town clip.
+ * Publishes the built book as a minion.town clip whose `powers` is
+ * `POWERS_NAME`.
  *
  * @param {object} options
- * @param {object} options.builtTree readable tree holding `index.html`,
- *   `styles.css`, and every declared plate, from a prior build.
+ * @param {{ lookup: (name: string) => Promise<{ bytes: () => Promise<Uint8Array> }> }} options.builtTree
+ *   readable tree holding `index.html`, `styles.css`, and every declared
+ *   plate, from a prior build.
  * @param {string[]} [options.plates] WebP files to publish beside the page;
  *   defaults to the plates `build/illuminations.mjs` declares.
- * @param {object} options.peer JSON-RPC peer connected to the minion MCP bridge.
- * @param {string} [options.powersName] pet name for the clip's `powers`,
- *   which becomes every visitor's bootstrap. It is overwritten with inert
- *   empty text first, so it must never name a real capability such as
- *   `sites` or a reserved `@`-name like `@agent`
- *   (skills/minion-town-clip-publishing on kriscendobot/garden). Only names
- *   matching `garden-book-<name>` are accepted; the default is
- *   `garden-book-inert`.
+ * @param {{
+ *   call: (method: string, params: object) => Promise<unknown>,
+ *   notify: (method: string, params: object) => void,
+ * }} options.peer JSON-RPC peer connected to the minion MCP bridge: `call`
+ *   resolves to the response, and `notify` sends without awaiting one.
  */
 export const publishBook = async ({
   builtTree,
   peer,
-  powersName = "garden-book-inert",
   plates = declaredPlates,
 }) => {
-  if (typeof powersName !== "string" || !INERT_POWERS_NAME.test(powersName)) {
-    throw new RangeError(
-      `Refusing powers name ${JSON.stringify(powersName)}: it must match ${INERT_POWERS_NAME} so writeText cannot overwrite a real capability`,
-    );
-  }
   await peer.call("initialize", {
     protocolVersion: "2025-03-26",
     capabilities: {},
@@ -170,7 +139,7 @@ export const publishBook = async ({
   });
   peer.notify("notifications/initialized", {});
   const publishArguments = {
-    powers: powersName,
+    powers: POWERS_NAME,
     content: await makePublishContent(builtTree, plates),
   };
   const requestBytes = publishRequestBytes(publishArguments);
@@ -181,7 +150,7 @@ export const publishBook = async ({
   }
   await peer.call("tools/call", {
     name: "writeText",
-    arguments: { name: powersName, text: "" },
+    arguments: { name: POWERS_NAME, text: "" },
   });
   return peer.call("tools/call", {
     name: "publish",

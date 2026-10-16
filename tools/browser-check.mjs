@@ -32,8 +32,6 @@ export const loadPlaywright = async () => {
 // Playwright choose.
 const headlessShells = ["chrome-headless-shell-linux64", "chrome-headless-shell-linux-arm64"];
 
-// Returns undefined when nothing is found, so Playwright falls back to its
-// own default browser.
 export const findChromium = ({ environment = process.env } = {}) => {
   if (environment.CHROMIUM) {
     return environment.CHROMIUM;
@@ -97,6 +95,9 @@ const measure = () => {
     Math.min(left.bottom, right.bottom) - Math.max(left.top, right.top) > 1;
 
   const figures = [...document.querySelectorAll("figure.illumination")];
+  if (figures.length === 0) {
+    problems.push("no illuminated figures found");
+  }
   let minimumContrast = Infinity;
   let tallest = 0;
   for (const figure of figures) {
@@ -167,7 +168,7 @@ const measure = () => {
     clientWidth: viewportWidth,
     figures: figures.length,
     tallestPlate: Math.round(tallest),
-    minimumCaptionContrast: Number(minimumContrast.toFixed(2)),
+    minimumCaptionContrast: figures.length === 0 ? 0 : Number(minimumContrast.toFixed(2)),
     bodyContrast: Number(bodyContrast.toFixed(2)),
     pageBackground,
     problems: [
@@ -204,21 +205,16 @@ const isRemote = (target) => {
  * problem in that configuration's result.
  *
  * @param {object} options
- * @param {{
- *   newContext: (options: object) => Promise<{
- *     newPage: () => Promise<{
- *       addInitScript: (script: () => void) => Promise<void>,
- *       goto: (url: string, options: object) => Promise<unknown>,
- *       evaluate: (pageFunction: Function, argument?: unknown) => Promise<any>,
- *       locator: (selector: string) => { first: () => { scrollIntoViewIfNeeded: () => Promise<void> } },
- *       screenshot: (options: { path: string }) => Promise<unknown>,
- *     }>,
- *     close: () => Promise<void>,
- *   }>,
- * }} options.browser a launched Playwright `Browser`; each configuration
- *   opens one context and closes it when done.
+ * @param {import("playwright-core").Browser} options.browser a launched
+ *   Playwright browser; each configuration opens one context and closes it.
  * @param {string} options.target path to a built `index.html` or an http(s) URL.
- * @param {string} [options.shotsDirectory] where to write screenshots.
+ * @param {string} [options.shotsDirectory] where to write screenshots,
+ *   named `<configuration>-<shot>.png`.
+ * @returns {Promise<Array<{ name: string, width: number, height: number,
+ *   colorScheme: string, figures: number, tallestPlate: number,
+ *   minimumCaptionContrast: number, bodyContrast: number,
+ *   scrollWidth: number, clientWidth: number, problems: string[] }>>}
+ *   one result per configuration; it passes when `problems` is empty.
  */
 export const checkEdition = async ({ browser, target, shotsDirectory }) => {
   const remote = isRemote(target);
@@ -301,7 +297,7 @@ const main = async () => {
   console.log("| --- | --- | --- | --- | --- | --- | --- |");
   for (const result of results) {
     console.log(
-      `| ${result.name} (${result.width}×${result.height}, ${result.colorScheme}) | ${result.scrollWidth} / ${result.clientWidth} | ${result.figures} | ${result.tallestPlate}px | ${result.minimumCaptionContrast}:1 | ${result.bodyContrast}:1 | ${result.problems.length === 0 ? "pass" : "FAIL"} |`,
+      `| ${result.name} (${result.width}x${result.height}, ${result.colorScheme}) | ${result.scrollWidth} / ${result.clientWidth} | ${result.figures} | ${result.tallestPlate}px | ${result.minimumCaptionContrast}:1 | ${result.bodyContrast}:1 | ${result.problems.length === 0 ? "pass" : "FAIL"} |`,
     );
   }
   for (const result of results) {

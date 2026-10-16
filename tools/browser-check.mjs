@@ -53,21 +53,24 @@ const headlessShells = {
   win32: [["chrome-headless-shell-win64", "chrome-headless-shell.exe"]],
 };
 
-const playwrightCache = () =>
-  process.env.PLAYWRIGHT_BROWSERS_PATH ??
+const playwrightCache = (environment, platform) =>
+  environment.PLAYWRIGHT_BROWSERS_PATH ??
   {
     darwin: join(homedir(), "Library", "Caches", "ms-playwright"),
-    win32: join(process.env.LOCALAPPDATA ?? homedir(), "ms-playwright"),
-  }[process.platform] ??
+    win32: join(environment.LOCALAPPDATA ?? homedir(), "ms-playwright"),
+  }[platform] ??
   join(homedir(), ".cache", "ms-playwright");
 
 // Returns undefined when nothing is found, so Playwright falls back to its
 // own platform-aware default browser.
-export const findChromium = () => {
-  if (process.env.CHROMIUM) {
-    return process.env.CHROMIUM;
+export const findChromium = ({
+  environment = process.env,
+  platform = process.platform,
+} = {}) => {
+  if (environment.CHROMIUM) {
+    return environment.CHROMIUM;
   }
-  const cache = playwrightCache();
+  const cache = playwrightCache(environment, platform);
   const candidates = existsSync(cache)
     ? readdirSync(cache)
         .filter((name) => name.startsWith("chromium_headless_shell-"))
@@ -76,8 +79,8 @@ export const findChromium = () => {
             Number(right.split("-")[1]) - Number(left.split("-")[1]),
         )
         .flatMap((name) =>
-          (headlessShells[process.platform] ?? []).map(([platform, executable]) =>
-            join(cache, name, platform, executable),
+          (headlessShells[platform] ?? []).map(([shell, executable]) =>
+            join(cache, name, shell, executable),
           ),
         )
         .filter(existsSync)
@@ -204,7 +207,7 @@ const measure = () => {
   };
 };
 
-// Fulfils EDITION_ORIGIN from the publish content under the clip's CSP; a
+// Fulfills EDITION_ORIGIN from the publish content under the clip's CSP; a
 // file the clip leaves out answers 404.
 const routeEdition = async (context, content) => {
   const files = new Map(content.map((file) => [`/${file.path}`, file]));
@@ -227,6 +230,8 @@ const routeEdition = async (context, content) => {
  * any CSP console message becomes a problem in that configuration's result.
  *
  * @param {object} options
+ * @param {{ newContext: (options: object) => Promise<object> }} options.browser
+ *   a launched Playwright `Browser`; each configuration opens one context.
  * @param {string} options.target path to a built `index.html` or an http(s) URL.
  * @param {string} [options.shotsDirectory] where to write screenshots.
  * @param {string[]} [options.plates] plates to publish beside a local page;

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { copyFileSync, mkdtempSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +9,7 @@ import {
   CLIP_CONTENT_SECURITY_POLICY,
   EDITION_ORIGIN,
   checkEdition,
+  findChromium,
 } from "../tools/browser-check.mjs";
 
 // Stands in for Playwright's routing and pages, not its layout: each page
@@ -175,4 +176,55 @@ test("checkEdition reports a CSP console violation as a failure in every configu
     assert.equal(problems.length, 1);
     assert.match(problems[0], /^CSP violation: /u);
   }
+});
+
+// A Playwright cache holding headless shells for the given revisions; only
+// the revisions in `withExecutable` get a launchable Linux executable.
+const makeCache = (revisions, withExecutable) => {
+  const cache = mkdtempSync(join(tmpdir(), "browser-check-cache-"));
+  for (const revision of revisions) {
+    const shell = join(cache, `chromium_headless_shell-${revision}`, "chrome-headless-shell-linux64");
+    mkdirSync(shell, { recursive: true });
+    if (withExecutable.includes(revision)) {
+      writeFileSync(join(shell, "chrome-headless-shell"), "");
+    }
+  }
+  return cache;
+};
+
+test("findChromium prefers an explicit CHROMIUM over the cache", () => {
+  assert.equal(
+    findChromium({
+      environment: { CHROMIUM: "/opt/chromium", PLAYWRIGHT_BROWSERS_PATH: makeCache([1200], [1200]) },
+      platform: "linux",
+    }),
+    "/opt/chromium",
+  );
+});
+
+test("findChromium falls back to Playwright's default when the cache is absent or empty", () => {
+  for (const cache of [join(tmpdir(), "browser-check-no-such-cache"), makeCache([], [])]) {
+    assert.equal(
+      findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache }, platform: "linux" }),
+      undefined,
+    );
+  }
+});
+
+test("findChromium picks the newest cached shell that has an executable", () => {
+  const cache = makeCache([999, 1200, 1300], [999, 1200]);
+  assert.equal(
+    findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache }, platform: "linux" }),
+    join(cache, "chromium_headless_shell-1200", "chrome-headless-shell-linux64", "chrome-headless-shell"),
+  );
+});
+
+test("findChromium finds nothing on a platform without a known headless shell", () => {
+  assert.equal(
+    findChromium({
+      environment: { PLAYWRIGHT_BROWSERS_PATH: makeCache([1200], [1200]) },
+      platform: "aix",
+    }),
+    undefined,
+  );
 });

@@ -33,10 +33,10 @@ const buildEdition = () => {
   return output;
 };
 
-test("the browser check measures the built edition in Chromium", async (t) => {
+test("the browser check measures the built edition in Chromium", async (testContext) => {
   const browser = await launch();
   if (browser.skip) {
-    t.skip(browser.skip);
+    testContext.skip(browser.skip);
     return;
   }
   try {

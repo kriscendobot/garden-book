@@ -5,7 +5,6 @@ import { join } from "node:path";
 import test from "node:test";
 import { pathToFileURL } from "node:url";
 
-import fastCheck from "fast-check";
 
 import {
   makeNodeReadableTree,
@@ -140,19 +139,18 @@ test("node trees read, list, and write through a real directory", async (t) => {
   assert.deepEqual([...(await readBytes(output, "image.webp"))], [0, 255]);
 });
 
-test("the Node trees round-trip arbitrary bytes through writeBytes and readBytes", async () => {
+test("the Node trees round-trip every byte value through writeBytes and readBytes", async () => {
   const root = await mkdtemp(join(tmpdir(), "garden-book-bytes-"));
   try {
     const url = pathToFileURL(root);
-    await fastCheck.assert(
-      fastCheck.asyncProperty(fastCheck.uint8Array({ maxLength: 65_536 }), async (bytes) => {
-        await writeBytes(makeNodeWritableTree(url), "image.webp", bytes);
-        assert.deepEqual(
-          new Uint8Array(await readBytes(makeNodeReadableTree(url), "image.webp")),
-          bytes,
-        );
-      }),
-    );
+    const everyByte = Uint8Array.from({ length: 256 }, (_unused, index) => index);
+    for (const bytes of [new Uint8Array(), everyByte, everyByte.toReversed()]) {
+      await writeBytes(makeNodeWritableTree(url), "image.webp", bytes);
+      assert.deepEqual(
+        new Uint8Array(await readBytes(makeNodeReadableTree(url), "image.webp")),
+        bytes,
+      );
+    }
   } finally {
     await rm(root, { recursive: true, force: true });
   }

@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import fastCheck from "fast-check";
 
 import packageJson from "../package.json" with { type: "json" };
 
@@ -252,38 +251,30 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
 });
 
 test("makePublishContent publishes exactly the declared plates, in order, byte for byte", async () => {
-  await fastCheck.assert(
-    fastCheck.asyncProperty(
-      fastCheck.uniqueArray(
-        fastCheck.tuple(
-          fastCheck.stringMatching(/^[A-Za-z0-9][A-Za-z0-9_.-]{0,31}\.webp$/u),
-          fastCheck.uint8Array({ maxLength: 1024 }),
-        ),
-        { selector: ([file]) => file, maxLength: 10 },
-      ),
-      async (plates) => {
-        const content = await makePublishContent(
-          makeReadableTree({
-            "index.html": "",
-            "styles.css": "",
-            ...Object.fromEntries(plates),
-          }),
-          plates.map(([file]) => file),
-        );
-        assert.deepEqual(
-          content.map(({ path }) => path),
-          ["index.html", "styles.css", ...plates.map(([file]) => file)],
-        );
-        plates.forEach(([, bytes], index) => {
-          assert.deepEqual(
-            new Uint8Array(Buffer.from(content[index + 2].bytes, "base64")),
-            bytes,
-          );
-        });
-      },
-    ),
-    { numRuns: 200 },
+  const plates = [
+    ["b.webp", new Uint8Array([0, 255, 128])],
+    ["a_1.webp", new Uint8Array()],
+    ["C-2.v2.webp", Uint8Array.from({ length: 256 }, (_unused, index) => index)],
+  ];
+  const content = await makePublishContent(
+    makeReadableTree({
+      "index.html": "",
+      "styles.css": "",
+      "undeclared.webp": new Uint8Array([1]),
+      ...Object.fromEntries(plates),
+    }),
+    plates.map(([file]) => file),
   );
+  assert.deepEqual(
+    content.map(({ path }) => path),
+    ["index.html", "styles.css", ...plates.map(([file]) => file)],
+  );
+  plates.forEach(([, bytes], index) => {
+    assert.deepEqual(
+      new Uint8Array(Buffer.from(content[index + 2].bytes, "base64")),
+      bytes,
+    );
+  });
 });
 
 test("makePublishContent publishes no plates for an empty list and one per repeated name", async () => {

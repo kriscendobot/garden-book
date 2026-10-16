@@ -2,9 +2,7 @@
 
 This brief defines the thematic illustration set for *Better Code and Gardens*.
 It covers every chapter and adds section illustrations only where the subject or
-reading rhythm changes enough to justify one. It is a production brief, not an
-asset manifest: filenames, SVG construction, responsive markup, and generator
-integration belong to the next stage.
+reading rhythm changes enough to justify one.
 
 ## Set direction
 
@@ -144,7 +142,7 @@ interpretive link rather than repeat the alternative text.
 - **Illuminated treatment:** Make the gate an architectural initial surrounded by
   ivy, with small speech scrolls becoming paths. The composition should feel
   welcoming and practical, not courtly.
-- **Accessibility and pacing:** A portrait-leaning 4:3 opener suits the human
+- **Accessibility and pacing:** A portrait 3:4 opener suits the human
   entry point. Alternative text should identify the liaison as relay, not worker.
   Keep all essential action in the center so a wider desktop crop and full-width
   mobile presentation tell the same story.
@@ -469,28 +467,11 @@ interpretive link rather than repeat the alternative text.
   distinguish job tier, provider-bound worker kind, floor, and fallback. Avoid
   encoding rank only by vertical position; use shape and caption language too.
 
-## Existing first-edition background
-
-**Recommendation: repurpose it as title-page-only ornament, not as a flat
-background.** The `art/title-garden.svg` scene introduced in pull requests 4
-and 5 is quiet and technically well prepared, but its broad washes and scattered
-edge plants do not explain the book's subject. At the low opacity required behind
-title copy, most of its already sparse information disappears, which supports the
-maintainer's judgment that it does not add much.
-
-The production stage should remove the full-field backdrop treatment and test a
-tighter reuse of its strongest material: crop or redraw the right-hand vine,
-trellis, and lower bed as a title-page border or corner illumination around the
-title block. That gives the existing work one restrained ceremonial role without
-counting it as one of the 25 thematic images. If the cropped ornament still reads
-as a faint generic garden rather than a deliberate frame, drop it instead of
-preserving it for continuity. Do not repeat it behind chapter or section art.
+## Existing paper texture
 
 The existing paper texture is a separate presentation layer, not an illustration.
 Its future use can be judged with the anchored color scheme and contrast tests in
-production. The existing garden-bed figure may remain as an interim asset, but the
-new chapter 2 opener should replace its current burden of representing the whole
-architecture chapter once the set is integrated.
+production.
 
 ## Coverage and integration notes
 

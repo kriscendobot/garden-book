@@ -5,6 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { pathToFileURL } from "node:url";
 
+
 import {
   makeNodeReadableTree,
   makeNodeWritableTree,
@@ -16,7 +17,7 @@ import {
   makeHrefResolver,
   splitFrontmatter,
 } from "../build/render-book.mjs";
-import { readText, writeText } from "../build/tree-io.mjs";
+import { readBytes, readText, writeBytes, writeText } from "../build/tree-io.mjs";
 
 const SOURCE = "https://github.com/kriscendobot/garden/blob/main2/";
 
@@ -107,6 +108,8 @@ test("tree-io rejects non-text entries and unwritable trees", async () => {
     /dir is not a readable text blob/,
   );
   await assert.rejects(writeText({}, "x", "y"), /does not provide writeText/);
+  await assert.rejects(readBytes(tree, "image"), /not a readable binary blob/);
+  await assert.rejects(writeBytes({}, "image", new Uint8Array()), /does not provide writeBytes/);
 });
 
 test("node trees read, list, and write through a real directory", async (t) => {
@@ -130,8 +133,27 @@ test("node trees read, list, and write through a real directory", async (t) => {
 
   const outputUrl = pathToFileURL(join(root, "out"));
   await makeNodeWritableTree(outputUrl).writeText("index.html", "<p>✓</p>");
+  await makeNodeWritableTree(outputUrl).writeBytes("image.webp", new Uint8Array([0, 255]));
   const output = makeNodeReadableTree(outputUrl);
   assert.equal(await readText(output, "index.html"), "<p>✓</p>");
+  assert.deepEqual([...(await readBytes(output, "image.webp"))], [0, 255]);
+});
+
+test("the Node trees round-trip every byte value through writeBytes and readBytes", async () => {
+  const root = await mkdtemp(join(tmpdir(), "garden-book-bytes-"));
+  try {
+    const url = pathToFileURL(root);
+    const everyByte = Uint8Array.from({ length: 256 }, (_unused, index) => index);
+    for (const bytes of [new Uint8Array(), everyByte, everyByte.toReversed()]) {
+      await writeBytes(makeNodeWritableTree(url), "image.webp", bytes);
+      assert.deepEqual(
+        new Uint8Array(await readBytes(makeNodeReadableTree(url), "image.webp")),
+        bytes,
+      );
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 const artwork = { illuminations: {} };

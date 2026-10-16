@@ -1,10 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+
+import packageJson from "../package.json" with { type: "json" };
+
 import { assembleBook } from "../build/assemble-book.mjs";
+import { illuminations } from "../build/illuminations.mjs";
 import { makeNodeReadableTree } from "../build/node-tree.mjs";
-import { encodeBase64, publishBook } from "../build/publish-book.mjs";
+import {
+  encodeBase64,
+  makePublishContent,
+  POWERS_NAME,
+  PUBLISH_REQUEST_LIMIT,
+  publishBook,
+  publishRequestBytes,
+} from "../build/publish-book.mjs";
 import { renderBook } from "../build/render-book.mjs";
+import { readBytes } from "../build/tree-io.mjs";
 
 const makeReadableTree = (files) => ({
   async list() {
@@ -19,6 +31,11 @@ const makeReadableTree = (files) => ({
     return {
       async text() {
         return files[name];
+      },
+      async bytes() {
+        return typeof files[name] === "string"
+          ? new TextEncoder().encode(files[name])
+          : files[name];
       },
     };
   },
@@ -99,6 +116,9 @@ test("assembleBook uses tree capabilities and writes the complete clip", async (
     async writeText(name, content) {
       output[name] = content;
     },
+    async writeBytes(name, content) {
+      output[name] = content;
+    },
   };
   const result = await assembleBook({
     chaptersTree: makeReadableTree({
@@ -130,6 +150,9 @@ test("every internal link in the assembled book resolves to an id", async () => 
     artworkTree: makeNodeReadableTree(new URL("../art/", import.meta.url)),
     outputTree: {
       async writeText(name, content) {
+        output[name] = content;
+      },
+      async writeBytes(name, content) {
         output[name] = content;
       },
     },
@@ -165,59 +188,6 @@ test("encodeBase64 matches the standard encoding at every padding boundary", () 
   }
 });
 
-test("publishBook refuses to clobber the sites capability", async () => {
-  const peer = {
-    async call() {
-      assert.fail("publishBook must not reach the bridge");
-    },
-    notify() {
-      assert.fail("publishBook must not reach the bridge");
-    },
-  };
-  await assert.rejects(
-    publishBook({
-      builtTree: makeReadableTree({}),
-      peer,
-      powersName: "sites",
-    }),
-    /Refusing powers name "sites"/,
-  );
-});
-
-test("publishBook accepts only garden-book-prefixed powers names", async () => {
-  const peer = {
-    async call() {
-      assert.fail("publishBook must not reach the bridge");
-    },
-    notify() {
-      assert.fail("publishBook must not reach the bridge");
-    },
-  };
-  for (const powersName of [
-    "@agent",
-    "@host",
-    "@mail",
-    "@nets",
-    "@planes",
-    "@self",
-    "@main",
-    "MAIN",
-    "Sites",
-    " sites",
-    "garden-book-",
-    "garden-book-Inert",
-    "garden-book-inert/x",
-    "",
-    42,
-  ]) {
-    await assert.rejects(
-      publishBook({ builtTree: makeReadableTree({}), peer, powersName }),
-      RangeError,
-      `powers name ${JSON.stringify(powersName)}`,
-    );
-  }
-});
-
 test("publishBook sends inert powers and UTF-8 clip content", async () => {
   assert.equal(
     encodeBase64(
@@ -238,19 +208,30 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
   };
   const response = await publishBook({
     builtTree: makeReadableTree({
-      "index.html": "<h1>Garden ✓</h1>",
+      "index.html":
+        '<h1>Garden ✓</h1><img src="illumination-test.webp">',
       "styles.css": "body {}",
+      "illumination-test.webp": new Uint8Array([0, 1, 2, 255]),
     }),
     peer,
-    powersName: "garden-book-test",
+    plates: ["illumination-test.webp"],
   });
 
+  assert.deepEqual(calls[0], [
+    "initialize",
+    {
+      protocolVersion: "2025-03-26",
+      capabilities: {},
+      clientInfo: { name: "garden-book", version: packageJson.version },
+    },
+  ]);
   assert.deepEqual(notifications, [["notifications/initialized", {}]]);
   assert.deepEqual(calls[1], [
     "tools/call",
-    { name: "writeText", arguments: { name: "garden-book-test", text: "" } },
+    { name: "writeText", arguments: { name: "garden-book-inert", text: "" } },
   ]);
-  assert.equal(calls[2][1].arguments.powers, "garden-book-test");
+  assert.equal(calls[2][1].arguments.powers, "garden-book-inert");
+  assert.equal(POWERS_NAME, "garden-book-inert");
   assert.deepEqual(
     calls[2][1].arguments.content.map((entry) => [
       entry.path,
@@ -259,7 +240,243 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
     [
       ["index.html", "text/html; charset=utf-8"],
       ["styles.css", "text/css; charset=utf-8"],
+      ["illumination-test.webp", "image/webp"],
     ],
   );
+  assert.equal(
+    calls[2][1].arguments.content[2].bytes,
+    encodeBase64(new Uint8Array([0, 1, 2, 255])),
+  );
   assert.equal(response.result.ok, true);
+});
+
+test("makePublishContent publishes exactly the declared plates, in order, byte for byte", async () => {
+  const plates = [
+    ["b.webp", new Uint8Array([0, 255, 128])],
+    ["a_1.webp", new Uint8Array()],
+    ["C-2.v2.webp", Uint8Array.from({ length: 256 }, (_unused, index) => index)],
+  ];
+  const content = await makePublishContent(
+    makeReadableTree({
+      "index.html": "",
+      "styles.css": "",
+      "undeclared.webp": new Uint8Array([1]),
+      ...Object.fromEntries(plates),
+    }),
+    plates.map(([file]) => file),
+  );
+  assert.deepEqual(
+    content.map(({ path }) => path),
+    ["index.html", "styles.css", ...plates.map(([file]) => file)],
+  );
+  plates.forEach(([, bytes], index) => {
+    assert.deepEqual(
+      new Uint8Array(Buffer.from(content[index + 2].bytes, "base64")),
+      bytes,
+    );
+  });
+});
+
+test("makePublishContent publishes no plates for an empty list and one per repeated name", async () => {
+  const tree = makeReadableTree({
+    "index.html": "",
+    "styles.css": "",
+    "plate.webp": new Uint8Array([1]),
+  });
+  assert.deepEqual(
+    (await makePublishContent(tree, [])).map(({ path }) => path),
+    ["index.html", "styles.css"],
+  );
+  assert.deepEqual(
+    (await makePublishContent(tree, ["plate.webp", "plate.webp"])).map(
+      ({ path }) => path,
+    ),
+    ["index.html", "styles.css", "plate.webp"],
+  );
+});
+
+test("makePublishContent publishes the declared plates by default", async () => {
+  const output = Object.fromEntries(
+    illuminations.map(({ file }) => [file, new Uint8Array([1])]),
+  );
+  // Publication needs only named lookup, never a directory listing.
+  const { lookup } = makeReadableTree({ "index.html": "", "styles.css": "", ...output });
+  const content = await makePublishContent({ lookup });
+  assert.deepEqual(
+    content.map(({ path }) => path),
+    ["index.html", "styles.css", ...illuminations.map(({ file }) => file)],
+  );
+});
+
+test("makePublishContent never publishes an undeclared sibling the page names", async () => {
+  for (const html of [
+    '<img src="confidential.webp">',
+    "<img src=confidential.webp>",
+    '<img data-note=">" src="confidential.webp">',
+  ]) {
+    const content = await makePublishContent(
+      makeReadableTree({
+        "index.html": html,
+        "styles.css": "",
+        "plate.webp": new Uint8Array([1]),
+        "confidential.webp": new Uint8Array([2]),
+      }),
+      ["plate.webp"],
+    );
+    assert.deepEqual(
+      content.map(({ path }) => path),
+      ["index.html", "styles.css", "plate.webp"],
+    );
+  }
+});
+
+test("makePublishContent refuses a declared plate missing from the build", async () => {
+  await assert.rejects(
+    makePublishContent(
+      makeReadableTree({
+        "index.html": "",
+        "styles.css": "",
+        "illumination-present.webp": new Uint8Array([1]),
+      }),
+      ["illumination-present.webp", "illumination-Gone_1.webp"],
+    ),
+    /missing from the build output: illumination-Gone_1\.webp$/u,
+  );
+});
+
+for (const [why, plate] of [
+  ["a non-WebP plate", "illumination-odd.png"],
+  ["a parent-directory plate", "../plate.webp"],
+  ["a subdirectory plate", "art/plate.webp"],
+]) {
+  test(`makePublishContent refuses ${why}`, async () => {
+    await assert.rejects(
+      makePublishContent(
+        makeReadableTree({ "index.html": "", "styles.css": "", [plate]: new Uint8Array([1]) }),
+        [plate],
+      ),
+      /declared plates must be WebP files in the edition directory/u,
+    );
+  });
+}
+
+const recordingPeer = (calls) => ({
+  async call(method, params) {
+    calls.push([method, params]);
+    return { jsonrpc: "2.0", id: calls.length, result: { ok: true } };
+  },
+  notify() {},
+});
+
+// A clip whose publish request is exactly `PUBLISH_REQUEST_LIMIT + over`
+// bytes. Base64 grows in steps of four, so the length of an empty plate's
+// name absorbs the rest.
+const clipOfRequestSize = async (over) => {
+  const tree = (html, plate) =>
+    makeReadableTree({ "index.html": html, "styles.css": "", [plate]: new Uint8Array() });
+  const measure = async (html, plate) =>
+    publishRequestBytes({
+      powers: POWERS_NAME,
+      content: await makePublishContent(tree(html, plate), [plate]),
+    });
+  const room = PUBLISH_REQUEST_LIMIT + over - (await measure("", "p.webp"));
+  const groups = Math.floor(room / 4);
+  const html = "x".repeat(groups * 3);
+  const plate = `p${"a".repeat(room - groups * 4)}.webp`;
+  assert.equal(await measure(html, plate), PUBLISH_REQUEST_LIMIT + over);
+  return { builtTree: tree(html, plate), plates: [plate] };
+};
+
+test("publishBook publishes a clip exactly at the MCP request limit", async () => {
+  const calls = [];
+  await publishBook({ ...(await clipOfRequestSize(0)), peer: recordingPeer(calls) });
+  assert.deepEqual(
+    calls.map(([method, params]) => params.name ?? method),
+    ["initialize", "writeText", "publish"],
+  );
+});
+
+test("publishBook refuses a clip one byte over the MCP request limit before writing", async () => {
+  const calls = [];
+  await assert.rejects(
+    publishBook({ ...(await clipOfRequestSize(1)), peer: recordingPeer(calls) }),
+    /encodes to 2097153 bytes, over minion\.town's 2097152-byte MCP request limit/,
+  );
+  assert.deepEqual(
+    calls.map(([method]) => method),
+    ["initialize"],
+  );
+});
+
+for (const failing of ["writeText", "publish"]) {
+  test(`publishBook rejects when ${failing} reports an MCP tool error`, async () => {
+    const calls = [];
+    const peer = {
+      async call(method, params) {
+        calls.push(params.name ?? method);
+        return {
+          jsonrpc: "2.0",
+          id: calls.length,
+          result:
+            params.name === failing
+              ? { isError: true, content: [{ type: "text", text: "denied" }] }
+              : { ok: true },
+        };
+      },
+      notify() {},
+    };
+    await assert.rejects(
+      publishBook({ ...(await clipOfRequestSize(-1)), peer }),
+      new RegExp(`^Error: minion\\.town ${failing} failed: .*denied`, "u"),
+    );
+    assert.deepEqual(
+      calls,
+      failing === "writeText" ? ["initialize", "writeText"] : ["initialize", "writeText", "publish"],
+    );
+  });
+}
+
+test("publishRequestBytes escapes DEL as the Python bridge does", () => {
+  assert.equal(
+    publishRequestBytes({ powers: "\x7f" }),
+    '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "publish", "arguments": {"powers": "\\u007f"}}}'
+      .length,
+  );
+});
+
+test("publishRequestBytes measures the body the Python bridge sends", () => {
+  // json.dumps({"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params":
+  // {"name": "publish", "arguments": {"powers": "\u2713\ud83c\udf31"}}})
+  assert.equal(
+    publishRequestBytes({ powers: "\u2713\u{1f331}" }),
+    '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "publish", "arguments": {"powers": "\\u2713\\ud83c\\udf31"}}}'
+      .length,
+  );
+});
+
+test("the full edition, with every plate, fits one publish request", async () => {
+  const output = {};
+  await assembleBook({
+    chaptersTree: makeNodeReadableTree(
+      new URL("../chapters/", import.meta.url),
+    ),
+    buildTree: makeNodeReadableTree(new URL("../build/", import.meta.url)),
+    artworkTree: makeNodeReadableTree(new URL("../art/", import.meta.url)),
+    outputTree: {
+      async writeText(name, content) {
+        output[name] = content;
+      },
+      async writeBytes(name, content) {
+        output[name] = content;
+      },
+    },
+  });
+  const requestBytes = publishRequestBytes({
+    powers: "garden-book-inert",
+    content: await makePublishContent(makeReadableTree(output)),
+  });
+  assert.ok(
+    requestBytes <= PUBLISH_REQUEST_LIMIT,
+    `the edition encodes to ${requestBytes} bytes, over the ${PUBLISH_REQUEST_LIMIT}-byte limit`,
+  );
 });

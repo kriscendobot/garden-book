@@ -1,8 +1,8 @@
 # garden-book build tooling
 
-Assembles `../chapters/ch*.md` into one static HTML book (`index.html` +
-sibling `styles.css`, since the clip CSP is `style-src 'self'`) and publishes
-it as a minion.town clip.
+Assembles `../chapters/ch*.md` into a static HTML book (`index.html`, sibling
+`styles.css`, and 25 same-origin WebP illuminations) and publishes it as a
+minion.town clip.
 
 As of 2026-10-01 this repo ([`kriscendobot/garden-book`](https://github.com/kriscendobot/garden-book)) is the source of
 record for ongoing editorial work — chapters, art, and this build tooling
@@ -18,9 +18,40 @@ the live source.
     source <garden-checkout>/scripts/jobs/minion-mcp-lib.sh; minion_mcp_prepare
     node build/publish.mjs "$(minion_mcp_env_json)" out   # prints the clip URL response
 
-The build command writes both `index.html` and `styles.css` into the output
-directory (`out/` above). They are build artifacts, not committed: the
-publish step uploads them as the clip, and a rebuild overwrites them.
+The build command writes `index.html`, `styles.css`, and the 25 illumination
+WebPs into the output directory (`out/` above). They are build artifacts, not
+committed: the publish step uploads all 27 files as the clip, and a rebuild
+overwrites them. Publishing refuses a clip over minion.town's MCP request
+limit, or one missing a plate declared in [`illuminations.mjs`](illuminations.mjs),
+before writing anything; other files in the output are never uploaded. Anything
+else that copies an edition must copy the whole output directory, not
+`index.html` alone.
+
+## Tree contract
+
+`assembleBook` reads chapters, `intro.html`, and art through readable trees
+whose `lookup(name)` returns a blob with `text()`, or `bytes()` for the plates
+([`tree-io.mjs`](tree-io.mjs) `readText`/`readBytes`). The output tree must
+provide both `writeText(name, content)` and `writeBytes(name, content)`; a tree
+with only `writeText` fails on the first plate. Each placement passed as
+`illuminations` supplies the `img` attributes `file`, `width`, `height`, and
+`alternativeText` (rendered as the `alt` attribute); the build does not validate them. The committed placements come from
+the metadata map in [`illuminations.mjs`](illuminations.mjs), and publishing
+refuses any declared plate that is not a `.webp` file in the output directory.
+Publishing reads only the named files, through `lookup`, and does not decode
+the plates; the browser check is what confirms that each one decodes.
+
+## Publish size
+
+`publishBook` refuses any request over `PUBLISH_REQUEST_LIMIT` (2,097,152
+bytes), because the plates are base64-encoded into one MCP request;
+`test/build.test.mjs` fails if the full edition stops fitting.
+To recover from an over-limit build, re-encode the largest plates smaller (the
+plates are WebP at a 480-pixel longest side, see
+[`art/OPENAI-ILLUMINATIONS.md`](../art/OPENAI-ILLUMINATIONS.md)) or drop a
+placement, then rebuild and rerun `npm test`.
+
+## Design hooks and checks
 
 Design hooks in [`render-book.mjs`](render-book.mjs): `PARTS` maps chapter numbers to the book's five
 parts (update it when chapters are added or renumbered; a chapter outside
@@ -31,7 +62,8 @@ catalog entry's `Source:` line (hoisted beside its heading and linked to
 `main2`), and the chapter's own `Contents` list. [`illuminations.mjs`](illuminations.mjs) places
 the plates from `art/`: each entry names an image, the heading anchor it was
 drawn for, an optional later heading inside that section (`at`), how many body
-blocks to pass before the figure (margin notes don't count), and its caption.
+blocks to pass before the figure (margin notes don't count), intrinsic
+dimensions, alternative text, and its caption.
 A placement whose heading is gone, which would leave its section, or which
 names missing art fails the build instead of moving silently.
 [`equilibrium-charts.mjs`](equilibrium-charts.mjs) does the same for the nine review-economics charts
@@ -43,13 +75,26 @@ directly after it. [`tools/equilibrium/integration-check.mjs`](../tools/equilibr
 nine placements in a built edition in the browser.
 [`tools/browser-check.mjs`](../tools/browser-check.mjs) loads a built edition in headless Chromium at phone
 and desktop widths in both color schemes and reports overflow, clipped or
-overlapping figures, and caption contrast (Playwright is not a dependency;
-point `PLAYWRIGHT_CORE` at an installed `playwright-core`). [`publish.mjs`](publish.mjs) publishes with
-an inert empty-text pet name as `powers`, never `sites`, because `powers`
-becomes every visitor's bootstrap (see [`skills/minion-town-clip-publishing`](https://github.com/kriscendobot/garden/blob/main2/skills/minion-town-clip-publishing/SKILL.md)
-on [`kriscendobot/garden`](https://github.com/kriscendobot/garden)); it refuses any `GARDEN_BOOK_POWERS` that is not
-`garden-book-<name>`, so `sites`, `@agent`, and the other reserved names are
-never overwritten.
+overlapping figures, plates that did not load, and caption contrast. It
+fails on any CSP violation the page reports; pointed at a published clip's
+URL, that checks the clip under the CSP it is actually served with (Playwright
+is not a dependency; point `PLAYWRIGHT_CORE` at an installed `playwright-core`).
+`test/browser-check-chromium.test.mjs` runs it against a fresh build and a
+known-bad copy when `playwright-core` resolves, and is skipped otherwise;
+`npm run test:browser` runs it and fails if no browser launches. Before
+publishing, an edition must pass `npm test`, `npm run test:browser`, and
+`npm run build && node tools/browser-check.mjs out/index.html`. [`publish.mjs`](publish.mjs) publishes with
+the fixed pet name `garden-book-inert` (`POWERS_NAME`), overwritten with empty
+text, as `powers`, never `sites`, because `powers` becomes every visitor's
+bootstrap (see [`skills/minion-town-clip-publishing`](https://github.com/kriscendobot/garden/blob/main2/skills/minion-town-clip-publishing/SKILL.md)
+on [`kriscendobot/garden`](https://github.com/kriscendobot/garden)). The name
+is not configurable, so no caller can point the overwrite at a real
+capability.
+
+The generation record is
+[`art/OPENAI-ILLUMINATIONS.md`](../art/OPENAI-ILLUMINATIONS.md); the committed
+review contact sheet is in
+[`art/illumination-redraw-evidence.md`](../art/illumination-redraw-evidence.md).
 
 [Chapter 8's review-economics section (8.8)](../chapters/ch8-cybernetics-budgeting.md#88-review-economics-an-equilibrium) is computed, not hand-written:
 [`tools/equilibrium/analyze.mjs`](../tools/equilibrium/analyze.mjs) reads one fixed `journal2` commit plus GitHub
@@ -66,7 +111,7 @@ role/skill links to the in-book [chapter 5](../chapters/ch5-roles-reference.md)/
 paths to `main2` on GitHub ([`kriscendobot/garden`](https://github.com/kriscendobot/garden), where the roles/skills
 this book documents actually live).
 
-Current edition, 2026-10-13, linked and reader copy-edited (jobs
+Last published edition, 2026-10-13, linked and reader copy-edited (jobs
 `book-reader-exposure-copyedit` and
 `book-hyperlink-references-after-copyedit-20261004`): the prose introduces
 garden-specific terms before using them, foregrounds reader-visible
@@ -78,8 +123,9 @@ source: [published edition](https://5kwirevgc77outc6vptymbj6tfwpwuldnb74qumkrs55
 - Hyperlinks: [PR #13](https://github.com/kriscendobot/garden-book/pull/13),
   merged as `eaf634ae5d4d839e8979dc3f359037dca1594c96`; published from
   that commit.
-- Build: `npm ci && npm test && node build/build.mjs chapters out` (62/62
-  tests). Output sha256: `index.html`
+- Build, from before the raster illuminations, so its test count and hashes
+  describe that build rather than this tree:
+  `npm ci && npm test && node build/build.mjs chapters out` (62/62 tests). Output sha256: `index.html`
   `384dbd3ce3224354dfc2652b44773fe632a77363b75049d7bfdc7bb3e7087155`,
   `styles.css`
   `859ffed2b91ea2db5f0a963cbe22d5ffa48a8168423250fee4f251d4d27a49d0`;
@@ -128,8 +174,8 @@ requests, and 19 upstream ferries: [published edition](https://xddmohl7mf56oiaps
 Earlier edition, 2026-10-04, illuminated (jobs
 `book-illumination-integrate-20261004` and
 `book-illumination-supervisor-after-integrate-20261004`): the 25 plates in
-`art/illumination-*.svg` are inlined at the places `build/illuminations.mjs`
-names, each as a `figure` with a caption, and the title-page garden scene and
+the then-current procedural `art/illumination-*.svg` files (since replaced by
+WebP plates) are inlined at the places `build/illuminations.mjs` names, each as a `figure` with a caption, and the title-page garden scene and
 the [chapter 2](../chapters/ch2-architecture-operation.md) garden-bed figure are retired: [published edition](https://dnl43y7ksqqrkfzkzsiyzhfoqks7tnxpedzi7gfymzviqo7uvkda.ocap.site/).
 
 - Art: [PR #9](https://github.com/kriscendobot/garden-book/pull/9), merged as

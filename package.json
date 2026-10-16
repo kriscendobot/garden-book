@@ -1,6 +1,6 @@
 {
   "name": "garden-book",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "The source and build tooling for Better Code and Gardens.",
   "private": true,
   "type": "module",
@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "node build/build.mjs chapters out",
-    "test": "node --test"
+    "test": "node --test",
+    "test:browser": "GARDEN_BOOK_REQUIRE_BROWSER=1 node --test test/browser-check-chromium.test.mjs"
   },
   "keywords": [],
   "author": "",

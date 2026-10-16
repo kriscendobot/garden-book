@@ -1,137 +1,80 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { fileURLToPath } from 'node:url';
-import { join, resolve } from 'node:path';
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readdir, readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 
-import {
-  generateIllustrations,
-  illustrations,
-  palette,
-  renderIllustration,
-} from '../art/generate-illuminations.mjs';
+import { illuminations } from "../build/illuminations.mjs";
 
-const repository = fileURLToPath(new URL('..', import.meta.url));
-const artDirectory = resolve(repository, 'art');
-
+const repository = fileURLToPath(new URL("..", import.meta.url));
+const artDirectory = resolve(repository, "art");
 const occurrences = (text, value) => text.split(value).length - 1;
 
-const assertTagNesting = (source, file) => {
-  const stack = [];
-  const tagPattern = /<\/?([A-Za-z][\w:.-]*)(?:\s[^<>]*?)?\s*\/?>/gu;
-  for (const match of source.matchAll(tagPattern)) {
-    const tag = match[0];
-    const name = match[1];
-    if (tag.startsWith('</')) {
-      assert.equal(stack.pop(), name, `${file} closes ${name} out of order`);
-    } else if (!tag.endsWith('/>')) {
-      stack.push(name);
-    }
+const webpDimensions = (bytes) => {
+  assert.equal(bytes.subarray(0, 4).toString("ascii"), "RIFF");
+  assert.equal(bytes.subarray(8, 12).toString("ascii"), "WEBP");
+  const kind = bytes.subarray(12, 16).toString("ascii");
+  if (kind === "VP8 ") {
+    assert.deepEqual([...bytes.subarray(23, 26)], [0x9d, 0x01, 0x2a]);
+    return [bytes.readUInt16LE(26) & 0x3fff, bytes.readUInt16LE(28) & 0x3fff];
   }
-  assert.deepEqual(stack, [], `${file} has unclosed elements`);
+  if (kind === "VP8L") {
+    const bits = bytes.readUInt32LE(21);
+    return [(bits & 0x3fff) + 1, ((bits >> 14) & 0x3fff) + 1];
+  }
+  if (kind === "VP8X") {
+    return [bytes.readUIntLE(24, 3) + 1, bytes.readUIntLE(27, 3) + 1];
+  }
+  assert.fail(`unsupported WebP chunk ${kind}`);
 };
 
-test('the brief has one reproducible SVG for each of its 25 entries', async () => {
-  const files = (await readdir(artDirectory))
-    .filter(file => /^illumination-.*\.svg$/u.test(file))
-    .sort();
-  const expectedFiles = illustrations.map(({ file }) => file).sort();
-
-  assert.equal(illustrations.length, 25);
-  assert.deepEqual(files, expectedFiles);
+test("the brief has one committed OpenAI-generated raster for each of its 25 entries", async () => {
+  const artFiles = await readdir(artDirectory);
+  const files = artFiles.filter(file => /^illumination-ch.*\.webp$/u.test(file)).sort();
+  const expected = illuminations.map(({ file }) => file).sort();
+  assert.equal(illuminations.length, 25);
+  assert.equal(new Set(illuminations.map(({ anchor }) => anchor)).size, 25);
+  assert.deepEqual(files, expected);
   assert.deepEqual(
-    illustrations.map(({ number }) => number),
-    Array.from({ length: 25 }, (_, index) => index + 1),
+    artFiles.filter(file => /^(?:illumination-.*\.svg|divider-|figure-|title-garden\.svg$|generate-illuminations\.mjs$)/u.test(file)),
+    [],
+    "retired procedural and placeholder art must not return",
   );
-
-  for (const illustration of illustrations) {
-    const source = await readFile(resolve(artDirectory, illustration.file), 'utf8');
-    assert.equal(source, renderIllustration(illustration));
-    assertTagNesting(source, illustration.file);
-  }
-});
-
-test('generateIllustrations reproduces the committed SVGs', async t => {
-  const scratch = await mkdtemp(join(tmpdir(), 'illuminations-'));
-  t.after(() => rm(scratch, { recursive: true, force: true }));
-  const directory = resolve(scratch, 'nested', 'art');
-
-  await generateIllustrations(directory);
-
-  const files = (await readdir(directory)).sort();
-  assert.deepEqual(files, illustrations.map(({ file }) => file).sort());
-  for (const file of files) {
-    assert.equal(
-      await readFile(resolve(directory, file), 'utf8'),
-      await readFile(resolve(artDirectory, file), 'utf8'),
-      file,
+  for (const illustration of illuminations) {
+    const bytes = await readFile(resolve(artDirectory, illustration.file));
+    const [actualWidth, actualHeight] = webpDimensions(bytes);
+    assert.deepEqual(
+      [actualWidth, actualHeight],
+      [illustration.width, illustration.height],
+      illustration.file,
     );
+    const ratioMatch = /^(\d+):(\d+)$/u.exec(illustration.ratio);
+    assert.ok(ratioMatch, `${illustration.file} has an invalid ratio`);
+    const ratioWidth = Number(ratioMatch[1]);
+    const ratioHeight = Number(ratioMatch[2]);
+    assert.equal(
+      actualWidth * ratioHeight,
+      actualHeight * ratioWidth,
+      `${illustration.file} declares ${illustration.ratio} but is ${actualWidth}:${actualHeight}`,
+    );
+    assert.ok(bytes.length >= 5_000, `${illustration.file} is unexpectedly small`);
+    assert.ok(bytes.length <= 40_000, `${illustration.file} is too large for the shared publish budget`);
+    assert.ok(illustration.alternativeText.length >= 40, `${illustration.file} needs meaningful alt text`);
   }
 });
 
-test('manifest and brief map every target anchor exactly once', async () => {
-  const [brief, manifest] = await Promise.all([
-    readFile(resolve(artDirectory, 'chapter-illustrations-brief.md'), 'utf8'),
-    readFile(resolve(artDirectory, 'MANIFEST.md'), 'utf8'),
+test("manifest, prompt record, brief, and placement table map every target exactly once", async () => {
+  const [brief, manifest, prompts] = await Promise.all([
+    readFile(resolve(artDirectory, "chapter-illustrations-brief.md"), "utf8"),
+    readFile(resolve(artDirectory, "MANIFEST.md"), "utf8"),
+    readFile(resolve(artDirectory, "OPENAI-ILLUMINATIONS.md"), "utf8"),
   ]);
-  const briefAnchors = [
-    ...brief.matchAll(/\*\*Target anchor:\*\* `([^`]+)`/gu),
-  ].map(match => match[1]);
-
+  const briefAnchors = [...brief.matchAll(/\*\*Target anchor:\*\* `([^`]+)`/gu)].map(match => match[1]);
   assert.equal(briefAnchors.length, 25);
-  assert.equal(new Set(briefAnchors).size, 25);
-  assert.deepEqual(
-    illustrations.map(({ anchor }) => anchor),
-    briefAnchors,
-  );
-
-  for (const { anchor, file } of illustrations) {
+  assert.deepEqual(illuminations.map(({ anchor }) => anchor), briefAnchors);
+  for (const { anchor, file } of illuminations) {
     assert.equal(occurrences(manifest, `\`${anchor}\``), 1, anchor);
     assert.equal(occurrences(manifest, `\`${file}\``), 1, file);
+    assert.equal(occurrences(prompts, `\`${file}\``), 1, file);
   }
-});
-
-test('SVGs are inline-safe, accessible, and collision-free together', async () => {
-  const allIds = new Set();
-  const allowedColors = new Set(Object.values(palette));
-
-  for (const illustration of illustrations) {
-    const source = await readFile(resolve(artDirectory, illustration.file), 'utf8');
-    const prefix = illustration.file.replace(/\.svg$/u, '');
-
-    assert.match(source, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/u);
-    assert.match(source, /role="img"/u);
-    assert.match(source, new RegExp(`<title id="${prefix}-title">[^<]+<\\/title>`, 'u'));
-    assert.match(source, new RegExp(`<desc id="${prefix}-description">[^<]+<\\/desc>`, 'u'));
-    assert.doesNotMatch(source, /<script\b|<foreignObject\b|<iframe\b|<image\b/iu);
-    assert.doesNotMatch(source, /\son[a-z]+\s*=/iu);
-    assert.doesNotMatch(
-      source,
-      /(?:href|src)\s*=\s*["'](?:https?:|\/\/|data:)|url\(\s*["']?(?:https?:|\/\/|data:)|@import/iu,
-    );
-
-    const localIds = new Set();
-    for (const match of source.matchAll(/\sid="([^"]+)"/gu)) {
-      const id = match[1];
-      assert.ok(id.startsWith(`${prefix}-`), `${id} is not prefixed by ${prefix}`);
-      assert.ok(!localIds.has(id), `${illustration.file} repeats ${id}`);
-      assert.ok(!allIds.has(id), `combined SVGs collide on ${id}`);
-      localIds.add(id);
-      allIds.add(id);
-    }
-
-    const references = [
-      ...source.matchAll(/url\(#([^)]+)\)|href="#([^"]+)"|aria-labelledby="([^"]+)"/gu),
-    ].flatMap(match => (match[3] ? match[3].split(/\s+/u) : [match[1] ?? match[2]]));
-    for (const reference of references) {
-      assert.ok(localIds.has(reference), `${illustration.file} has missing #${reference}`);
-    }
-
-    for (const match of source.matchAll(/#[0-9A-Fa-f]{6}\b/gu)) {
-      assert.ok(allowedColors.has(match[0].toUpperCase()), `${illustration.file} uses ${match[0]}`);
-    }
-  }
-
-  assert.equal(allIds.size, 50);
 });

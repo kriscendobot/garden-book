@@ -2,25 +2,24 @@
 // Loads a built edition in headless Chromium at phone and desktop sizes, in
 // the light and dark color schemes, and measures what a reader would notice:
 // horizontal overflow, clipped or runaway figures, figures that cover text,
-// and caption contrast. Optionally writes screenshots of the title page and a
-// few figures for a person to look at.
+// caption contrast, and plates that did not load. Optionally writes
+// screenshots of the title page and a few figures for a person to look at.
 //
 //   node tools/browser-check.mjs out/index.html [screenshot-directory]
 //   node tools/browser-check.mjs https://<published-clip>/ [screenshot-directory]
 //
 // Playwright is not a dependency of the book. The script imports
 // playwright-core from PLAYWRIGHT_CORE (a path to the package) or from normal
-// module resolution, and launches CHROMIUM or the newest headless shell in
-// ~/.cache/ms-playwright. It exits 1 if any configuration fails.
+// module resolution, and launches CHROMIUM, the newest headless shell in the
+// Linux Playwright cache, or Playwright's default browser. It exits 1 if
+// any configuration fails.
 
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const [, , htmlArgument = "out/index.html", shotsArgument] = process.argv;
-
-const loadPlaywright = async () => {
+export const loadPlaywright = async () => {
   const specifier = process.env.PLAYWRIGHT_CORE
     ? pathToFileURL(join(resolve(process.env.PLAYWRIGHT_CORE), "index.mjs"))
         .href
@@ -28,11 +27,18 @@ const loadPlaywright = async () => {
   return import(specifier);
 };
 
-const findChromium = () => {
-  if (process.env.CHROMIUM) {
-    return process.env.CHROMIUM;
+// Linux is the validation environment, so only Playwright's Linux cache
+// layouts (x64, then ARM64) are searched; anywhere else, set CHROMIUM or let
+// Playwright choose.
+const headlessShells = ["chrome-headless-shell-linux64", "chrome-headless-shell-linux-arm64"];
+
+export const findChromium = ({ environment = process.env } = {}) => {
+  if (environment.CHROMIUM) {
+    return environment.CHROMIUM;
   }
-  const cache = join(homedir(), ".cache", "ms-playwright");
+  const cache =
+    environment.PLAYWRIGHT_BROWSERS_PATH ??
+    join(homedir(), ".cache", "ms-playwright");
   const candidates = existsSync(cache)
     ? readdirSync(cache)
         .filter((name) => name.startsWith("chromium_headless_shell-"))
@@ -40,12 +46,9 @@ const findChromium = () => {
           (left, right) =>
             Number(right.split("-")[1]) - Number(left.split("-")[1]),
         )
-        .map((name) =>
-          join(
-            cache,
-            name,
-            "chrome-headless-shell-linux64",
-            "chrome-headless-shell",
+        .flatMap((name) =>
+          headlessShells.map((shell) =>
+            join(cache, name, shell, "chrome-headless-shell"),
           ),
         )
         .filter(existsSync)
@@ -63,10 +66,10 @@ const configurations = [
 // Screenshot targets: the title page, chapter openers, and section figures.
 const shots = [
   ["title", "#top"],
-  ["opener-ch1", 'figure:has(svg[aria-labelledby^="illumination-ch1-metamorphoses-"])'],
-  ["opener-ch9", 'figure:has(svg[aria-labelledby^="illumination-ch9-hanging-library-"])'],
-  ["section-ch2-journal", 'figure:has(svg[aria-labelledby^="illumination-ch2-journal-duties-"])'],
-  ["section-ch8-loop", 'figure:has(svg[aria-labelledby^="illumination-ch8-cybernetic-loop-"])'],
+  ["opener-ch1", 'figure:has(img[src="illumination-ch1-metamorphoses.webp"])'],
+  ["opener-ch9", 'figure:has(img[src="illumination-ch9-hanging-library.webp"])'],
+  ["section-ch2-journal", 'figure:has(img[src="illumination-ch2-journal-duties.webp"])'],
+  ["section-ch8-loop", 'figure:has(img[src="illumination-ch8-cybernetic-loop.webp"])'],
 ];
 
 // Runs in the page. Everything it needs is defined inside.
@@ -92,18 +95,24 @@ const measure = () => {
     Math.min(left.bottom, right.bottom) - Math.max(left.top, right.top) > 1;
 
   const figures = [...document.querySelectorAll("figure.illumination")];
+  if (figures.length === 0) {
+    problems.push("no illuminated figures found");
+  }
   let minimumContrast = Infinity;
   let tallest = 0;
   for (const figure of figures) {
-    const svg = figure.querySelector("svg");
+    const illuminationImage = figure.querySelector(".illumination-art");
     const caption = figure.querySelector("figcaption");
-    const label = svg.getAttribute("aria-labelledby").split(" ")[0].replace(/-title$/, "");
+    const label = illuminationImage.getAttribute("src").replace(/\.webp$/, "");
     const figureBox = figure.getBoundingClientRect();
-    const svgBox = svg.getBoundingClientRect();
+    const illuminationImageBox = illuminationImage.getBoundingClientRect();
     const captionBox = caption.getBoundingClientRect();
     const container = figure.parentElement.getBoundingClientRect();
     const floated = getComputedStyle(figure).float !== "none";
-    for (const [part, box] of [["figure", figureBox], ["svg", svgBox], ["caption", captionBox]]) {
+    if (!illuminationImage.complete || illuminationImage.naturalWidth === 0) {
+      problems.push(`${label}: image did not load`);
+    }
+    for (const [part, box] of [["figure", figureBox], ["art", illuminationImageBox], ["caption", captionBox]]) {
       if (box.left < -0.5 || box.right > viewportWidth + 0.5) {
         problems.push(`${label}: ${part} leaves the viewport`);
       }
@@ -111,21 +120,20 @@ const measure = () => {
         problems.push(`${label}: ${part} is wider than its column`);
       }
     }
-    if (svgBox.width > figureBox.width + 0.5 || captionBox.width > figureBox.width + 0.5) {
+    if (illuminationImageBox.width > figureBox.width + 0.5 || captionBox.width > figureBox.width + 0.5) {
       problems.push(`${label}: content wider than its figure`);
     }
-    const [, , viewWidth, viewHeight] = svg.getAttribute("viewBox").split(/\s+/).map(Number);
-    const expectedHeight = (svgBox.width * viewHeight) / viewWidth;
-    if (Math.abs(svgBox.height - expectedHeight) > 1.5) {
-      problems.push(`${label}: svg is ${svgBox.height.toFixed(0)}px tall, expected ${expectedHeight.toFixed(0)}px`);
+    const expectedHeight = (illuminationImageBox.width * Number(illuminationImage.getAttribute("height"))) / Number(illuminationImage.getAttribute("width"));
+    if (Math.abs(illuminationImageBox.height - expectedHeight) > 1.5) {
+      problems.push(`${label}: art is ${illuminationImageBox.height.toFixed(0)}px tall, expected ${expectedHeight.toFixed(0)}px`);
     }
-    if (svgBox.height > window.innerHeight * 0.75) {
-      problems.push(`${label}: svg is taller than three quarters of the viewport`);
+    if (illuminationImageBox.height > window.innerHeight * 0.75) {
+      problems.push(`${label}: art is taller than three quarters of the viewport`);
     }
     if (figure.scrollHeight > figure.clientHeight + 1 || captionBox.bottom > figureBox.bottom + 0.5) {
       problems.push(`${label}: figure clips its content`);
     }
-    tallest = Math.max(tallest, svgBox.height);
+    tallest = Math.max(tallest, illuminationImageBox.height);
     // Anything else in the chapter that a figure could cover.
     const section = figure.closest("section");
     for (const other of section.querySelectorAll(
@@ -159,8 +167,8 @@ const measure = () => {
     scrollWidth: root.scrollWidth,
     clientWidth: viewportWidth,
     figures: figures.length,
-    tallestSvg: Math.round(tallest),
-    minimumCaptionContrast: Number(minimumContrast.toFixed(2)),
+    tallestPlate: Math.round(tallest),
+    minimumCaptionContrast: figures.length === 0 ? 0 : Number(minimumContrast.toFixed(2)),
     bodyContrast: Number(bodyContrast.toFixed(2)),
     pageBackground,
     problems: [
@@ -170,63 +178,138 @@ const measure = () => {
   };
 };
 
-const { chromium } = await loadPlaywright();
-const browser = await chromium.launch({
-  executablePath: findChromium(),
-  args: ["--no-sandbox"],
-});
-const url = /^https?:\/\//.test(htmlArgument)
-  ? htmlArgument
-  : pathToFileURL(resolve(htmlArgument)).href;
-const results = [];
-try {
+// Runs in every page before its own scripts, so it hears each CSP violation
+// the page reports (CSP3 § 5.5, the `securitypolicyviolation` event).
+const recordViolations = () => {
+  globalThis.cspViolations = [];
+  document.addEventListener("securitypolicyviolation", (event) => {
+    globalThis.cspViolations.push(
+      `${event.effectiveDirective} blocked ${event.blockedURI || "inline content"}`,
+    );
+  });
+};
+
+// URL schemes are ASCII case-insensitive (URL Standard § 4.4).
+const isRemote = (target) => {
+  try {
+    return ["http:", "https:"].includes(new URL(target).protocol);
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Measures a built edition in every configuration. A local `target` is
+ * loaded directly; an http(s) URL, such as a published clip, is loaded under
+ * the CSP it is served with. Any CSP violation the page reports becomes a
+ * problem in that configuration's result.
+ *
+ * @param {object} options
+ * @param {import("playwright-core").Browser} options.browser a launched
+ *   Playwright browser; each configuration opens one context and closes it.
+ * @param {string} options.target path to a built `index.html` or an http(s) URL.
+ * @param {string} [options.shotsDirectory] where to write screenshots,
+ *   named `<configuration>-<shot>.png`.
+ * @returns {Promise<Array<{ name: string, width: number, height: number,
+ *   colorScheme: string, figures: number, tallestPlate: number,
+ *   minimumCaptionContrast: number, bodyContrast: number,
+ *   scrollWidth: number, clientWidth: number, problems: string[] }>>}
+ *   one result per configuration; it passes when `problems` is empty.
+ */
+export const checkEdition = async ({ browser, target, shotsDirectory }) => {
+  const remote = isRemote(target);
+  if (!remote && basename(target) !== "index.html") {
+    throw new TypeError(`A local edition is loaded from its index.html, not ${target}`);
+  }
+  const url = remote ? target : pathToFileURL(resolve(target)).href;
+  const results = [];
   for (const configuration of configurations) {
     const context = await browser.newContext({
       viewport: { width: configuration.width, height: configuration.height },
       colorScheme: configuration.colorScheme,
       reducedMotion: "reduce",
     });
-    const page = await context.newPage();
-    await page.goto(url, { waitUntil: "load" });
-    const result = await page.evaluate(measure);
-    results.push({ ...configuration, ...result });
-    if (shotsArgument) {
-      mkdirSync(shotsArgument, { recursive: true });
-      for (const [name, selector] of shots) {
-        const element = page.locator(selector).first();
-        await element.scrollIntoViewIfNeeded();
-        await page.evaluate(
-          (target) => {
-            const box = document.querySelector(target).getBoundingClientRect();
-            window.scrollBy(0, box.top - 64);
-          },
-          selector,
-        );
-        await page.screenshot({
-          path: join(shotsArgument, `${configuration.name}-${name}.png`),
-        });
+    try {
+      const page = await context.newPage();
+      await page.addInitScript(recordViolations);
+      await page.goto(url, { waitUntil: "load" });
+      await page.evaluate(async () => {
+        for (const image of document.images) {
+          image.scrollIntoView({ block: "center" });
+          await image.decode().catch(() => undefined);
+        }
+        window.scrollTo(0, 0);
+      });
+      const violations = await page.evaluate(() => globalThis.cspViolations ?? []);
+      const result = await page.evaluate(measure);
+      results.push({
+        ...configuration,
+        ...result,
+        problems: [
+          ...violations.map((violation) => `CSP violation: ${violation}`),
+          ...result.problems,
+        ],
+      });
+      if (shotsDirectory) {
+        mkdirSync(shotsDirectory, { recursive: true });
+        for (const [name, selector] of shots) {
+          const element = page.locator(selector).first();
+          await element.scrollIntoViewIfNeeded();
+          await page.evaluate(
+            (selectorText) => {
+              const box = document.querySelector(selectorText).getBoundingClientRect();
+              window.scrollBy(0, box.top - 64);
+            },
+            selector,
+          );
+          await page.screenshot({
+            path: join(shotsDirectory, `${configuration.name}-${name}.png`),
+          });
+        }
       }
+    } finally {
+      await context.close();
     }
-    await context.close();
   }
-} finally {
-  await browser.close();
-}
+  return results;
+};
 
-console.log(
-  "| Configuration | scrollWidth / clientWidth | Figures | Tallest SVG | Caption contrast (min) | Body contrast | Result |",
-);
-console.log("| --- | --- | --- | --- | --- | --- | --- |");
-for (const result of results) {
-  console.log(
-    `| ${result.name} (${result.width}×${result.height}, ${result.colorScheme}) | ${result.scrollWidth} / ${result.clientWidth} | ${result.figures} | ${result.tallestSvg}px | ${result.minimumCaptionContrast}:1 | ${result.bodyContrast}:1 | ${result.problems.length === 0 ? "pass" : "FAIL"} |`,
-  );
-}
-for (const result of results) {
-  for (const problem of result.problems) {
-    console.log(`${result.name}: ${problem}`);
+const main = async () => {
+  const [, , htmlArgument = "out/index.html", shotsArgument] = process.argv;
+  const { chromium } = await loadPlaywright();
+  const browser = await chromium.launch({
+    executablePath: findChromium(),
+    args: ["--no-sandbox"],
+  });
+  let results;
+  try {
+    results = await checkEdition({
+      browser,
+      target: htmlArgument,
+      shotsDirectory: shotsArgument,
+    });
+  } finally {
+    await browser.close();
   }
-}
-if (results.some((result) => result.problems.length > 0)) {
-  process.exitCode = 1;
+  console.log(
+    "| Configuration | scrollWidth / clientWidth | Figures | Tallest plate | Caption contrast (min) | Body contrast | Result |",
+  );
+  console.log("| --- | --- | --- | --- | --- | --- | --- |");
+  for (const result of results) {
+    console.log(
+      `| ${result.name} (${result.width}x${result.height}, ${result.colorScheme}) | ${result.scrollWidth} / ${result.clientWidth} | ${result.figures} | ${result.tallestPlate}px | ${result.minimumCaptionContrast}:1 | ${result.bodyContrast}:1 | ${result.problems.length === 0 ? "pass" : "FAIL"} |`,
+    );
+  }
+  for (const result of results) {
+    for (const problem of result.problems) {
+      console.log(`${result.name}: ${problem}`);
+    }
+  }
+  if (results.some((result) => result.problems.length > 0)) {
+    process.exitCode = 1;
+  }
+};
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  await main();
 }

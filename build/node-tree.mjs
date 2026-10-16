@@ -61,6 +61,9 @@ export const makeNodeReadableTree = (rootUrl) => {
         async text() {
           return readFile(entryUrl, "utf8");
         },
+        async bytes() {
+          return readFile(entryUrl);
+        },
       };
     },
   });
@@ -74,6 +77,10 @@ export const makeNodeWritableTree = (rootUrl) => {
     async writeText(name, content) {
       await mkdir(root, { recursive: true });
       await writeFile(nameUrl(root, name), content, "utf8");
+    },
+    async writeBytes(name, content) {
+      await mkdir(root, { recursive: true });
+      await writeFile(nameUrl(root, name), content);
     },
   };
 };

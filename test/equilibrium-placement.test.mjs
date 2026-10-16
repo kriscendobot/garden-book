@@ -61,6 +61,9 @@ await assembleBook({
     async writeText(name, content) {
       output[name] = content;
     },
+    async writeBytes(name, content) {
+      output[name] = content;
+    },
   },
 });
 const html = output["index.html"];
@@ -488,10 +491,10 @@ test("each chart is inlined verbatim with its caption and exact-value disclosure
   assert.equal(e5.split("<td>not recorded</td>").length - 1, 3);
 });
 
-test("inline ids stay unique with the illuminations, and nothing unsafe enters the page", () => {
+test("inline ids stay unique and only local illumination images enter the page", () => {
   const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, "every id in the page is unique");
-  for (const { file } of [...illuminations, ...equilibriumCharts]) {
+  for (const { file } of equilibriumCharts) {
     const prefix = file.replace(/\.svg$/, "");
     assert.ok(
       ids.includes(`${prefix}-title`) && ids.includes(`${prefix}-description`),
@@ -499,21 +502,28 @@ test("inline ids stay unique with the illuminations, and nothing unsafe enters t
     );
   }
   assert.equal(html.split('<figure class="illumination ').length - 1, 25);
+  for (const { file, alternativeText } of illuminations) {
+    assert.equal(html.split(`src="${file}"`).length - 1, 1, file);
+    assert.ok(html.includes(`alt="${alternativeText}"`), file);
+  }
   for (const references of html.matchAll(/aria-labelledby="([^"]+)"/g)) {
     for (const id of references[1].split(" ")) assert.ok(ids.includes(id), id);
   }
 
   assert.doesNotMatch(
     html,
-    /<script\b|<style\b|<iframe\b|<object\b|<embed\b|<image\b|<img\b|<foreignObject\b/i,
+    /<script\b|<style\b|<iframe\b|<object\b|<embed\b|<image\b|<foreignObject\b/i,
   );
   // Attributes are checked on the tags only: the prose quotes code like
   // `@import` and `new URL(...)`.
   const tags = html.match(/<[^>]+>/g).join("\n");
   assert.doesNotMatch(
     tags,
-    /\sstyle\s*=|\son[a-z]+\s*=|\ssrc\s*=|@import|url\(\s*["']?(?!#)/i,
+    /\sstyle\s*=|\son[a-z]+\s*=|@import|url\(\s*["']?(?!#)/i,
   );
+  for (const tag of html.match(/<img\b[^>]*>/g)) {
+    assert.match(tag, /^<img class="illumination-art" src="illumination-[a-z0-9-]+\.webp" width="\d+" height="\d+" loading="(?:eager|lazy)" decoding="async" alt="[^"]+">$/);
+  }
   assert.deepEqual(
     [...html.matchAll(/<link\b[^>]*>/g)].map((match) => match[0]),
     ['<link rel="stylesheet" href="styles.css">'],

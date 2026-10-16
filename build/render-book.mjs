@@ -80,9 +80,6 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#x27;");
 
-const inlineSvg = (source, className) =>
-  source.trim().replace(/<svg\s+xmlns="[^"]+"/, `<svg class="${className}"`);
-
 const glyph = (key, className = "glyph") =>
   `<svg class="${className}" aria-hidden="true" focusable="false"><use href="#g-${key}"/></svg>`;
 
@@ -167,12 +164,10 @@ const assertWithinSection = (html, anchor, at) => {
   }
 };
 
-const illuminationFigure = (placement, source, opener) => {
+const illuminationFigure = (placement, opener) => {
   const shape = placement.ratio.replace(":", "-");
-  return `<figure class="illumination ${opener ? "opener" : "section-figure"} ratio-${shape}">${inlineSvg(
-    source,
-    "illumination-art",
-  )}<figcaption>${escapeHtml(placement.caption)}</figcaption></figure>`;
+  const loading = opener ? "eager" : "lazy";
+  return `<figure class="illumination ${opener ? "opener" : "section-figure"} ratio-${shape}"><img class="illumination-art" src="${escapeHtml(placement.file)}" width="${placement.width}" height="${placement.height}" loading="${loading}" decoding="async" alt="${escapeHtml(placement.alternativeText)}"><figcaption>${escapeHtml(placement.caption)}</figcaption></figure>`;
 };
 
 // Inline code in a chart's table cells and notes is written between
@@ -534,15 +529,14 @@ export const renderBook = ({
       if (at !== placement.anchor) {
         assertWithinSection(bodyHtml, placement.anchor, at);
       }
-      const source = artwork.illuminations?.[placement.file];
-      if (source === undefined) {
+      if (!Object.hasOwn(artwork.illuminations ?? {}, placement.file)) {
         throw new RangeError(`No artwork for ${placement.file}`);
       }
       bodyHtml = insertAfterBlocks(
         bodyHtml,
         at,
         placement.blocks,
-        illuminationFigure(placement, source, at === chapterId),
+        illuminationFigure(placement, at === chapterId),
       );
       placed.add(placement.file);
     }

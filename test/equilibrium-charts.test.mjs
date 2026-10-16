@@ -6,7 +6,6 @@ import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
 
 import { charts, generateCharts, loadData, palette, renderChart } from '../art/generate-equilibrium-charts.mjs';
-import { illustrations } from '../art/generate-illuminations.mjs';
 
 const repository = fileURLToPath(new URL('..', import.meta.url));
 const artDirectory = resolve(repository, 'art');
@@ -256,14 +255,10 @@ test('scenario curves plot the committed series at their scale', () => {
   }
 });
 
-test('the charts are inline-safe, accessible, and collision-free with the illuminations', async () => {
+test('the charts are inline-safe, accessible, and collision-free together', async () => {
   const allowed = new Set(Object.values(palette));
   assert.equal(allowed.size, 13);
   const ids = new Set();
-  for (const illustration of illustrations) {
-    const source = await readFile(resolve(artDirectory, illustration.file), 'utf8');
-    for (const match of source.matchAll(/\sid="([^"]+)"/gu)) ids.add(match[1]);
-  }
   for (const chart of charts) {
     const source = sources[chart.id];
     const prefix = chart.file.replace(/\.svg$/u, '');

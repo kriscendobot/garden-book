@@ -20,6 +20,6 @@ if (!chaptersArgument || !outputArgument || extras.length > 0) {
     outputTree: makeNodeWritableTree(asDirectoryUrl(outputArgument)),
   });
   console.log(
-    `${result.chapterCount} files, ${result.html.length} characters; roles=${result.roleCount} skills=${result.skillCount}`,
+    `${result.chapterCount} chapters, ${result.html.length} characters; roles=${result.roleCount} skills=${result.skillCount}`,
   );
 }

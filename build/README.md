@@ -111,7 +111,35 @@ role/skill links to the in-book [chapter 5](../chapters/ch5-roles-reference.md)/
 paths to `main2` on GitHub ([`kriscendobot/garden`](https://github.com/kriscendobot/garden), where the roles/skills
 this book documents actually live).
 
-Last published edition, 2026-10-13, linked and reader copy-edited (jobs
+Latest published edition, 2026-10-16, a **DRAFT** with repainted raster
+illuminations (jobs `garden-book-pr15-fix-final-panel-defects-20261016` and
+`garden-book-pr15-merge-and-publish-draft-20261016`). Its title page says it
+is a draft. It was published under maintainer override, before the gauntlet
+converged and before the history was cleaned up; `main` may be retconned
+later: [draft edition](https://xkmof32e37co54ni4b2gm5r3ls73uhsvodwg4jpmqni2jcv4fluq.ocap.site/).
+
+- [PR #15](https://github.com/kriscendobot/garden-book/pull/15), head
+  `ef627035f70e9061927fbedc12fd008c47f5f3e1`, merged as
+  `9b2a60340920eb3ec36813779a010163539a86f2` without a converged panel
+  (13 rounds); the draft-note commit
+  `39fd2e8` is what was published.
+- Build: `npm ci && npm test && npm run test:browser && npm run build`
+  (86/86 tests, browser test 1/1, 27 files). Output sha256: `index.html`
+  `770339a75f85d0cbc4b3c346edbfa55ee938ff80aa5ef3bb5b25fc5582ec6330`,
+  `styles.css`
+  `a99007a89e744a0f347c39a16c499b089ee7deafd0cd38fc2dbcb5f718fa798b`. All
+  27 served files return the same bytes as the build, each with
+  `cache-control: public, max-age=31536000, immutable`.
+- Browser: `tools/browser-check.mjs` passes against both the build and the
+  live URL at 390x844 and 1440x900 in light and dark: 25 plates, no
+  overflow, caption contrast at least 5.68:1, body contrast at least 12.9:1.
+  The equilibrium integration check passes all 36 cases (nine charts) on
+  the build. All 25 placements are in declared order under their
+  anchors, at their intrinsic sizes. All five part glyphs render (the
+  sidebar copies are hidden at phone width by design).
+- Skipped for now: the history PR and its gauntlet.
+
+Previous edition, 2026-10-13, linked and reader copy-edited (jobs
 `book-reader-exposure-copyedit` and
 `book-hyperlink-references-after-copyedit-20261004`): the prose introduces
 garden-specific terms before using them, foregrounds reader-visible

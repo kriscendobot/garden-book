@@ -1,6 +1,6 @@
 {
   "name": "garden-book",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "The source and build tooling for Better Code and Gardens.",
   "private": true,
   "type": "module",
@@ -17,5 +17,8 @@
   "dependencies": {
     "markdown-it": "^15.0.2",
     "markdown-it-anchor": "^10.0.0"
+  },
+  "devDependencies": {
+    "fast-check": "^4.10.2"
   }
 }

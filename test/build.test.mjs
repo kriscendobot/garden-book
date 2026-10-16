@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import fc from "fast-check";
+
 import { assembleBook } from "../build/assemble-book.mjs";
 import { makeNodeReadableTree } from "../build/node-tree.mjs";
 import {
@@ -285,6 +287,26 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
   assert.equal(response.result.ok, true);
 });
 
+test("makePublishContent preserves arbitrary plate bytes through its Base64 record", async () => {
+  await fc.assert(
+    fc.asyncProperty(fc.uint8Array({ maxLength: 32_768 }), async (bytes) => {
+      const content = await makePublishContent(
+        makeReadableTree({
+          "index.html": '<img src="plate.webp">',
+          "styles.css": "",
+          "plate.webp": bytes,
+        }),
+      );
+      const plate = content.find(({ path }) => path === "plate.webp");
+      assert.deepEqual(
+        new Uint8Array(Buffer.from(plate.bytes, "base64")),
+        bytes,
+      );
+    }),
+    { numRuns: 200 },
+  );
+});
+
 test("makePublishContent ignores stale unreferenced illuminations", async () => {
   const content = await makePublishContent(
     makeReadableTree({
@@ -342,6 +364,45 @@ test("makePublishContent publishes a referenced plate whatever its name", async 
     ["index.html", "styles.css", "plate.webp"],
   );
 });
+
+test("makePublishContent publishes query, fragment, and ./ spellings under the plate's name", async () => {
+  const content = await makePublishContent(
+    makeReadableTree({
+      "index.html":
+        "<img src=\"plate.webp?rev=1\"><img src=\"other.webp#figure\"><img src='./third.webp'>",
+      "styles.css": "",
+      "plate.webp": new Uint8Array([1]),
+      "other.webp": new Uint8Array([2]),
+      "third.webp": new Uint8Array([3]),
+    }),
+  );
+  assert.deepEqual(
+    content.map(({ path }) => path).sort(),
+    ["index.html", "other.webp", "plate.webp", "styles.css", "third.webp"],
+  );
+});
+
+for (const [why, html, pattern] of [
+  ["a srcset candidate", '<img src="small.webp" srcset="large.webp 2x">', /srcset or <source>/u],
+  ["a <picture> source", '<picture><source srcset="large.webp"><img src="small.webp"></picture>', /srcset or <source>/u],
+  ["a parent-directory image", '<img src="../plate.webp">', /outside the edition directory: \.\.\/plate\.webp$/u],
+  ["a subdirectory image", '<img src="art/plate.webp">', /outside the edition directory: art\/plate\.webp$/u],
+]) {
+  test(`makePublishContent refuses ${why}`, async () => {
+    await assert.rejects(
+      makePublishContent(
+        makeReadableTree({
+          "index.html": html,
+          "styles.css": "",
+          "small.webp": new Uint8Array([1]),
+          "large.webp": new Uint8Array([2]),
+          "plate.webp": new Uint8Array([3]),
+        }),
+      ),
+      pattern,
+    );
+  });
+}
 
 test("makePublishContent refuses a non-illumination plate missing from the build", async () => {
   await assert.rejects(

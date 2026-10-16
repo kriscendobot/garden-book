@@ -5,6 +5,8 @@ import { join } from "node:path";
 import test from "node:test";
 import { pathToFileURL } from "node:url";
 
+import fc from "fast-check";
+
 import {
   makeNodeReadableTree,
   makeNodeWritableTree,
@@ -136,6 +138,24 @@ test("node trees read, list, and write through a real directory", async (t) => {
   const output = makeNodeReadableTree(outputUrl);
   assert.equal(await readText(output, "index.html"), "<p>✓</p>");
   assert.deepEqual([...(await readBytes(output, "image.webp"))], [0, 255]);
+});
+
+test("the Node trees round-trip arbitrary bytes through writeBytes and readBytes", async () => {
+  const root = await mkdtemp(join(tmpdir(), "garden-book-bytes-"));
+  try {
+    const url = pathToFileURL(root);
+    await fc.assert(
+      fc.asyncProperty(fc.uint8Array({ maxLength: 65_536 }), async (bytes) => {
+        await writeBytes(makeNodeWritableTree(url), "image.webp", bytes);
+        assert.deepEqual(
+          new Uint8Array(await readBytes(makeNodeReadableTree(url), "image.webp")),
+          bytes,
+        );
+      }),
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 const artwork = { illuminations: {} };

@@ -18,11 +18,44 @@ export const encodeBase64 = (bytes) => {
 // that list rather than whatever files the rendered page happens to name.
 const declaredPlates = illuminations.map(({ file }) => file);
 
+const fourCharacterCode = (bytes, offset) =>
+  String.fromCharCode(...bytes.subarray(offset, offset + 4));
+
+const littleEndianUint32 = (bytes, offset) =>
+  (bytes[offset] |
+    (bytes[offset + 1] << 8) |
+    (bytes[offset + 2] << 16) |
+    (bytes[offset + 3] << 24)) >>>
+  0;
+
+// A RIFF/WEBP container whose declared length matches the bytes, whose first
+// chunk carries image data (VP8, VP8L, or VP8X), and whose chunks tile the
+// file exactly. This does not decode the image, but it refuses the truncated
+// and mislabeled files a `.webp` suffix alone would let through.
+export const isWebpContainer = (bytes) => {
+  if (
+    bytes.length < 20 ||
+    fourCharacterCode(bytes, 0) !== "RIFF" ||
+    fourCharacterCode(bytes, 8) !== "WEBP" ||
+    littleEndianUint32(bytes, 4) + 8 !== bytes.length ||
+    !["VP8 ", "VP8L", "VP8X"].includes(fourCharacterCode(bytes, 12))
+  ) {
+    return false;
+  }
+  let offset = 12;
+  while (offset + 8 <= bytes.length) {
+    const size = littleEndianUint32(bytes, offset + 4);
+    offset += 8 + size + (size % 2);
+  }
+  return offset === bytes.length;
+};
+
 export const makePublishContent = async (
   builtTree,
   plates = declaredPlates,
 ) => {
-  const unsupported = plates.filter(
+  const uniquePlates = [...new Set(plates)];
+  const unsupported = uniquePlates.filter(
     (file) => !/^[A-Za-z0-9][A-Za-z0-9_.-]*\.webp$/u.test(file),
   );
   if (unsupported.length > 0) {
@@ -31,28 +64,44 @@ export const makePublishContent = async (
     );
   }
   const built = new Set(await builtTree.list());
-  const missing = plates.filter((file) => !built.has(file));
+  const missing = uniquePlates.filter((file) => !built.has(file));
   if (missing.length > 0) {
     throw new Error(
       `Refusing to publish: declared plates missing from the build output: ${missing.join(", ")}`,
     );
   }
-  const files = [
-    ["index.html", "text/html; charset=utf-8", "text"],
-    ["styles.css", "text/css; charset=utf-8", "text"],
-    ...[...new Set(plates)].map((file) => [file, "image/webp", "bytes"]),
-  ];
-  return Promise.all(
-    files.map(async ([path, contentType, kind]) => ({
-      path,
-      contentType,
-      bytes: encodeBase64(
-        kind === "text"
-          ? new TextEncoder().encode(await readText(builtTree, path))
-          : await readBytes(builtTree, path),
-      ),
-    })),
+  const plateBytes = await Promise.all(
+    uniquePlates.map((file) => readBytes(builtTree, file)),
   );
+  const malformed = uniquePlates.filter(
+    (_file, index) => !isWebpContainer(plateBytes[index]),
+  );
+  if (malformed.length > 0) {
+    throw new TypeError(
+      `Refusing to publish: declared plates are not well-formed WebP files: ${malformed.join(", ")}`,
+    );
+  }
+  const record = (path, contentType, bytes) => ({
+    path,
+    contentType,
+    bytes: encodeBase64(bytes),
+  });
+  const encoder = new TextEncoder();
+  return [
+    record(
+      "index.html",
+      "text/html; charset=utf-8",
+      encoder.encode(await readText(builtTree, "index.html")),
+    ),
+    record(
+      "styles.css",
+      "text/css; charset=utf-8",
+      encoder.encode(await readText(builtTree, "styles.css")),
+    ),
+    ...uniquePlates.map((file, index) =>
+      record(file, "image/webp", plateBytes[index]),
+    ),
+  ];
 };
 
 const INERT_POWERS_NAME = /^garden-book-[a-z0-9-]+$/;

@@ -10,12 +10,14 @@ import { illuminations } from "../build/illuminations.mjs";
 import { makeNodeReadableTree } from "../build/node-tree.mjs";
 import {
   encodeBase64,
+  isWebpContainer,
   makePublishContent,
   PUBLISH_REQUEST_LIMIT,
   publishBook,
   publishRequestBytes,
 } from "../build/publish-book.mjs";
 import { renderBook } from "../build/render-book.mjs";
+import { readBytes } from "../build/tree-io.mjs";
 
 const makeReadableTree = (files) => ({
   async list() {
@@ -39,6 +41,20 @@ const makeReadableTree = (files) => ({
     };
   },
 });
+
+// A minimal RIFF/WEBP container carrying `payload` as its VP8L chunk, so tests
+// can publish arbitrary bytes through the WebP container check.
+const webp = (payload = new Uint8Array([1])) => {
+  const padded = payload.length + (payload.length % 2);
+  const bytes = new Uint8Array(20 + padded);
+  const view = new DataView(bytes.buffer);
+  bytes.set(new TextEncoder().encode("RIFF"), 0);
+  view.setUint32(4, bytes.length - 8, true);
+  bytes.set(new TextEncoder().encode("WEBPVP8L"), 8);
+  view.setUint32(16, payload.length, true);
+  bytes.set(payload, 20);
+  return bytes;
+};
 
 const artwork = { illuminations: {} };
 
@@ -263,7 +279,7 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
       "index.html":
         '<h1>Garden ✓</h1><img src="illumination-test.webp">',
       "styles.css": "body {}",
-      "illumination-test.webp": new Uint8Array([0, 1, 2, 255]),
+      "illumination-test.webp": webp(new Uint8Array([0, 1, 2, 255])),
     }),
     peer,
     powersName: "garden-book-test",
@@ -295,37 +311,103 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
       ["illumination-test.webp", "image/webp"],
     ],
   );
-  assert.equal(calls[2][1].arguments.content[2].bytes, "AAEC/w==");
+  assert.equal(
+    calls[2][1].arguments.content[2].bytes,
+    encodeBase64(webp(new Uint8Array([0, 1, 2, 255]))),
+  );
   assert.equal(response.result.ok, true);
 });
 
-test("makePublishContent preserves arbitrary plate bytes through its Base64 record", async () => {
+test("makePublishContent publishes exactly the declared plates, in order, byte for byte", async () => {
   await fastCheck.assert(
     fastCheck.asyncProperty(
-      fastCheck.uint8Array({ maxLength: 32_768 }),
-      async (bytes) => {
+      fastCheck.uniqueArray(
+        fastCheck.tuple(
+          fastCheck.stringMatching(/^[A-Za-z0-9][A-Za-z0-9_.-]{0,31}\.webp$/u),
+          fastCheck.uint8Array({ maxLength: 1024 }).map(webp),
+        ),
+        { selector: ([file]) => file, maxLength: 10 },
+      ),
+      async (plates) => {
         const content = await makePublishContent(
           makeReadableTree({
             "index.html": "",
             "styles.css": "",
-            "plate.webp": bytes,
+            ...Object.fromEntries(plates),
           }),
-          ["plate.webp"],
+          plates.map(([file]) => file),
         );
-        const plate = content.find(({ path }) => path === "plate.webp");
         assert.deepEqual(
-          new Uint8Array(Buffer.from(plate.bytes, "base64")),
-          bytes,
+          content.map(({ path }) => path),
+          ["index.html", "styles.css", ...plates.map(([file]) => file)],
         );
+        plates.forEach(([, bytes], index) => {
+          assert.deepEqual(
+            new Uint8Array(Buffer.from(content[index + 2].bytes, "base64")),
+            bytes,
+          );
+        });
       },
     ),
     { numRuns: 200 },
   );
 });
 
+test("makePublishContent publishes no plates for an empty list and one per repeated name", async () => {
+  const tree = makeReadableTree({
+    "index.html": "",
+    "styles.css": "",
+    "plate.webp": webp(),
+  });
+  assert.deepEqual(
+    (await makePublishContent(tree, [])).map(({ path }) => path),
+    ["index.html", "styles.css"],
+  );
+  assert.deepEqual(
+    (await makePublishContent(tree, ["plate.webp", "plate.webp"])).map(
+      ({ path }) => path,
+    ),
+    ["index.html", "styles.css", "plate.webp"],
+  );
+});
+
+test("isWebpContainer accepts every committed plate", async () => {
+  const art = makeNodeReadableTree(new URL("../art/", import.meta.url));
+  for (const { file } of illuminations) {
+    assert.ok(isWebpContainer(await readBytes(art, file)), file);
+  }
+});
+
+test("makePublishContent refuses truncated and mislabeled WebP plates", async () => {
+  const valid = webp(new Uint8Array(16));
+  const truncated = valid.subarray(0, valid.length - 4);
+  const lyingLength = valid.slice();
+  new DataView(lyingLength.buffer).setUint32(16, 64, true);
+  const notWebp = valid.slice();
+  notWebp.set(new TextEncoder().encode("AVI "), 8);
+  const png = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+  for (const [why, bytes] of [
+    ["truncated", truncated],
+    ["chunk overruns the file", lyingLength],
+    ["RIFF but not WEBP", notWebp],
+    ["PNG bytes", png],
+    ["empty", new Uint8Array()],
+  ]) {
+    assert.equal(isWebpContainer(bytes), false, why);
+    await assert.rejects(
+      makePublishContent(
+        makeReadableTree({ "index.html": "", "styles.css": "", "plate.webp": bytes }),
+        ["plate.webp"],
+      ),
+      /declared plates are not well-formed WebP files: plate\.webp$/u,
+      why,
+    );
+  }
+});
+
 test("makePublishContent publishes the declared plates by default", async () => {
   const output = Object.fromEntries(
-    illuminations.map(({ file }) => [file, new Uint8Array([1])]),
+    illuminations.map(({ file }) => [file, webp()]),
   );
   const content = await makePublishContent(
     makeReadableTree({ "index.html": "", "styles.css": "", ...output }),
@@ -346,8 +428,8 @@ test("makePublishContent never publishes an undeclared sibling the page names", 
       makeReadableTree({
         "index.html": html,
         "styles.css": "",
-        "plate.webp": new Uint8Array([1]),
-        "confidential.webp": new Uint8Array([2]),
+        "plate.webp": webp(),
+        "confidential.webp": webp(new Uint8Array([2])),
       }),
       ["plate.webp"],
     );
@@ -364,7 +446,7 @@ test("makePublishContent refuses a declared plate missing from the build", async
       makeReadableTree({
         "index.html": "",
         "styles.css": "",
-        "illumination-present.webp": new Uint8Array([1]),
+        "illumination-present.webp": webp(),
       }),
       ["illumination-present.webp", "illumination-Gone_1.webp"],
     ),

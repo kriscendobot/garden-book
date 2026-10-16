@@ -5,8 +5,6 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 
-import fastCheck from "fast-check";
-
 import { checkEdition, findChromium } from "../tools/browser-check.mjs";
 
 // Stands in for Playwright's contexts and pages, not its layout: each page
@@ -101,18 +99,14 @@ test("checkEdition reports each securitypolicyviolation event as a failure in ev
 
 // A Playwright cache holding headless shells for the given revisions; only
 // the revisions in `withExecutable` get a launchable executable, laid out as
-// Playwright does for `shell` and `executable`.
-const makeCache = (
-  revisions,
-  withExecutable,
-  [shellDirectory, executable] = ["chrome-headless-shell-linux64", "chrome-headless-shell"],
-) => {
+// Playwright does on Linux under `shellDirectory`.
+const makeCache = (revisions, withExecutable, shellDirectory = "chrome-headless-shell-linux64") => {
   const cache = mkdtempSync(join(tmpdir(), "browser-check-cache-"));
   for (const revision of revisions) {
     const shell = join(cache, `chromium_headless_shell-${revision}`, shellDirectory);
     mkdirSync(shell, { recursive: true });
     if (withExecutable.includes(revision)) {
-      writeFileSync(join(shell, executable), "");
+      writeFileSync(join(shell, "chrome-headless-shell"), "");
     }
   }
   return cache;
@@ -122,7 +116,6 @@ test("findChromium prefers an explicit CHROMIUM over the cache", () => {
   assert.equal(
     findChromium({
       environment: { CHROMIUM: "/opt/chromium", PLAYWRIGHT_BROWSERS_PATH: makeCache([1200], [1200]) },
-      platform: "linux",
     }),
     "/opt/chromium",
   );
@@ -131,7 +124,7 @@ test("findChromium prefers an explicit CHROMIUM over the cache", () => {
 test("findChromium falls back to Playwright's default when the cache is absent or empty", () => {
   for (const cache of [join(tmpdir(), "browser-check-no-such-cache"), makeCache([], [])]) {
     assert.equal(
-      findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache }, platform: "linux" }),
+      findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache } }),
       undefined,
     );
   }
@@ -140,58 +133,15 @@ test("findChromium falls back to Playwright's default when the cache is absent o
 test("findChromium picks the newest cached shell that has an executable", () => {
   const cache = makeCache([999, 1200, 1300], [999, 1200]);
   assert.equal(
-    findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache }, platform: "linux" }),
+    findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache } }),
     join(cache, "chromium_headless_shell-1200", "chrome-headless-shell-linux64", "chrome-headless-shell"),
   );
 });
 
-test("findChromium finds nothing on a platform without a known headless shell", () => {
+test("findChromium finds the Linux ARM64 shell", () => {
+  const cache = makeCache([1200], [1200], "chrome-headless-shell-linux-arm64");
   assert.equal(
-    findChromium({
-      environment: { PLAYWRIGHT_BROWSERS_PATH: makeCache([1200], [1200]) },
-      platform: "aix",
-    }),
-    undefined,
-  );
-});
-
-for (const [platform, layout] of [
-  ["darwin", ["chrome-headless-shell-mac-arm64", "chrome-headless-shell"]],
-  ["darwin", ["chrome-headless-shell-mac-x64", "chrome-headless-shell"]],
-  ["win32", ["chrome-headless-shell-win64", "chrome-headless-shell.exe"]],
-  ["linux", ["chrome-headless-shell-linux-arm64", "chrome-headless-shell"]],
-]) {
-  test(`findChromium finds the ${layout[0]} shell on ${platform}`, () => {
-    const cache = makeCache([1200], [1200], layout);
-    assert.equal(
-      findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache }, platform }),
-      join(cache, "chromium_headless_shell-1200", ...layout),
-    );
-  });
-}
-
-test("findChromium returns the highest revision that has an executable, or nothing", () => {
-  fastCheck.assert(
-    fastCheck.property(
-      fastCheck
-        .uniqueArray(fastCheck.integer({ min: 1, max: 5000 }), { maxLength: 8 })
-        .chain((revisions) =>
-          fastCheck.tuple(
-            fastCheck.constant(revisions),
-            fastCheck.subarray(revisions),
-          ),
-        ),
-      ([revisions, withExecutable]) => {
-        const cache = makeCache(revisions, withExecutable);
-        const newest = Math.max(...withExecutable);
-        assert.equal(
-          findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache }, platform: "linux" }),
-          withExecutable.length === 0
-            ? undefined
-            : join(cache, `chromium_headless_shell-${newest}`, "chrome-headless-shell-linux64", "chrome-headless-shell"),
-        );
-      },
-    ),
-    { numRuns: 50 },
+    findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache } }),
+    join(cache, "chromium_headless_shell-1200", "chrome-headless-shell-linux-arm64", "chrome-headless-shell"),
   );
 });

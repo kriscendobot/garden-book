@@ -11,7 +11,7 @@
 // Playwright is not a dependency of the book. The script imports
 // playwright-core from PLAYWRIGHT_CORE (a path to the package) or from normal
 // module resolution, and launches CHROMIUM, the newest headless shell in the
-// platform's Playwright cache, or Playwright's default browser. It exits 1 if
+// Linux Playwright cache, or Playwright's default browser. It exits 1 if
 // any configuration fails.
 
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
@@ -27,37 +27,20 @@ export const loadPlaywright = async () => {
   return import(specifier);
 };
 
-// Playwright's headless-shell directory and executable for each platform.
-const headlessShells = {
-  linux: [
-    ["chrome-headless-shell-linux64", "chrome-headless-shell"],
-    ["chrome-headless-shell-linux-arm64", "chrome-headless-shell"],
-  ],
-  darwin: [
-    ["chrome-headless-shell-mac-arm64", "chrome-headless-shell"],
-    ["chrome-headless-shell-mac-x64", "chrome-headless-shell"],
-  ],
-  win32: [["chrome-headless-shell-win64", "chrome-headless-shell.exe"]],
-};
-
-const playwrightCache = (environment, platform) =>
-  environment.PLAYWRIGHT_BROWSERS_PATH ??
-  {
-    darwin: join(homedir(), "Library", "Caches", "ms-playwright"),
-    win32: join(environment.LOCALAPPDATA ?? homedir(), "ms-playwright"),
-  }[platform] ??
-  join(homedir(), ".cache", "ms-playwright");
+// Linux is the validation environment, so only Playwright's Linux cache
+// layouts (x64, then ARM64) are searched; anywhere else, set CHROMIUM or let
+// Playwright choose.
+const headlessShells = ["chrome-headless-shell-linux64", "chrome-headless-shell-linux-arm64"];
 
 // Returns undefined when nothing is found, so Playwright falls back to its
-// own platform-aware default browser.
-export const findChromium = ({
-  environment = process.env,
-  platform = process.platform,
-} = {}) => {
+// own default browser.
+export const findChromium = ({ environment = process.env } = {}) => {
   if (environment.CHROMIUM) {
     return environment.CHROMIUM;
   }
-  const cache = playwrightCache(environment, platform);
+  const cache =
+    environment.PLAYWRIGHT_BROWSERS_PATH ??
+    join(homedir(), ".cache", "ms-playwright");
   const candidates = existsSync(cache)
     ? readdirSync(cache)
         .filter((name) => name.startsWith("chromium_headless_shell-"))
@@ -66,8 +49,8 @@ export const findChromium = ({
             Number(right.split("-")[1]) - Number(left.split("-")[1]),
         )
         .flatMap((name) =>
-          (headlessShells[platform] ?? []).map(([shell, executable]) =>
-            join(cache, name, shell, executable),
+          headlessShells.map((shell) =>
+            join(cache, name, shell, "chrome-headless-shell"),
           ),
         )
         .filter(existsSync)

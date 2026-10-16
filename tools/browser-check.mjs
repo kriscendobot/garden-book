@@ -16,21 +16,8 @@
 
 import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-
-import { makeNodeReadableTree } from "../build/node-tree.mjs";
-import { makePublishContent } from "../build/publish-book.mjs";
-
-// The garden's skills/minion-town-clip-publishing (kriscendobot/garden)
-// documents the script-src, style-src, connect-src, and img-src directives of
-// published clips; the other CLIP_CONTENT_SECURITY_POLICY directives are this
-// tool's assumption.
-export const CLIP_CONTENT_SECURITY_POLICY =
-  "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
-
-// Never resolved by DNS: every request to it is fulfilled by the route below.
-export const EDITION_ORIGIN = "https://edition.invalid";
 
 export const loadPlaywright = async () => {
   const specifier = process.env.PLAYWRIGHT_CORE
@@ -207,53 +194,55 @@ const measure = () => {
   };
 };
 
-// Fulfills EDITION_ORIGIN from the publish content under the clip's CSP; a
-// file the clip leaves out answers 404.
-const routeEdition = async (context, content) => {
-  const files = new Map(content.map((file) => [`/${file.path}`, file]));
-  await context.route(`${EDITION_ORIGIN}/**`, (route) => {
-    const file = files.get(new URL(route.request().url()).pathname);
-    return file
-      ? route.fulfill({
-          status: 200,
-          contentType: file.contentType,
-          headers: { "content-security-policy": CLIP_CONTENT_SECURITY_POLICY },
-          body: Buffer.from(file.bytes, "base64"),
-        })
-      : route.fulfill({ status: 404 });
+// Runs in every page before its own scripts, so it hears each CSP violation
+// the page reports (CSP3 § 5.5, the `securitypolicyviolation` event).
+const recordViolations = () => {
+  globalThis.cspViolations = [];
+  document.addEventListener("securitypolicyviolation", (event) => {
+    globalThis.cspViolations.push(
+      `${event.effectiveDirective} blocked ${event.blockedURI || "inline content"}`,
+    );
   });
 };
 
+// URL schemes are ASCII case-insensitive (URL Standard § 4.4).
+const isRemote = (target) => {
+  try {
+    return ["http:", "https:"].includes(new URL(target).protocol);
+  } catch {
+    return false;
+  }
+};
+
 /**
- * Measures a built edition in every configuration. A local `target` loads
- * exactly the files `makePublishContent` would publish, under the clip's CSP;
- * any CSP console message becomes a problem in that configuration's result.
+ * Measures a built edition in every configuration. A local `target` is
+ * loaded directly; an http(s) URL, such as a published clip, is loaded under
+ * the CSP it is served with. Any CSP violation the page reports becomes a
+ * problem in that configuration's result.
  *
  * @param {object} options
- * @param {{ newContext: (options: object) => Promise<object> }} options.browser
- *   a launched Playwright `Browser`; each configuration opens one context.
+ * @param {{
+ *   newContext: (options: object) => Promise<{
+ *     newPage: () => Promise<{
+ *       addInitScript: (script: () => void) => Promise<void>,
+ *       goto: (url: string, options: object) => Promise<unknown>,
+ *       evaluate: (pageFunction: Function, argument?: unknown) => Promise<any>,
+ *       locator: (selector: string) => { first: () => { scrollIntoViewIfNeeded: () => Promise<void> } },
+ *       screenshot: (options: { path: string }) => Promise<unknown>,
+ *     }>,
+ *     close: () => Promise<void>,
+ *   }>,
+ * }} options.browser a launched Playwright `Browser`; each configuration
+ *   opens one context and closes it when done.
  * @param {string} options.target path to a built `index.html` or an http(s) URL.
  * @param {string} [options.shotsDirectory] where to write screenshots.
- * @param {string[]} [options.plates] plates to publish beside a local page;
- *   defaults to the plates `build/illuminations.mjs` declares.
  */
-export const checkEdition = async ({
-  browser,
-  target,
-  shotsDirectory,
-  plates,
-}) => {
-  const remote = /^https?:\/\//.test(target);
+export const checkEdition = async ({ browser, target, shotsDirectory }) => {
+  const remote = isRemote(target);
   if (!remote && basename(target) !== "index.html") {
     throw new TypeError(`A local edition is loaded from its index.html, not ${target}`);
   }
-  const content = remote
-    ? undefined
-    : await makePublishContent(
-        makeNodeReadableTree(pathToFileURL(`${dirname(resolve(target))}/`)),
-        plates,
-      );
-  const url = remote ? target : `${EDITION_ORIGIN}/index.html`;
+  const url = remote ? target : pathToFileURL(resolve(target)).href;
   const results = [];
   for (const configuration of configurations) {
     const context = await browser.newContext({
@@ -262,16 +251,8 @@ export const checkEdition = async ({
       reducedMotion: "reduce",
     });
     try {
-      if (content) {
-        await routeEdition(context, content);
-      }
       const page = await context.newPage();
-      const violations = [];
-      page.on("console", (message) => {
-        if (/Content Security Policy/u.test(message.text())) {
-          violations.push(`CSP violation: ${message.text()}`);
-        }
-      });
+      await page.addInitScript(recordViolations);
       await page.goto(url, { waitUntil: "load" });
       await page.evaluate(async () => {
         for (const image of document.images) {
@@ -280,11 +261,15 @@ export const checkEdition = async ({
         }
         window.scrollTo(0, 0);
       });
+      const violations = await page.evaluate(() => globalThis.cspViolations ?? []);
       const result = await page.evaluate(measure);
       results.push({
         ...configuration,
         ...result,
-        problems: [...violations, ...result.problems],
+        problems: [
+          ...violations.map((violation) => `CSP violation: ${violation}`),
+          ...result.problems,
+        ],
       });
       if (shotsDirectory) {
         mkdirSync(shotsDirectory, { recursive: true });

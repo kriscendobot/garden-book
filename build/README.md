@@ -75,13 +75,14 @@ directly after it. [`tools/equilibrium/integration-check.mjs`](../tools/equilibr
 nine placements in a built edition in the browser.
 [`tools/browser-check.mjs`](../tools/browser-check.mjs) loads a built edition in headless Chromium at phone
 and desktop widths in both color schemes and reports overflow, clipped or
-overlapping figures, plates that did not load, and caption contrast. For a
-local edition it loads exactly the files the publish step would upload, under
-the published clip's CSP, and fails on any CSP violation (Playwright is not a
-dependency; point `PLAYWRIGHT_CORE` at an installed `playwright-core`).
+overlapping figures, plates that did not load, and caption contrast. It
+fails on any CSP violation the page reports; pointed at a published clip's
+URL, that checks the clip under the CSP it is actually served with (Playwright
+is not a dependency; point `PLAYWRIGHT_CORE` at an installed `playwright-core`).
 `test/browser-check-chromium.test.mjs` runs it against a fresh build and a
-known-bad copy when `playwright-core` resolves, and is skipped otherwise. Before publishing,
-an edition must pass `npm test` and
+known-bad copy when `playwright-core` resolves, and is skipped otherwise;
+`npm run test:browser` runs it and fails if no browser launches. Before
+publishing, an edition must pass `npm test`, `npm run test:browser`, and
 `npm run build && node tools/browser-check.mjs out/index.html`. [`publish.mjs`](publish.mjs) publishes with
 the fixed pet name `garden-book-inert` (`POWERS_NAME`), overwritten with empty
 text, as `powers`, never `sites`, because `powers` becomes every visitor's
@@ -92,7 +93,7 @@ capability.
 
 The generation record is
 [`art/OPENAI-ILLUMINATIONS.md`](../art/OPENAI-ILLUMINATIONS.md); the committed
-review contact sheet and the published-clip policy note are in
+review contact sheet is in
 [`art/illumination-redraw-evidence.md`](../art/illumination-redraw-evidence.md).
 
 [Chapter 8's review-economics section (8.8)](../chapters/ch8-cybernetics-budgeting.md#88-review-economics-an-equilibrium) is computed, not hand-written:

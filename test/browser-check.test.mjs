@@ -1,90 +1,45 @@
 import assert from "node:assert/strict";
-import { copyFileSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { pathToFileURL } from "node:url";
 import test from "node:test";
 
-import {
-  CLIP_CONTENT_SECURITY_POLICY,
-  EDITION_ORIGIN,
-  checkEdition,
-  findChromium,
-} from "../tools/browser-check.mjs";
+import fastCheck from "fast-check";
 
-// Stands in for Playwright's routing and pages, not its layout: each page
-// fetches its URL and the images it references through the context's route,
-// and reports a CSP console message when `violate` says so. The in-page
-// measurement is stubbed here; test/browser-check-chromium.test.mjs runs it.
-// `fail` names a page method that rejects.
-const makeFakeBrowser = ({ violate, fail }) => {
-  const visits = [];
+import { checkEdition, findChromium } from "../tools/browser-check.mjs";
+
+// Stands in for Playwright's contexts and pages, not its layout: each page
+// records the order of init scripts and navigations, and answers the
+// CSP-violation query with `violations`. The in-page measurement is stubbed
+// here; test/browser-check-chromium.test.mjs runs it. `fail` names a page
+// method that rejects.
+const makeFakeBrowser = ({ violations = [], fail } = {}) => {
+  const steps = [];
   const contexts = [];
   return {
-    visits,
+    steps,
     contexts,
     async newContext() {
-      const routes = [];
-      const request = async (url) => {
-        const [, handler] = routes.find(([pattern]) =>
-          url.startsWith(pattern.replace(/\*\*$/u, "")),
-        );
-        let response;
-        await handler({
-          request: () => ({ url: () => url }),
-          fulfill: async (fulfilled) => {
-            response = fulfilled;
-          },
-        });
-        return response;
-      };
       const context = {
         closed: false,
-        async route(pattern, handler) {
-          routes.push([pattern, handler]);
-        },
         async newPage() {
-          const listeners = [];
           return {
-            on(event, listener) {
-              if (event === "console") {
-                listeners.push(listener);
-              }
+            async addInitScript() {
+              steps.push(["init"]);
             },
             async goto(url) {
               if (fail === "goto") {
                 throw new Error("navigation failed");
               }
-              const response = await request(url);
-              const images = [];
-              for (const [, source] of response.body
-                .toString("utf8")
-                .matchAll(/<img\b[^>]*?\bsrc="([^"]*)"/gu)) {
-                const image = await request(new URL(source, url).href);
-                images.push({
-                  source,
-                  status: image.status,
-                  type: image.contentType,
-                  signature: image.body?.subarray(8, 12).toString("latin1"),
-                });
-              }
-              visits.push({
-                url,
-                status: response.status,
-                policy: response.headers["content-security-policy"],
-                images,
-              });
-              if (violate) {
-                for (const listener of listeners) {
-                  listener({
-                    text: () =>
-                      "Refused to load the image because it violates the following Content Security Policy directive",
-                  });
-                }
-              }
+              steps.push(["goto", url]);
             },
-            async evaluate() {
-              return { problems: [] };
+            async evaluate(pageFunction) {
+              const source = String(pageFunction);
+              if (source.includes("cspViolations")) {
+                return violations;
+              }
+              return source.includes("getComputedStyle") ? { problems: [] } : undefined;
             },
           };
         },
@@ -98,95 +53,66 @@ const makeFakeBrowser = ({ violate, fail }) => {
   };
 };
 
-const realPlate = fileURLToPath(
-  new URL("../art/illumination-ch3-muster.webp", import.meta.url),
-);
-
-const makeEdition = (page = '<p>book</p><img src="plate.webp">') => {
+const makeEdition = () => {
   const directory = mkdtempSync(join(tmpdir(), "browser-check-"));
-  writeFileSync(join(directory, "index.html"), page);
-  writeFileSync(join(directory, "styles.css"), "");
-  copyFileSync(realPlate, join(directory, "plate.webp"));
-  copyFileSync(realPlate, join(directory, "unpublished.webp"));
+  writeFileSync(join(directory, "index.html"), "<p>book</p>");
   return join(directory, "index.html");
 };
 
-test("checkEdition loads the publish content of a local edition under the clip's CSP", async () => {
-  const browser = makeFakeBrowser({ violate: false });
-  const results = await checkEdition({
-    browser,
-    target: makeEdition(),
-    plates: ["plate.webp"],
-  });
+test("checkEdition loads a local edition directly, listening for CSP violations first", async () => {
+  const browser = makeFakeBrowser();
+  const target = makeEdition();
+  const results = await checkEdition({ browser, target });
   assert.equal(results.length, 4);
   assert.ok(results.every(({ problems }) => problems.length === 0));
-  for (const visit of browser.visits) {
-    assert.equal(visit.url, `${EDITION_ORIGIN}/index.html`);
-    assert.equal(visit.status, 200);
-    assert.equal(visit.policy, CLIP_CONTENT_SECURITY_POLICY);
-    assert.deepEqual(visit.images, [
-      { source: "plate.webp", status: 200, type: "image/webp", signature: "WEBP" },
-    ]);
-  }
+  const url = pathToFileURL(target).href;
+  assert.deepEqual(browser.steps, Array(4).fill([["init"], ["goto", url]]).flat());
   assert.ok(browser.contexts.every(({ closed }) => closed));
 });
 
-test("checkEdition answers 404 for a file in the edition directory that the clip leaves out", async () => {
-  const browser = makeFakeBrowser({ violate: false });
-  await checkEdition({
-    browser,
-    target: makeEdition('<img src="unpublished.webp">'),
-    plates: ["plate.webp"],
-  });
-  for (const visit of browser.visits) {
-    assert.deepEqual(visit.images, [
-      { source: "unpublished.webp", status: 404, type: undefined, signature: undefined },
-    ]);
+test("checkEdition recognizes http(s) targets whatever the scheme's case", async () => {
+  for (const target of ["https://example.test/", "HTTPS://example.test/", "Http://example.test/clip"]) {
+    const browser = makeFakeBrowser();
+    await checkEdition({ browser, target });
+    assert.deepEqual(browser.steps[1], ["goto", target], target);
   }
-});
-
-test("checkEdition refuses a local edition missing a declared plate", async () => {
   await assert.rejects(
-    checkEdition({
-      browser: makeFakeBrowser({ violate: false }),
-      target: makeEdition(),
-      plates: ["missing.webp"],
-    }),
-    /declared plates missing from the build output: missing\.webp/u,
+    checkEdition({ browser: makeFakeBrowser(), target: "HTTPS-notes/edition.html" }),
+    /A local edition is loaded from its index\.html/u,
   );
 });
 
 test("checkEdition closes the browser context when a page fails", async () => {
-  const browser = makeFakeBrowser({ violate: false, fail: "goto" });
-  await assert.rejects(
-    checkEdition({ browser, target: makeEdition(), plates: ["plate.webp"] }),
-    /navigation failed/u,
-  );
+  const browser = makeFakeBrowser({ fail: "goto" });
+  await assert.rejects(checkEdition({ browser, target: makeEdition() }), /navigation failed/u);
   assert.equal(browser.contexts.length, 1);
   assert.equal(browser.contexts[0].closed, true);
 });
 
-test("checkEdition reports a CSP console violation as a failure in every configuration", async () => {
+test("checkEdition reports each securitypolicyviolation event as a failure in every configuration", async () => {
   const results = await checkEdition({
-    browser: makeFakeBrowser({ violate: true }),
+    browser: makeFakeBrowser({ violations: ["script-src-elem blocked inline content"] }),
     target: makeEdition(),
-    plates: ["plate.webp"],
   });
   for (const { problems } of results) {
-    assert.equal(problems.length, 1);
-    assert.match(problems[0], /^CSP violation: /u);
+    assert.deepEqual(problems, ["CSP violation: script-src-elem blocked inline content"]);
   }
 });
 
 // A Playwright cache holding headless shells for the given revisions; only
-// the revisions in `withExecutable` get a launchable Linux executable.
-const makeCache = (revisions, withExecutable) => {
+// the revisions in `withExecutable` get a launchable executable, laid out as
+// Playwright does for `shell` and `executable`.
+const makeCache = (
+  revisions,
+  withExecutable,
+  [shellDirectory, executable] = ["chrome-headless-shell-linux64", "chrome-headless-shell"],
+) => {
   const cache = mkdtempSync(join(tmpdir(), "browser-check-cache-"));
   for (const revision of revisions) {
-    const shell = join(cache, `chromium_headless_shell-${revision}`, "chrome-headless-shell-linux64");
+    const shell = join(cache, `chromium_headless_shell-${revision}`, shellDirectory);
     mkdirSync(shell, { recursive: true });
     if (withExecutable.includes(revision)) {
-      writeFileSync(join(shell, "chrome-headless-shell"), "");
+      writeFileSync(join(shell, executable), "");
     }
   }
   return cache;
@@ -226,5 +152,46 @@ test("findChromium finds nothing on a platform without a known headless shell", 
       platform: "aix",
     }),
     undefined,
+  );
+});
+
+for (const [platform, layout] of [
+  ["darwin", ["chrome-headless-shell-mac-arm64", "chrome-headless-shell"]],
+  ["darwin", ["chrome-headless-shell-mac-x64", "chrome-headless-shell"]],
+  ["win32", ["chrome-headless-shell-win64", "chrome-headless-shell.exe"]],
+  ["linux", ["chrome-headless-shell-linux-arm64", "chrome-headless-shell"]],
+]) {
+  test(`findChromium finds the ${layout[0]} shell on ${platform}`, () => {
+    const cache = makeCache([1200], [1200], layout);
+    assert.equal(
+      findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache }, platform }),
+      join(cache, "chromium_headless_shell-1200", ...layout),
+    );
+  });
+}
+
+test("findChromium returns the highest revision that has an executable, or nothing", () => {
+  fastCheck.assert(
+    fastCheck.property(
+      fastCheck
+        .uniqueArray(fastCheck.integer({ min: 1, max: 5000 }), { maxLength: 8 })
+        .chain((revisions) =>
+          fastCheck.tuple(
+            fastCheck.constant(revisions),
+            fastCheck.subarray(revisions),
+          ),
+        ),
+      ([revisions, withExecutable]) => {
+        const cache = makeCache(revisions, withExecutable);
+        const newest = Math.max(...withExecutable);
+        assert.equal(
+          findChromium({ environment: { PLAYWRIGHT_BROWSERS_PATH: cache }, platform: "linux" }),
+          withExecutable.length === 0
+            ? undefined
+            : join(cache, `chromium_headless_shell-${newest}`, "chrome-headless-shell-linux64", "chrome-headless-shell"),
+        );
+      },
+    ),
+    { numRuns: 50 },
   );
 });

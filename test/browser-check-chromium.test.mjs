@@ -10,7 +10,9 @@ import { checkEdition, findChromium, loadPlaywright } from "../tools/browser-che
 
 // Playwright is not a dependency of the book, so this runs only where
 // playwright-core resolves (or PLAYWRIGHT_CORE names it) and a Chromium can
-// launch; elsewhere it is skipped, and the skip names the reason.
+// launch; elsewhere it is skipped, and the skip names the reason. Under
+// `npm run test:browser` (GARDEN_BOOK_REQUIRE_BROWSER=1), the gate before
+// publishing, a missing browser fails instead.
 const launch = async () => {
   try {
     const { chromium } = await loadPlaywright();
@@ -19,6 +21,9 @@ const launch = async () => {
       args: ["--no-sandbox"],
     });
   } catch (error) {
+    if (process.env.GARDEN_BOOK_REQUIRE_BROWSER === "1") {
+      throw error;
+    }
     return { skip: `no headless Chromium: ${error.message.split("\n")[0]}` };
   }
 };
@@ -50,7 +55,7 @@ test("the browser check measures the built edition in Chromium", async (testCont
     }
 
     // A known-bad copy: plates forced wider than any viewport, and an inline
-    // script the clip's CSP refuses.
+    // script refused by a CSP like the published clip's.
     const broken = buildEdition();
     appendFileSync(
       join(broken, "styles.css"),
@@ -61,6 +66,9 @@ test("the browser check measures the built edition in Chromium", async (testCont
       readFileSync(join(broken, "index.html"), "utf8").replace(
         "</body>",
         "<script>document.title = 'inline';</script></body>",
+      ).replace(
+        "<head>",
+        `<head><meta http-equiv="Content-Security-Policy" content="script-src 'self'">`,
       ),
     );
     const brokenResults = await checkEdition({ browser, target: join(broken, "index.html") });

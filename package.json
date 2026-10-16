@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "node build/build.mjs chapters out",
-    "test": "node --test"
+    "test": "node --test",
+    "test:browser": "GARDEN_BOOK_REQUIRE_BROWSER=1 node --test test/browser-check-chromium.test.mjs"
   },
   "keywords": [],
   "author": "",

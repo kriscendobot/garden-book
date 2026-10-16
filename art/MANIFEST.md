@@ -47,7 +47,7 @@ Do not reuse these files as decoration without empty alternative text and an exp
 The nine charts below draw `equilibrium-data-spec.md` (charts E1 to E9) from the committed `data/equilibrium/aggregates.json` and `data/equilibrium/scenario.json`. `generate-equilibrium-charts.mjs` rewrites exactly these SVGs, byte for byte, from that data; `test/equilibrium-charts.test.mjs` checks reproduction, the spec's numbers and labels, the spec tables against the data, the plotted scenario geometry, and inline safety. The chart ID is the deterministic key: it matches the spec heading (`### E1.`), the SVG's `data-chart` attribute, and the generator's `charts` entry, which also carries a draft caption (kind, sample size, cutoff) for integration. `build/equilibrium-charts.mjs` places the charts in section 8.8, each with its caption and the spec's exact values in a disclosure directly after it; `test/equilibrium-placement.test.mjs` checks the placements and values, and `equilibrium-integration-evidence.md` records the browser check of the built book.
 
 | Chart | File | Spec placement anchor | Kind | Data |
-| --- | --- | --- | --- |
+| --- | --- | --- | --- | --- |
 | E1 | `equilibrium-e1-pr-cost.svg` | `ch8-two-price-tags-on-one-pull-request` | Derived and observed | `ebfb.mergedJoined` |
 | E2 | `equilibrium-e2-list-vs-paid.svg` | `ch8-two-price-tags-on-one-pull-request` | Observed list price; derived fee and ratio | `reconciliation.byMonth`, window totals; study point quoted from the spec |
 | E3 | `equilibrium-e3-weekly-throughput.svg` | `ch8-latency-and-throughput` | Observed | `weeklySeries` |

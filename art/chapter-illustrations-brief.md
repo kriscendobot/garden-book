@@ -142,7 +142,7 @@ interpretive link rather than repeat the alternative text.
 - **Illuminated treatment:** Make the gate an architectural initial surrounded by
   ivy, with small speech scrolls becoming paths. The composition should feel
   welcoming and practical, not courtly.
-- **Accessibility and pacing:** A portrait-leaning 4:3 opener suits the human
+- **Accessibility and pacing:** A portrait 3:4 opener suits the human
   entry point. Alternative text should identify the liaison as relay, not worker.
   Keep all essential action in the center so a wider desktop crop and full-width
   mobile presentation tell the same story.

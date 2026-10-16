@@ -111,8 +111,7 @@ role/skill links to the in-book [chapter 5](../chapters/ch5-roles-reference.md)/
 paths to `main2` on GitHub ([`kriscendobot/garden`](https://github.com/kriscendobot/garden), where the roles/skills
 this book documents actually live).
 
-Last published edition, 2026-10-13, built before the raster illuminations
-(its test count and output hashes describe that build, not this tree), linked and reader copy-edited (jobs
+Last published edition, 2026-10-13, linked and reader copy-edited (jobs
 `book-reader-exposure-copyedit` and
 `book-hyperlink-references-after-copyedit-20261004`): the prose introduces
 garden-specific terms before using them, foregrounds reader-visible
@@ -124,8 +123,9 @@ source: [published edition](https://5kwirevgc77outc6vptymbj6tfwpwuldnb74qumkrs55
 - Hyperlinks: [PR #13](https://github.com/kriscendobot/garden-book/pull/13),
   merged as `eaf634ae5d4d839e8979dc3f359037dca1594c96`; published from
   that commit.
-- Build: `npm ci && npm test && node build/build.mjs chapters out` (62/62
-  tests). Output sha256: `index.html`
+- Build, from before the raster illuminations, so its test count and hashes
+  describe that build rather than this tree:
+  `npm ci && npm test && node build/build.mjs chapters out` (62/62 tests). Output sha256: `index.html`
   `384dbd3ce3224354dfc2652b44773fe632a77363b75049d7bfdc7bb3e7087155`,
   `styles.css`
   `859ffed2b91ea2db5f0a963cbe22d5ffa48a8168423250fee4f251d4d27a49d0`;

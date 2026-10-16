@@ -37,7 +37,9 @@ with only `writeText` fails on the first plate. Each placement passed as
 `illuminations` supplies the `img` attributes `file`, `width`, `height`, and
 `alternativeText` (rendered as the `alt` attribute); the build does not validate them. The committed placements come from
 the metadata map in [`illuminations.mjs`](illuminations.mjs), and publishing
-refuses any declared plate that is not a `.webp` file in the output directory.
+refuses any declared plate that is not a `.webp` file in the output directory
+or whose bytes are not a well-formed RIFF/WEBP container (`isWebpContainer`
+checks the header, declared length, and chunk layout; it does not decode).
 
 ## Publish size
 
@@ -87,8 +89,10 @@ on [`kriscendobot/garden`](https://github.com/kriscendobot/garden)); it refuses 
 `garden-book-<name>`, so `sites`, `@agent`, and the other reserved names are
 never overwritten.
 
-The generation record, the committed review contact sheet, and the
-replacement evidence are in [`art/`](../art/illumination-redraw-evidence.md).
+The generation record is
+[`art/OPENAI-ILLUMINATIONS.md`](../art/OPENAI-ILLUMINATIONS.md); the committed
+review contact sheet and the published-clip policy note are in
+[`art/illumination-redraw-evidence.md`](../art/illumination-redraw-evidence.md).
 
 [Chapter 8's review-economics section (8.8)](../chapters/ch8-cybernetics-budgeting.md#88-review-economics-an-equilibrium) is computed, not hand-written:
 [`tools/equilibrium/analyze.mjs`](../tools/equilibrium/analyze.mjs) reads one fixed `journal2` commit plus GitHub
@@ -105,7 +109,8 @@ role/skill links to the in-book [chapter 5](../chapters/ch5-roles-reference.md)/
 paths to `main2` on GitHub ([`kriscendobot/garden`](https://github.com/kriscendobot/garden), where the roles/skills
 this book documents actually live).
 
-Current edition, 2026-10-13, linked and reader copy-edited (jobs
+Last published edition, 2026-10-13, built before the raster illuminations
+(its test count and output hashes describe that build, not this tree), linked and reader copy-edited (jobs
 `book-reader-exposure-copyedit` and
 `book-hyperlink-references-after-copyedit-20261004`): the prose introduces
 garden-specific terms before using them, foregrounds reader-visible

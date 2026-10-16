@@ -2,10 +2,7 @@
 
 This brief defines the thematic illustration set for *Better Code and Gardens*.
 It covers every chapter and adds section illustrations only where the subject or
-reading rhythm changes enough to justify one. Production is complete: the
-committed WebP plates and their placements in
-[`build/illuminations.mjs`](../build/illuminations.mjs) are the asset manifest,
-and this brief remains the record of each illustration's intent.
+reading rhythm changes enough to justify one.
 
 ## Set direction
 

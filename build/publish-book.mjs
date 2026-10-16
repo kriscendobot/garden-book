@@ -32,8 +32,7 @@ export const makePublishContent = async (
     );
   }
   // Reads exactly the declared names, so the tree needs only lookup, not
-  // directory listing; Chromium's decode in tools/browser-check.mjs is what
-  // tests that a plate is a usable image.
+  // directory listing.
   const plateBytes = await Promise.all(
     uniquePlates.map((file) =>
       readBytes(builtTree, file).catch((error) => {
@@ -98,9 +97,24 @@ const pythonJson = (value) => {
       .join(", ")}}`;
   }
   return JSON.stringify(value).replace(
-    /[^\x00-\x7f]/g,
+    /[^\x00-\x7e]/g,
     (unit) => `\\u${unit.charCodeAt(0).toString(16).padStart(4, "0")}`,
   );
+};
+
+// An MCP tool reports its own failure in the result (`isError`), not as a
+// JSON-RPC error, so a failed call still resolves.
+const callTool = async (peer, name, toolArguments) => {
+  const response = await peer.call("tools/call", {
+    name,
+    arguments: toolArguments,
+  });
+  if (response?.result?.isError === true) {
+    throw new Error(
+      `minion.town ${name} failed: ${JSON.stringify(response.result.content ?? response.result)}`,
+    );
+  }
+  return response;
 };
 
 export const publishRequestBytes = (publishArguments, requestIdentifier = 3) =>
@@ -126,6 +140,9 @@ export const publishRequestBytes = (publishArguments, requestIdentifier = 3) =>
  *   notify: (method: string, params: object) => void,
  * }} options.peer JSON-RPC peer connected to the minion MCP bridge: `call`
  *   resolves to the response, and `notify` sends without awaiting one.
+ * @returns {Promise<unknown>} the bridge's JSON-RPC response to `publish`.
+ *   Rejects, without publishing, if `writeText` reports `isError`, and
+ *   rejects if `publish` does.
  */
 export const publishBook = async ({
   builtTree,
@@ -148,12 +165,6 @@ export const publishBook = async ({
       `Refusing to publish: the clip encodes to ${requestBytes} bytes, over minion.town's ${PUBLISH_REQUEST_LIMIT}-byte MCP request limit`,
     );
   }
-  await peer.call("tools/call", {
-    name: "writeText",
-    arguments: { name: POWERS_NAME, text: "" },
-  });
-  return peer.call("tools/call", {
-    name: "publish",
-    arguments: publishArguments,
-  });
+  await callTool(peer, "writeText", { name: POWERS_NAME, text: "" });
+  return callTool(peer, "publish", publishArguments);
 };

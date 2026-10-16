@@ -408,6 +408,42 @@ test("publishBook refuses a clip one byte over the MCP request limit before writ
   );
 });
 
+for (const failing of ["writeText", "publish"]) {
+  test(`publishBook rejects when ${failing} reports an MCP tool error`, async () => {
+    const calls = [];
+    const peer = {
+      async call(method, params) {
+        calls.push(params.name ?? method);
+        return {
+          jsonrpc: "2.0",
+          id: calls.length,
+          result:
+            params.name === failing
+              ? { isError: true, content: [{ type: "text", text: "denied" }] }
+              : { ok: true },
+        };
+      },
+      notify() {},
+    };
+    await assert.rejects(
+      publishBook({ ...(await clipOfRequestSize(-1)), peer }),
+      new RegExp(`^Error: minion\\.town ${failing} failed: .*denied`, "u"),
+    );
+    assert.deepEqual(
+      calls,
+      failing === "writeText" ? ["initialize", "writeText"] : ["initialize", "writeText", "publish"],
+    );
+  });
+}
+
+test("publishRequestBytes escapes DEL as the Python bridge does", () => {
+  assert.equal(
+    publishRequestBytes({ powers: "\x7f" }),
+    '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "publish", "arguments": {"powers": "\\u007f"}}}'
+      .length,
+  );
+});
+
 test("publishRequestBytes measures the body the Python bridge sends", () => {
   // json.dumps({"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params":
   // {"name": "publish", "arguments": {"powers": "\u2713\ud83c\udf31"}}})

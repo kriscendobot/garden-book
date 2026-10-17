@@ -406,8 +406,7 @@ additions:
 - **Orchestration jobs.** Multi-part work is split into parked child jobs
   plus one orchestration job. A deterministic watcher releases the children in
   order and alerts the maintainer on failure instead of stalling silently
-  ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration)). This book was produced that way: each chapter is a
-  child of the orchestration `garden-book-orch`.
+  ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration)).
 - **Pool sizing tied to budget.** The fourth stage imagined "around 100"
   gardeners per host, most of them idle. Today each host's declared capacity
   is "reconciled against backend health and budget limits," and the guidance

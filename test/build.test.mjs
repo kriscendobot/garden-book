@@ -127,6 +127,7 @@ test("assembleBook uses tree capabilities and writes the complete clip", async (
     }),
     buildTree: makeReadableTree({
       "intro.html": "{{FRIEZE}}{{INCLUDED}}",
+      "colophon.html": '<h2 id="colophon">Colophon</h2>\n<h3 id="colophon-text">Text</h3>\n{{PROVENANCE}}',
       "styles.css": "body { color: green; }\n",
     }),
     artworkTree: makeReadableTree({}),
@@ -137,6 +138,11 @@ test("assembleBook uses tree capabilities and writes the complete clip", async (
 
   assert.equal(result.chapterCount, 1);
   assert.match(output["index.html"], /<!DOCTYPE html>/);
+  assert.match(
+    output["index.html"],
+    /<section class="chapter colophon" aria-labelledby="colophon">\n<h2 id="colophon">Colophon<\/h2>/,
+  );
+  assert.deepEqual(Object.keys(output).sort(), ["index.html", "styles.css"]);
   assert.equal(output["styles.css"], "body { color: green; }\n");
 });
 

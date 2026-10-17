@@ -307,9 +307,7 @@ board, promotes the next child (serial) or all children (parallel), watches
 each reach `tada/`, and treats a child that vanished without a `tada/` report,
 or whose report carries `orchestration-failed: true`, as a failure handled by
 the record's policy (halt and surface to the maintainer, or continue).
-[Chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration) covers orchestration as a procedure. This book is itself an
-orchestration, `garden-book-orch`, which first ran eight chapter children in
-parallel.
+[Chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration) covers orchestration as a procedure.
 
 ## 2.3 The gardener fleet
 

@@ -76,7 +76,7 @@ a:focus-visible{outline:2px solid var(--leaf);outline-offset:2px;border-radius:2
 
 /* ---- The page: a text column with a margin to its right ----------------- */
 main{margin-left:var(--side);padding:0 3rem 6rem 3.5rem}
-main>header,main>section,main>footer{max-width:var(--text)}
+main>header,main>section{max-width:var(--text)}
 p{margin:0 0 1rem}
 ul,ol{padding-left:1.4rem}
 li{margin:.25rem 0}
@@ -112,6 +112,7 @@ ol.toc,ol.toc ol{list-style:none;padding:0;margin:0}
 .toc-part-head .glyph{grid-row:span 2;width:2rem;height:2rem;color:var(--leaf)}
 .toc-part-head .pt{font:.8rem/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
 .toc-part-head .pd{grid-column:2;font-style:italic;font-size:.95rem;color:var(--soil);line-height:1.35}
+.toc-back .toc-part-head .pt{grid-column:2}
 .toc-part>ol>li{margin:0 0 1rem}
 .toc-part>ol>li>a{display:flex;gap:.7rem;font-size:1.12rem;color:var(--ink);text-decoration:none}
 .toc-part>ol>li>a:hover .ct{text-decoration:underline;text-decoration-color:var(--leaf-faint)}
@@ -205,7 +206,13 @@ hr{border:0;border-top:1px solid var(--rule);margin:2.5rem 0}
 .back{font:.78rem/1 var(--sans);letter-spacing:.06em;margin:3rem 0 0}
 .back a{color:var(--soil);text-decoration:none}
 .back a:hover{color:var(--leaf)}
-footer{margin-top:6rem;padding-top:1rem;border-top:1px solid var(--rule);font:.8rem/1.5 var(--sans);color:var(--soil)}
+/* Back matter: the colophon, set in the chapters' measure but quieter. */
+.colophon{margin-top:6rem;border-top:1px solid var(--rule)}
+.colophon .provenance{font-size:.85rem}
+.colophon .provenance tbody th{font:inherit;letter-spacing:0;text-transform:none;color:inherit;border-bottom:0}
+.colophon .provenance tbody tr+tr th{border-top:1px solid var(--rule)}
+.colophon .provenance caption{text-align:left;font:.8rem/1.4 var(--sans);color:var(--soil);margin:0 0 .5rem}
+.colophon ul.editions li{margin:.35rem 0}
 
 /* ---- Margin notes ------------------------------------------------------- */
 /* Narrow layouts: inline, set small and quiet beneath what they annotate. */

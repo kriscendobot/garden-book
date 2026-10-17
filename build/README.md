@@ -29,7 +29,7 @@ else that copies an edition must copy the whole output directory, not
 
 ## Tree contract
 
-`assembleBook` reads chapters, `intro.html`, and art through readable trees
+`assembleBook` reads chapters, `intro.html`, `colophon.html`, and art through readable trees
 whose `lookup(name)` returns a blob with `text()`, or `bytes()` for the plates
 ([`tree-io.mjs`](tree-io.mjs) `readText`/`readBytes`). The output tree must
 provide both `writeText(name, content)` and `writeBytes(name, content)`; a tree
@@ -57,9 +57,11 @@ Design hooks in [`render-book.mjs`](render-book.mjs): `PARTS` maps chapter numbe
 parts (update it when chapters are added or renumbered; a chapter outside
 every part is listed after them); `GLYPHS` holds each part's inline SVG
 growth stage (presentation attributes only, since the CSP forbids inline
-style). Margin notes are `.marginnote` elements: chapter provenance, each
+style). Margin notes are `.marginnote` elements: the title page's edition identifier, each
 catalog entry's `Source:` line (hoisted beside its heading and linked to
-`main2`), and the chapter's own `Contents` list. [`illuminations.mjs`](illuminations.mjs) places
+`main2`), and the chapter's own `Contents` list. Each chapter's provenance
+(its `author` and `grounded-on` frontmatter, and its source file) is set as a
+row of the colophon's table instead, in place of `{{PROVENANCE}}`. [`illuminations.mjs`](illuminations.mjs) places
 the plates from `art/`: each entry names an image, the heading anchor it was
 drawn for, an optional later heading inside that section (`at`), how many body
 blocks to pass before the figure (margin notes don't count), intrinsic
@@ -105,8 +107,11 @@ including every classification rule and the exact commands, is
 [`art/equilibrium-data-spec.md`](../art/equilibrium-data-spec.md). Only aggregates are committed, never journal
 or review text.
 
-[`build.mjs`](build.mjs) reads [`intro.html`](intro.html) (the title page; update its edition note) from
-the build directory. It prefixes heading ids per chapter, rewrites relative
+[`build.mjs`](build.mjs) reads [`intro.html`](intro.html) (the title page; keep it to the title and a
+minimal edition identifier) and [`colophon.html`](colophon.html) (the back matter after the last
+chapter: editions, text and editing, build and publication; anything about how
+the book was made goes here, and a new edition adds itself to its Editions list) from
+the build directory. The colophon's `h3` headings become its entries in the contents. It prefixes heading ids per chapter, rewrites relative
 role/skill links to the in-book [chapter 5](../chapters/ch5-roles-reference.md)/[6](../chapters/ch6-skills-reference.md) entries, and sends other repo
 paths to `main2` on GitHub ([`kriscendobot/garden`](https://github.com/kriscendobot/garden), where the roles/skills
 this book documents actually live).

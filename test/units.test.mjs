@@ -158,12 +158,12 @@ test("the Node trees round-trip every byte value through writeBytes and readByte
 
 const artwork = { illuminations: {} };
 
-test("renderBook hoists source notes and annotates provenance", () => {
+test("renderBook hoists source notes and moves provenance to the colophon", () => {
   const { html } = renderBook({
     chapterSources: [
       {
         fileName: "ch2-garden.md",
-        text: "---\nauthor: gardener\ngrounded-on: main2\n---\n# Chapter 2: Garden\n\nSee [GitHub](https://github.com/).\n",
+        text: "---\nauthor: gardener $$ $&\ngrounded-on: main2\n---\n# Chapter 2: Costs: $$ and $&\n\nSee [GitHub](https://github.com/).\n",
       },
       {
         fileName: "ch6-skills.md",
@@ -171,12 +171,25 @@ test("renderBook hoists source notes and annotates provenance", () => {
       },
     ],
     introSource: "{{FRIEZE}}{{INCLUDED}}",
+    colophonSource:
+      '<h2 id="colophon">Colophon</h2>\n<h3 id="colophon-text">Text</h3>\n{{PROVENANCE}}',
     artwork,
     illuminations: [],
     equilibriumCharts: [],
   });
 
-  assert.match(html, /Written by gardener; grounded on main2\./);
+  assert.doesNotMatch(html, /marginnote provenance/);
+  const colophon = html.slice(html.indexOf('<section class="chapter colophon"'));
+  assert.match(
+    colophon,
+    /<tr><th scope="row"><a href="#ch2-chapter-2-costs--and-">Chapter 2: Costs: \$\$ and \$&amp;<\/a><\/th><td>gardener \$\$ \$&amp;<\/td><td>main2<\/td><td><a href="https:\/\/github.com\/kriscendobot\/garden-book\/blob\/main\/chapters\/ch2-garden.md" rel="noopener"><code>ch2-garden.md<\/code><\/a><\/td><\/tr>/,
+  );
+  assert.match(
+    html,
+    /<p class="nav-part"><span>Back matter<\/span><\/p><ol><li><a href="#colophon">/,
+  );
+  assert.match(html, /<li><a href="#colophon-text">Text<\/a><\/li>/);
+  assert.doesNotMatch(html, /<footer>/);
   assert.match(html, /href="https:\/\/github.com\/" rel="noopener"/);
   assert.doesNotMatch(html, /<figure/);
   assert.match(

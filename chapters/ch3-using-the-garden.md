@@ -298,9 +298,7 @@ liaison does not post a loose pile of jobs and hope the follow-ups happen. It pa
 <child>...`). The deterministic `garden-orchestrate` watcher promotes the
 children one at a time (serial, the default) or all at once (parallel),
 watches each to completion, and on a child failure either halts and
-surfaces it or continues, per the policy ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration)). This book is
-itself one such orchestration, `garden-book-orch`: eight chapters in
-parallel, halt on failure. For a plain two-step dependency, `post-plan.sh
+surfaces it or continues, per the policy ([chapter 7](#ch7-chapter-7-procedures-and-workflows), [§ 7.4](#ch7-74-orchestration)). For a plain two-step dependency, `post-plan.sh
 --blocked --blocked-on <predecessor>` is the lighter tool.
 
 ### Fleet operations

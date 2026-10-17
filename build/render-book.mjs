@@ -347,6 +347,7 @@ const hoistSourceNotes = (_match, heading, rest) => {
 export const renderBook = ({
   chapterSources,
   introSource,
+  colophonSource,
   artwork,
   illuminations = defaultIlluminations,
   equilibriumCharts = defaultEquilibriumCharts,
@@ -400,6 +401,7 @@ export const renderBook = ({
   const placed = new Set();
   const tableOfContents = [];
   const sections = [];
+  const provenanceRows = [];
 
   for (const chapter of chapters) {
     const markdown = new MarkdownIt("commonmark", {
@@ -453,16 +455,11 @@ export const renderBook = ({
       .map((heading) => [heading[1], heading[2].replaceAll("`", "")]);
     tableOfContents.push([chapterId, title, subsections, undefined, title]);
 
-    const provenance = [];
-    if (chapter.metadata.author) {
-      provenance.push(`Written by ${chapter.metadata.author}`);
-    }
-    if (chapter.metadata["grounded-on"]) {
-      provenance.push(`grounded on ${chapter.metadata["grounded-on"]}`);
-    }
-    const provenanceHtml = `<div class="marginnote provenance" role="note">${escapeHtml(
-      provenance.join("; "),
-    )}. Source: <a href="${BOOK_CHAPTER_SOURCE}${chapter.fileName}"><code>${chapter.fileName}</code></a>.</div>`;
+    provenanceRows.push(
+      `<tr><th scope="row"><a href="#${chapterId}">${escapeHtml(title)}</a></th><td>${escapeHtml(
+        chapter.metadata.author ?? "",
+      )}</td><td>${escapeHtml(chapter.metadata["grounded-on"] ?? "")}</td><td><a href="${BOOK_CHAPTER_SOURCE}${chapter.fileName}" rel="noopener"><code>${chapter.fileName}</code></a></td></tr>`,
+    );
     const part = partOf(chapter.number);
     const numberMatch = /^Chapter (\d+):\s*(.*)$/.exec(title);
     const shortTitle = numberMatch ? numberMatch[2] : title;
@@ -476,7 +473,6 @@ export const renderBook = ({
         : "";
       bodyHtml = partMark + bodyHtml;
     }
-    bodyHtml = bodyHtml.replace("</h2>", `</h2>\n${provenanceHtml}`);
     bodyHtml = bodyHtml.replace(
       /<p>Source: <a href="#[^"]*">(?:<code>)?([^<]+?)(?:<\/code>)?<\/a><\/p>/g,
       (_match, source) =>
@@ -641,6 +637,28 @@ export const renderBook = ({
       mainContents.push("</ol></li>");
     }
   }
+  let colophon = "";
+  if (colophonSource !== undefined) {
+    const colophonHtml = colophonSource.replace(
+      "{{PROVENANCE}}",
+      () =>
+        `<table class="provenance"><caption>Chapters, their writers, and the commits they were grounded on</caption><thead><tr><th scope="col">Chapter</th><th scope="col">Written by</th><th scope="col">Grounded on</th><th scope="col">Source</th></tr></thead><tbody>${provenanceRows.join(
+          "",
+        )}</tbody></table>`,
+    );
+    const colophonSections = [
+      ...colophonHtml.matchAll(/<h3 id="([^"]+)">([^<]+)<\/h3>/g),
+    ];
+    navigation.push(
+      '<p class="nav-part"><span>Back matter</span></p><ol><li><a href="#colophon"><span class="ct">Colophon</span></a></li></ol>',
+    );
+    mainContents.push(
+      `<li class="toc-part toc-back"><p class="toc-part-head"><span class="pt">Back matter</span></p><ol><li><a href="#colophon"><span class="ct">Colophon</span></a><ol>${colophonSections
+        .map(([, id, heading]) => `<li><a href="#${id}">${heading}</a></li>`)
+        .join("")}</ol></li></ol></li>`,
+    );
+    colophon = `<section class="chapter colophon" aria-labelledby="colophon">\n${colophonHtml.trim()}\n<p class="back"><a href="#toc">&uarr; Contents</a></p>\n</section>\n`;
+  }
   navigation.push("</nav>");
   mainContents.push("</ol>");
   frieze.push("</ol>");
@@ -677,8 +695,7 @@ ${intro}
 ${mainContents.join("")}
 </section>
 ${sections.join("")}
-<footer><p>Assembled from the chapters in <a href="https://github.com/kriscendobot/garden-book">kriscendobot/garden-book</a>.</p></footer>
-</main>
+${colophon}</main>
 </body>
 </html>
 `;

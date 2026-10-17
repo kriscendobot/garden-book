@@ -22,9 +22,10 @@ export const assembleBook = async ({
       text: await readText(chaptersTree, fileName),
     })),
   );
-  const [introSource, styles, illuminationSources, chartSources] =
+  const [introSource, colophonSource, styles, illuminationSources, chartSources] =
     await Promise.all([
     readText(buildTree, "intro.html"),
+    readText(buildTree, "colophon.html"),
     readText(buildTree, "styles.css"),
     Promise.all(illuminations.map(({ file }) => readBytes(artworkTree, file))),
     Promise.all(equilibriumCharts.map(({ file }) => readText(artworkTree, file))),
@@ -32,6 +33,7 @@ export const assembleBook = async ({
   const result = renderBook({
     chapterSources,
     introSource,
+    colophonSource,
     artwork: {
       illuminations: Object.fromEntries(
         illuminations.map(({ file }, index) => [

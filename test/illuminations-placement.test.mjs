@@ -28,7 +28,7 @@ test("renderBook places accessible raster openers and section figures", () => {
       { file: "detail.webp", anchor: "ch1-11-first", at: "ch1-detail", ratio: "5:2", blocks: 1, width: 1200, height: 480, alternativeText: "A detail scene.", caption: "Detail caption." },
     ],
   });
-  assert.match(html, /<div class="marginnote provenance" role="note">.*?<\/div>\n<figure class="illumination opener ratio-3-2"><img class="illumination-art" src="opener\.webp" width="1200" height="800" loading="eager" decoding="async" alt="An opener scene\."><figcaption>Opener &amp; caption\.<\/figcaption><\/figure>\n<p>Opening\.<\/p>/s);
+  assert.match(html, /<h2 id="ch1-chapter-1-intro"><span class="chapnum">Chapter 1<\/span> Intro<\/h2>\n<figure class="illumination opener ratio-3-2"><img class="illumination-art" src="opener\.webp" width="1200" height="800" loading="eager" decoding="async" alt="An opener scene\."><figcaption>Opener &amp; caption\.<\/figcaption><\/figure>\n<p>Opening\.<\/p>/s);
   assert.match(html, /<p>Two\.<\/p>\n<figure class="illumination section-figure ratio-5-2"><img .*?loading="lazy".*?<figcaption>Detail caption\.<\/figcaption><\/figure>\n<p>Three\.<\/p>/s);
 });
 

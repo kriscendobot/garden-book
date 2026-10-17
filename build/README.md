@@ -60,8 +60,7 @@ growth stage (presentation attributes only, since the CSP forbids inline
 style). Margin notes are `.marginnote` elements: the title page's edition identifier, each
 catalog entry's `Source:` line (hoisted beside its heading and linked to
 `main2`), and the chapter's own `Contents` list. Each chapter's provenance
-(its `author` and `grounded-on` frontmatter, and its source file) is set as a
-row of the colophon's table instead, in place of `{{PROVENANCE}}`. [`illuminations.mjs`](illuminations.mjs) places
+is a row of the colophon's table. [`illuminations.mjs`](illuminations.mjs) places
 the plates from `art/`: each entry names an image, the heading anchor it was
 drawn for, an optional later heading inside that section (`at`), how many body
 blocks to pass before the figure (margin notes don't count), intrinsic

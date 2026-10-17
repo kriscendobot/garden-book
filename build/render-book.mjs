@@ -455,8 +455,6 @@ export const renderBook = ({
       .map((heading) => [heading[1], heading[2].replaceAll("`", "")]);
     tableOfContents.push([chapterId, title, subsections, undefined, title]);
 
-    // Who wrote the chapter, and the commit it was grounded on, belong to the
-    // making of the book, so they go to the colophon, not the chapter.
     provenanceRows.push(
       `<tr><th scope="row"><a href="#${chapterId}">${escapeHtml(title)}</a></th><td>${escapeHtml(
         chapter.metadata.author ?? "",
@@ -643,9 +641,10 @@ export const renderBook = ({
   if (colophonSource !== undefined) {
     const colophonHtml = colophonSource.replace(
       "{{PROVENANCE}}",
-      `<table class="provenance"><caption>Chapters, their writers, and the commits they were grounded on</caption><thead><tr><th scope="col">Chapter</th><th scope="col">Written by</th><th scope="col">Grounded on</th><th scope="col">Source</th></tr></thead><tbody>${provenanceRows.join(
-        "",
-      )}</tbody></table>`,
+      () =>
+        `<table class="provenance"><caption>Chapters, their writers, and the commits they were grounded on</caption><thead><tr><th scope="col">Chapter</th><th scope="col">Written by</th><th scope="col">Grounded on</th><th scope="col">Source</th></tr></thead><tbody>${provenanceRows.join(
+          "",
+        )}</tbody></table>`,
     );
     const colophonSections = [
       ...colophonHtml.matchAll(/<h3 id="([^"]+)">([^<]+)<\/h3>/g),

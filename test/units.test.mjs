@@ -163,7 +163,7 @@ test("renderBook hoists source notes and moves provenance to the colophon", () =
     chapterSources: [
       {
         fileName: "ch2-garden.md",
-        text: "---\nauthor: gardener\ngrounded-on: main2\n---\n# Chapter 2: Garden\n\nSee [GitHub](https://github.com/).\n",
+        text: "---\nauthor: gardener $$ $&\ngrounded-on: main2\n---\n# Chapter 2: Costs: $$ and $&\n\nSee [GitHub](https://github.com/).\n",
       },
       {
         fileName: "ch6-skills.md",
@@ -182,7 +182,7 @@ test("renderBook hoists source notes and moves provenance to the colophon", () =
   const colophon = html.slice(html.indexOf('<section class="chapter colophon"'));
   assert.match(
     colophon,
-    /<tr><th scope="row"><a href="#ch2-chapter-2-garden">Chapter 2: Garden<\/a><\/th><td>gardener<\/td><td>main2<\/td><td><a href="https:\/\/github.com\/kriscendobot\/garden-book\/blob\/main\/chapters\/ch2-garden.md" rel="noopener"><code>ch2-garden.md<\/code><\/a><\/td><\/tr>/,
+    /<tr><th scope="row"><a href="#ch2-chapter-2-costs--and-">Chapter 2: Costs: \$\$ and \$&amp;<\/a><\/th><td>gardener \$\$ \$&amp;<\/td><td>main2<\/td><td><a href="https:\/\/github.com\/kriscendobot\/garden-book\/blob\/main\/chapters\/ch2-garden.md" rel="noopener"><code>ch2-garden.md<\/code><\/a><\/td><\/tr>/,
   );
   assert.match(
     html,

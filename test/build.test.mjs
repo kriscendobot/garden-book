@@ -228,7 +228,14 @@ test("publishBook sends inert powers and UTF-8 clip content", async () => {
   assert.deepEqual(notifications, [["notifications/initialized", {}]]);
   assert.deepEqual(calls[1], [
     "tools/call",
-    { name: "writeText", arguments: { name: "garden-book-inert", text: "" } },
+    {
+      name: "evaluate",
+      arguments: {
+        source: `E(agent).writeText("garden-book-inert", '').then(() => 'written')`,
+        names: ["agent"],
+        values: ["@agent"],
+      },
+    },
   ]);
   assert.equal(calls[2][1].arguments.powers, "garden-book-inert");
   assert.equal(POWERS_NAME, "garden-book-inert");
@@ -392,7 +399,7 @@ test("publishBook publishes a clip exactly at the MCP request limit", async () =
   await publishBook({ ...(await clipOfRequestSize(0)), peer: recordingPeer(calls) });
   assert.deepEqual(
     calls.map(([method, params]) => params.name ?? method),
-    ["initialize", "writeText", "publish"],
+    ["initialize", "evaluate", "publish"],
   );
 });
 
@@ -408,7 +415,7 @@ test("publishBook refuses a clip one byte over the MCP request limit before writ
   );
 });
 
-for (const failing of ["writeText", "publish"]) {
+for (const failing of ["evaluate", "publish"]) {
   test(`publishBook rejects when ${failing} reports an MCP tool error`, async () => {
     const calls = [];
     const peer = {
@@ -431,7 +438,7 @@ for (const failing of ["writeText", "publish"]) {
     );
     assert.deepEqual(
       calls,
-      failing === "writeText" ? ["initialize", "writeText"] : ["initialize", "writeText", "publish"],
+      failing === "evaluate" ? ["initialize", "evaluate"] : ["initialize", "evaluate", "publish"],
     );
   });
 }

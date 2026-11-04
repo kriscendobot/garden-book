@@ -141,7 +141,7 @@ export const publishRequestBytes = (publishArguments, requestIdentifier = 3) =>
  * }} options.peer JSON-RPC peer connected to the minion MCP bridge: `call`
  *   resolves to the response, and `notify` sends without awaiting one.
  * @returns {Promise<unknown>} the bridge's JSON-RPC response to `publish`.
- *   Rejects, without publishing, if `writeText` reports `isError`, and
+ *   Rejects, without publishing, if blanking the name reports `isError`, and
  *   rejects if `publish` does.
  */
 export const publishBook = async ({
@@ -165,6 +165,10 @@ export const publishBook = async ({
       `Refusing to publish: the clip encodes to ${requestBytes} bytes, over minion.town's ${PUBLISH_REQUEST_LIMIT}-byte MCP request limit`,
     );
   }
-  await callTool(peer, "writeText", { name: POWERS_NAME, text: "" });
+  await callTool(peer, "evaluate", {
+    source: `E(agent).writeText(${JSON.stringify(POWERS_NAME)}, '').then(() => 'written')`,
+    names: ["agent"],
+    values: ["@agent"],
+  });
   return callTool(peer, "publish", publishArguments);
 };

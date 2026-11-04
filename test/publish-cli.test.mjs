@@ -57,17 +57,17 @@ const runPublish = (failing) => {
 };
 
 test("publish CLI exits 0 when every tool call succeeds", () => {
-  assert.deepEqual(runPublish(""), { status: 0, calls: ["writeText", "publish"] });
+  assert.deepEqual(runPublish(""), { status: 0, calls: ["evaluate", "publish"] });
 });
 
-test("publish CLI exits non-zero without publishing when blanking writeText fails", () => {
-  const { status, calls } = runPublish("writeText");
+test("publish CLI exits non-zero without publishing when blanking the name fails", () => {
+  const { status, calls } = runPublish("evaluate");
   assert.notEqual(status, 0);
-  assert.deepEqual(calls, ["writeText"]);
+  assert.deepEqual(calls, ["evaluate"]);
 });
 
 test("publish CLI exits non-zero when publish fails", () => {
   const { status, calls } = runPublish("publish");
   assert.notEqual(status, 0);
-  assert.deepEqual(calls, ["writeText", "publish"]);
+  assert.deepEqual(calls, ["evaluate", "publish"]);
 });
